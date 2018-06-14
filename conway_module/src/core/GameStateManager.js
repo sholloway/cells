@@ -84,7 +84,6 @@ class GameStateManager{
 	}
 
 	seedWorld(seeder = defaultSeeder()){
-		console.log(`Seeder: ${seeder}`)
 		this.worldDimensions = calculateWorldSize(this.config)
 		this.currentGrid = seeder.seed(this.worldDimensions.cellsWide, this.worldDimensions.cellsHigh)
 		this.nextGrid = createDeadArray(this.worldDimensions.cellsWide, this.worldDimensions.cellsHigh)
@@ -121,7 +120,7 @@ class GameStateManager{
 		for (let row = 0; row < this.currentGrid.length; row++){
 			for (let col = 0; col < this.currentGrid[row].length; col++){
 				let neighborsCount = scanNeighbors(this.currentGrid, row, col)
-				let cellLiveOrDead = evaluator.evaluate(neighborsCount)
+				let cellLiveOrDead = evaluator.evaluate(neighborsCount, this.currentGrid[row][col])
 				this.nextGrid[row][col] = cellLiveOrDead
 			}
 		}
