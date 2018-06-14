@@ -58,6 +58,78 @@ function defaultSeeder(){
 	return new DefaultSeeder()
 }
 
+function isCellValid(array, row, col){
+  return row >= 0 &&
+    row < array.length &&
+    col >= 0 &&
+    col < array[row].length
+}
+
+/*
+The Default Evaluator leverages the Game B3/S23.
+Born Requirements: 3 Neighbors
+Survival Requirements: {2, 3} Neighbors
+*/
+class CellEvaluator{
+	constructor(birthRules=[3], survivalRules=[2,3]){
+		this.birthRules = birthRules
+		this.survivalRules = survivalRules
+	}
+
+	evaluate(neghborsCount, currentCellState){
+		let nextCellState;
+		switch (currentCellState){
+			case CellStates.DEAD:
+				nextCellState = (this.birthRules.includes(neghborsCount))? CellStates.ALIVE : CellStates.DEAD;
+				break
+			case CellStates.ALIVE:
+				nextCellState = (this.survivalRules.includes(neghborsCount))? CellStates.ALIVE : CellStates.DEAD;
+				break
+			default:
+				throw new Error(`Cannot evaluate cell. Unknown cell state: ${currentCellState}`)
+		}
+		return nextCellState
+	}
+}
+
+const CellStates = {
+	DEAD: 0,
+	ALIVE: 1
+}
+
+function defaultCellEvaluator(){
+	return new CellEvaluator()
+}
+
+function scanNeighbors(array, row, col){
+  let neighborsCount = 0
+  // Top Row
+  for (let c = col - 1; c <= col + 1; c++){
+    if(isCellValid(array, row - 1, c)){
+      neighborsCount += array[row - 1][c]
+    }
+  }
+
+  // Residing Row
+  //left
+  if(isCellValid(array, row, col - 1)){
+    neighborsCount += array[row][col - 1]
+  }
+
+  //right
+  if(isCellValid(array, row, col + 1)){
+    neighborsCount += array[row][col + 1]
+  }
+
+  // Bottom Row
+  for (let c = col - 1; c <= col + 1; c++){
+    if(isCellValid(array, row + 1, c)){
+      neighborsCount += array[row + 1][c]
+    }
+	}
+	return neighborsCount
+}
+
 class GameStateManager{
 	constructor(config){
 		this.config = config
@@ -67,10 +139,9 @@ class GameStateManager{
 
 	seedWorld(seeder = defaultSeeder()){
 		console.log(`Seeder: ${seeder}`)
-		//let width, height = calculateWorldSize(this.config)
-		let worldDimensions = calculateWorldSize(this.config)
-		this.currentGrid = seeder.seed(worldDimensions.cellsWide, worldDimensions.cellsHigh)
-		this.nextGrid = createDeadArray(worldDimensions.cellsWide, worldDimensions.cellsHigh)
+		this.worldDimensions = calculateWorldSize(this.config)
+		this.currentGrid = seeder.seed(this.worldDimensions.cellsWide, this.worldDimensions.cellsHigh)
+		this.nextGrid = createDeadArray(this.worldDimensions.cellsWide, this.worldDimensions.cellsHigh)
 	}
 
 	/*
@@ -85,6 +156,29 @@ class GameStateManager{
 	*/
 	getNextGrid(){
 		return copyArray(this.nextGrid)
+	}
+
+	/*
+	Replaces the current grid with the next grid and reinitializes the next grid with 0s.
+	This is similar to double buffering in computer graphics.
+	*/
+	activateNextGrid(){
+		this.currentGrid = this.getNextGrid()
+	  this.nextGrid = createDeadArray(this.worldDimensions.cellsWide, this.worldDimensions.cellsHigh)
+	}
+
+	/*
+	Traverse the current grid, applying the rules defined by the evaluator and
+	populate the next grid accordingly. No changes are made to the current grid.
+	*/
+	evaluateCells(evaluator = defaultCellEvaluator()){
+		for (let row = 0; row < this.currentGrid.length; row++){
+			for (let col = 0; col < this.currentGrid[row].length; col++){
+				let neighborsCount = scanNeighbors(this.currentGrid, row, col)
+				let cellLiveOrDead = evaluator.evaluate(neighborsCount)
+				this.nextGrid[row][col] = cellLiveOrDead
+			}
+		}
 	}
 }
 

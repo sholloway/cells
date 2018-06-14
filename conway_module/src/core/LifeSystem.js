@@ -11,9 +11,9 @@ const LifeSystemState = {
 
 //Private methods
 function gameLoop(){
-	this.evaluator.evaluateCells()
+	this.gridStateManager.evaulateCells(this.evaluator)
 	this.renderer.render()
-	this.gridStateManager.swapState()
+	this.gridStateManager.activateNextGrid()
 }
 
 class LifeSystem{
