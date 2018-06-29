@@ -44,11 +44,8 @@ class LifeSystem{
 	}
 
 	stop(){
-		console.log('Stop Clicked')
 		if (this.gameState == LifeSystemState.RUNNING){
-			console.log('Attempting to Stop')
 			this.gameState = LifeSystemState.STOPPED
-			console.log(this.gameLoopHandle)
 			this.window.clearInterval(this.gameLoopHandle)
 		}
 	}

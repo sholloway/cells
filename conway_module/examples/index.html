@@ -39,18 +39,6 @@
 		</div>
 
 		<script type="application/javascript">
-			//TODO: Make this script load after the document does.
-			/*
-			Steps
-			1. Get the config object from the module.
-			2. Get the LifeSystem from the module
-			3. Grab the canvas object.
-			4. Set the canvas size
-			5. Start the system.
-
-			Implement Renderer.
-			After this is working, figure out how to drive it from a form.
-			*/
 			let LifeSystem = Conways.LifeSystem
 			let config = Conways.DefaultConfig
 
@@ -58,11 +46,7 @@
 			canvas.setAttribute('width', config.canvas.width)
 			canvas.setAttribute('height', config.canvas.height)
 			let ctx = canvas.getContext('2d')
-
 			let life = new LifeSystem(window, ctx, config)
-			// life.start()
-			// let renderFrame = render.bind(this, ctx, config, state)
-			//window.setInterval(renderFrame, 100)
 
 			function start_simulation(){
 				life.start()
