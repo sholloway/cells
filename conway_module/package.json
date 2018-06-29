@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "NODE_ENV=test NODE_PATH=. node_modules/mocha/bin/mocha",
-    "cov": "./node_modules/.bin/istanbul cover --report text --report html _mocha"
+    "cov": "./node_modules/.bin/istanbul cover --report text --report html _mocha",
+    "build-dev": "node build.js dev",
+    "build-prod": "node build.js prod"
   },
   "author": "Samuel D. Holloway",
   "license": "MIT",
@@ -13,6 +15,7 @@
     "chai": "4.1.2",
     "istanbul": "0.4.5",
     "mocha": "5.2.0",
-    "sinon": "6.0.0"
+    "sinon": "6.0.0",
+    "systemjs-builder": "0.16.13"
   }
 }

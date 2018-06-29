@@ -1,6 +1,7 @@
 const { CellStates } = require('./CellStates.js')
 const CellEvaluator = require('./CellEvaluator.js')
 const DefaultSeeder = require('./DefaultSeeder.js')
+const Cell = require('./../renderer/Cell.js')
 
 function calculateWorldSize(config){
 	let cellsWide = Math.floor(config.canvas.width/config.cell.width)
@@ -116,12 +117,44 @@ class GameStateManager{
 	Traverse the current grid, applying the rules defined by the evaluator and
 	populate the next grid accordingly. No changes are made to the current grid.
 	*/
-	evaluateCells(evaluator = defaultCellEvaluator()){
+	evaluateCells(scene, evaluator = defaultCellEvaluator()){
 		for (let row = 0; row < this.currentGrid.length; row++){
 			for (let col = 0; col < this.currentGrid[row].length; col++){
 				let neighborsCount = scanNeighbors(this.currentGrid, row, col)
-				let cellLiveOrDead = evaluator.evaluate(neighborsCount, this.currentGrid[row][col])
-				this.nextGrid[row][col] = cellLiveOrDead
+				let cellAlive = evaluator.evaluate(neighborsCount, this.currentGrid[row][col])
+				this.nextGrid[row][col] = cellAlive
+
+				/*
+				We've got a data structure problem. I want to track how many iterations
+				a given cell has survived. Currently I'm using two data structures:
+				- 2D array of bits
+				- A stack of entities.
+
+				Both data structures are emptied after each iteration. This doesn't help.
+				Ideas:
+				- Change the CellEvaluator to have access to the scene. Have it return a Cell rather than a bit.
+				- Use a different data structure to store what needs to be rendered.
+					- Required Data
+						- Location
+						- Age
+						- # Neighbors: This could also be used to drive the look of the cell.
+					- Possible Data Structures
+						- A tree that is optimized for storing order pairs.
+							- The empty cells would not be added to the tree.
+							- e.g. KD-Tree
+						- A hash table.
+							- The key could be based off the location somehow.
+					- Rather than subsitute the Stack or 2D array, could compliment it by adding a 3rd
+						data structure.
+						- e.g. 2D Array -> Hash Table -> Rendering Stack
+				*/
+				if (cellAlive){
+					//TODO: I feel like this is a weak solution. There should be an abstraction that
+					//to project the cell onto the grid.
+					let upperX = row * this.config.cell.width
+        	let upperY = col * this.config.cell.height
+					scene.push(new Cell(upperX, upperY, this.config.cell.width, this.config.cell.height, 0))
+				}
 			}
 		}
 	}

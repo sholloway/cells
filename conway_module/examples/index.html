@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Conway's Game of Life</title>
+		<style>
+			#grid_canvas {
+				border: 1px solid black;
+			}
+
+			.container{
+				display: flex;
+			}
+
+			.col{
+				flex-direction: column;
+			}
+
+			.row{
+				flex-direction: row;
+				padding-top: 10px;
+
+			}
+		</style>
+	</head>
+	<script src="./../dist/conways-game.js"></script>
+	<body>
+		<div class="container col">
+			<h1>Conway's Game Of Life</h1>
+			<hr/>
+			<div>
+				<canvas id="grid_canvas"></canvas>
+			</div>
+			<div class="container row">
+				<button id="start_button" onclick="start_simulation();">Start New World</button>
+				<button id="stop_button" onclick="stop_simulation();">Stop</button>
+				<button id="resume_button" onclick="resume_simulation();">Resume</button>
+			</div>
+		</div>
+
+		<script type="application/javascript">
+			//TODO: Make this script load after the document does.
+			/*
+			Steps
+			1. Get the config object from the module.
+			2. Get the LifeSystem from the module
+			3. Grab the canvas object.
+			4. Set the canvas size
+			5. Start the system.
+
+			Implement Renderer.
+			After this is working, figure out how to drive it from a form.
+			*/
+			let LifeSystem = Conways.LifeSystem
+			let config = Conways.DefaultConfig
+
+			let canvas = document.getElementById('grid_canvas')
+			canvas.setAttribute('width', config.canvas.width)
+			canvas.setAttribute('height', config.canvas.height)
+			let ctx = canvas.getContext('2d')
+
+			let life = new LifeSystem(window, ctx, config)
+			// life.start()
+			// let renderFrame = render.bind(this, ctx, config, state)
+			//window.setInterval(renderFrame, 100)
+
+			function start_simulation(){
+				life.start()
+			}
+
+			function stop_simulation(){
+				life.stop()
+			}
+
+			function resume_simulation(){
+				life.resume()
+			}
+		</script>
+	</body>
+</html>

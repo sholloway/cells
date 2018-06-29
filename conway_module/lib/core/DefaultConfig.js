@@ -1,4 +1,4 @@
-let defaultConfig = {
+let DefaultConfig = {
 	canvas: {
     width: 600,
     height: 400
@@ -12,4 +12,4 @@ let defaultConfig = {
 	}
 };
 
-model.exports = defaultConfig;
+module.exports = DefaultConfig;
