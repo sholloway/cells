@@ -9,7 +9,7 @@ class SceneManager{
 	}
 
 	nextEntity(){
-		return this.stack.pop()
+		return this.stack.shift()
 	}
 
 	fullyRendered(){

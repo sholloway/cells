@@ -10,6 +10,13 @@ class ArrayAssertions{
 			}
 		}
 	}
+
+	static assertEqualArrays(expected, actual){
+		expect(actual.length).to.equal(expected.length)
+		for(let index=0; index < actual.length; index++){
+			expect(actual[index]).to.equal(expected[index])
+		}
+	}
 }
 
 module.exports = ArrayAssertions
