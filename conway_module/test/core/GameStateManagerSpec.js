@@ -3,7 +3,114 @@ const expect = chai.expect
 const ArrayAssertions = require('./ArrayAssertions.js')
 const GameStateManager = require('./../../lib/core/GameStateManager.js')
 const SceneManager = require('./../../lib/core/SceneManager.js')
+
+const GridUtilities = require('./../../lib/core/GridUtilities.js')
+const scanNeighbors = GridUtilities.scanNeighbors
+
 describe('Game State Manager', function(){
+describe('Scanning Neighbors', function(){
+	it ('should return zero when the cell has no neighbors', function(){
+		let grid = [[0, 0, 0],
+								[0, 0, 0],
+								[0, 0, 0]]
+		let a = scanNeighbors(grid, 1, 1)
+		expect(a).to.equal(0)
+	})
+
+	it ('should return 1 when the cell has 1 neighbor', function(){
+		let a = scanNeighbors([	[1, 0, 0],
+														[0, 0, 0],
+														[0, 0, 0]], 1, 1)
+		expect(a).to.equal(1)
+
+		let b = scanNeighbors([	[0, 1, 0],
+														[0, 0, 0],
+														[0, 0, 0]], 1, 1)
+		expect(b).to.equal(1)
+
+		let c = scanNeighbors([	[0, 0, 1],
+														[0, 0, 0],
+														[0, 0, 0]], 1, 1)
+		expect(c).to.equal(1)
+
+		let d = scanNeighbors([	[0, 0, 0],
+														[1, 0, 0],
+														[0, 0, 0]], 1, 1)
+		expect(d).to.equal(1)
+
+		let f = scanNeighbors([	[0, 0, 0],
+														[0, 0, 1],
+														[0, 0, 0]], 1, 1)
+		expect(f).to.equal(1)
+
+		let g = scanNeighbors([	[0, 0, 0],
+														[0, 0, 0],
+														[1, 0, 0]], 1, 1)
+		expect(g).to.equal(1)
+
+		let h = scanNeighbors([	[0, 0, 0],
+														[0, 0, 0],
+														[0, 1, 0]], 1, 1)
+		expect(h).to.equal(1)
+
+		let i = scanNeighbors([	[0, 0, 0],
+														[0, 0, 0],
+														[0, 0, 1]], 1, 1)
+		expect(i).to.equal(1)
+	})
+
+	it ('should not include the cell in the neighbors count', function(){
+		let e = scanNeighbors([	[0, 0, 0],
+														[0, 1, 0],
+														[0, 0, 0]], 1, 1)
+		expect(e).to.equal(0)
+	})
+
+	it ('should return the count of neighbors', function(){
+		let a = scanNeighbors([	[1, 0, 0],
+														[0, 1, 0],
+														[0, 0, 1]], 1, 1)
+		expect(a).to.equal(2)
+
+		let b = scanNeighbors([	[1, 1, 1],
+														[0, 0, 0],
+														[0, 0, 1]], 1, 1)
+		expect(b).to.equal(4)
+
+		let c = scanNeighbors([	[1, 1, 1],
+														[1, 0, 0],
+														[1, 0, 0]], 1, 1)
+		expect(c).to.equal(5)
+
+		let d = scanNeighbors([	[1, 1, 1],
+														[1, 0, 0],
+														[1, 1, 1]], 1, 1)
+		expect(d).to.equal(7)
+
+		let e = scanNeighbors([	[1, 1, 1],
+														[1, 0, 1],
+														[1, 1, 1]], 1, 1)
+		expect(e).to.equal(8)
+	})
+
+	it ('should ignore invalid cells', function(){
+		let a = scanNeighbors([	[1, 1, 1],
+														[1, 0, 0],
+														[1, 1, 1]], 0, 0)
+		expect(a).to.equal(2)
+
+		let b = scanNeighbors([	[1, 1, 1],
+														[1, 0, 0],
+														[1, 1, 1]], 2, 2)
+		expect(b).to.equal(1)
+
+		let c = scanNeighbors([	[1, 1, 1],
+														[1, 0, 0],
+														[1, 1, 1]], 2, 1)
+		expect(c).to.equal(3)
+	})
+})
+
 	describe('Initializing Grid Size', function(){
 		it ('should create the currentGrid to fit the maximum number of cells', function(){
 			let config = makeConfig()

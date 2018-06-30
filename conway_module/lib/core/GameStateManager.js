@@ -3,12 +3,16 @@ const CellEvaluator = require('./CellEvaluator.js')
 const DefaultSeeder = require('./DefaultSeeder.js')
 const Cell = require('./../renderer/Cell.js')
 
+const GridUtilities = require('./GridUtilities.js')
+const scanNeighbors = GridUtilities.scanNeighbors
+
 function calculateWorldSize(config){
 	let cellsWide = Math.floor(config.canvas.width/config.cell.width)
 	let cellsHigh = Math.floor(config.canvas.height/config.cell.height)
 	return {
 		cellsWide: cellsWide,
-		cellsHigh: cellsHigh}
+		cellsHigh: cellsHigh
+	}
 }
 
 function createDeadArray(width, height){
@@ -37,44 +41,8 @@ function defaultSeeder(){
 	return new DefaultSeeder()
 }
 
-function isCellValid(array, row, col){
-  return row >= 0 &&
-    row < array.length &&
-    col >= 0 &&
-    col < array[row].length
-}
-
 function defaultCellEvaluator(){
 	return new CellEvaluator()
-}
-
-function scanNeighbors(array, row, col){
-  let neighborsCount = 0
-  // Top Row
-  for (let c = col - 1; c <= col + 1; c++){
-    if(isCellValid(array, row - 1, c)){
-      neighborsCount += array[row - 1][c]
-    }
-  }
-
-  // Residing Row
-  //left
-  if(isCellValid(array, row, col - 1)){
-    neighborsCount += array[row][col - 1]
-  }
-
-  //right
-  if(isCellValid(array, row, col + 1)){
-    neighborsCount += array[row][col + 1]
-  }
-
-  // Bottom Row
-  for (let c = col - 1; c <= col + 1; c++){
-    if(isCellValid(array, row + 1, c)){
-      neighborsCount += array[row + 1][c]
-    }
-	}
-	return neighborsCount
 }
 
 class GameStateManager{

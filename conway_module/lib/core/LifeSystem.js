@@ -13,12 +13,6 @@ const LifeSystemState = {
 //Private methods
 function gameLoop(){
 	this.gridStateManager.evaluateCells(this.scene, this.evaluator)
-	/*
-	Options:
-	- Manage a render stack in the render.
-	- Manage a stack of entities in the grid state manager.
-	- Have a dedicated data structure shared between the renderer & GSM.
-	*/
 	this.renderer.render(this.scene)
 	this.gridStateManager.activateNextGrid()
 }
