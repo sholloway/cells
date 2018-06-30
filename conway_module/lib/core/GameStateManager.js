@@ -118,7 +118,7 @@ class GameStateManager{
 				*/
 				if (cellAlive){
 					//TODO: I feel like this is a weak solution. There should be an abstraction that
-					//to project the cell onto the grid.
+					//projects the cell onto the grid.
 					let upperX = row * this.config.cell.width
         	let upperY = col * this.config.cell.height
 					scene.push(new Cell(upperX, upperY, this.config.cell.width, this.config.cell.height, 0))

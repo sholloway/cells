@@ -8,7 +8,7 @@ let DefaultConfig = {
     height: 20
 	},
 	game:{
-		interval: 100 //# of milliseconds to loop on.
+		interval: 150 //# of milliseconds to loop on.
 	}
 };
 

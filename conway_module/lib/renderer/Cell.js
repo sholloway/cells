@@ -1,8 +1,9 @@
 let Entity = require('./Entity.js')
 let rectangleRenderer = require('./RectangleRenderer.js')
+let circleRenderer = require('./CircleRenderer.js')
 let ageBasedColor = require('./AgeBasedColor.js')
 
-class Cell extends ageBasedColor(rectangleRenderer(Entity)){
+class Cell extends ageBasedColor(circleRenderer(Entity)){
 	/*
 	Parameters:
 	- x: The upper left corner on the x-axis.
