@@ -1,3 +1,4 @@
+const TWO_PI = Math.PI * 2
 module.exports = (superclass) => class extends superclass{
 	/*
 	TODO: Make the cell color change based on its lifespan.
@@ -11,10 +12,10 @@ module.exports = (superclass) => class extends superclass{
 		let cy = this.y + (this.height/2)
 		let radius = this.width/2
 
-		ctx.beginPath()
-		ctx.arc(cx, cy, radius, 0, Math.PI * 2, true)
-		ctx.fill()
-		ctx.stroke()
+		htmlCanvasContext.beginPath()
+		htmlCanvasContext.arc(cx, cy, radius, 0, TWO_PI, true)
+		htmlCanvasContext.fill()
+		htmlCanvasContext.stroke()
 	}
 
 	fillStyle(){
