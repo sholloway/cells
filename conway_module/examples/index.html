@@ -47,6 +47,7 @@
 			canvas.setAttribute('height', config.canvas.height)
 			let ctx = canvas.getContext('2d')
 			let life = new LifeSystem(window, ctx, config)
+			life.main(window.performance.now());
 
 			function start_simulation(){
 				life.start()

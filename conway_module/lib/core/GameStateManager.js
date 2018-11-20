@@ -73,7 +73,7 @@ class GameStateManager{
 	}
 
 	/*
-	Replaces the current grid with the next grid and reinitializes the next grid with 0s.
+	Replaces the current grid with the next grid and re-initializes the next grid with 0s.
 	This is similar to double buffering in computer graphics.
 	*/
 	activateNextGrid(){
