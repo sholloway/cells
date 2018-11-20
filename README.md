@@ -18,7 +18,12 @@ npm install
 npm test
 ```
 
-3. Run the simulation
+3. Build the distribution.
+```shell
+npm run build-dev
+```
+
+4. Run the simulation
 ```shell
 open examples/index.html
 ```
