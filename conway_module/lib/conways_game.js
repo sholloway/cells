@@ -1,2 +1,2 @@
-module.exports.LifeSystem = require('./core/LifeSystem.js')
+module.exports.LifeSystem = require('./core/AlternativeLifeSystem.js')
 module.exports.DefaultConfig = require('./core/DefaultConfig.js')

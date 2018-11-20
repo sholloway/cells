@@ -1,4 +1,3 @@
-
 const defaultConfig = require('./DefaultConfig.js')
 const GameStateManager = require('./GameStateManager.js')
 const HTMLCanvasRenderer = require('./../renderer/HTMLCanvasRenderer.js')
@@ -17,7 +16,7 @@ function gameLoop(){
 	this.gridStateManager.activateNextGrid()
 }
 
-class LifeSystem{
+class AltLifeSystem{
 	constructor(window, htmlCanvasContext, config = defaultConfig){
 		//TODO: I want to be able to override the default config with out defining the entire thing.
 		this.config = config
@@ -64,4 +63,4 @@ class LifeSystem{
 	}
 }
 
-module.exports = LifeSystem
+module.exports = AltLifeSystem
