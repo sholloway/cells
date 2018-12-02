@@ -45,6 +45,7 @@ function defaultCellEvaluator(){
 	return new CellEvaluator()
 }
 
+
 class GameStateManager{
 	constructor(config){
 		this.config = config

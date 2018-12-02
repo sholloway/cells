@@ -3,4 +3,8 @@
 */node_modules
 *.code-workspace
 */coverage
+coverage
 */dist
+.nyc_output
+*.dot
+*.png
