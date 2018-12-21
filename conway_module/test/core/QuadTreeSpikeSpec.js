@@ -11,41 +11,42 @@ Considerations:
 	- A seeder should produce a list of cell addresses that are alive.
 	- The spatial data structures (grid, quadtree, etc...) should take in the same structure.
 
-*/
-describe('QuadTree Spike', function(){
-	/*
- 	   0 1 2 3 4 5 6 7 8 9
-	0 |1|0|0|0|0|0|0|0|0|0|
-	1 |0|1|0|0|0|0|0|0|0|0|
-	2 |0|0|1|0|0|0|0|0|0|0|
-	3 |0|0|0|1|0|0|0|0|0|0|
-	4 |0|0|0|0|1|0|0|0|0|0|
-	5 |0|0|0|0|0|1|0|0|0|0|
-	6 |0|0|0|0|0|0|1|0|0|0|
-	7 |0|0|0|0|0|0|0|1|0|0|
-	8 |0|0|0|0|0|0|0|0|1|0|
-	9 |0|0|0|0|0|0|0|0|0|1|
 	*/
-	it('should build a tree from identity matrix', function(){
+describe('QuadTree Spike', function(){
+	describe('Indexing', function(){
 		/*
-		Issues:
-		- I've implemented a point in rectangle intersection test, but really,
+		0 1 2 3 4 5 6 7 8 9
+		0 |1|0|0|0|0|0|0|0|0|0|
+		1 |0|1|0|0|0|0|0|0|0|0|
+		2 |0|0|1|0|0|0|0|0|0|0|
+		3 |0|0|0|1|0|0|0|0|0|0|
+		4 |0|0|0|0|1|0|0|0|0|0|
+		5 |0|0|0|0|0|1|0|0|0|0|
+		6 |0|0|0|0|0|0|1|0|0|0|
+		7 |0|0|0|0|0|0|0|1|0|0|
+		8 |0|0|0|0|0|0|0|0|1|0|
+		9 |0|0|0|0|0|0|0|0|0|1|
+		*/
+		it('should build a tree from identity matrix', function(){
+			/*
+			Issues:
+			- I've implemented a point in rectangle intersection test, but really,
 			I want a rectangle in rectangle test. That is resulting in multiple hits.
 			- The convex hull needs to include width of the cells.
 
-		- Having the grid start at 0,0 might be messing up the math.
+			- Having the grid start at 0,0 might be messing up the math.
 			The quad tree should work directly with the grid. Scaling should happen after indexing.
 			Grid Location -> Index -> Scale -> Render
-		- Scaling might be the wrong way to think about this. Projection from one coordinate
+			- Scaling might be the wrong way to think about this. Projection from one coordinate
 			system to another might be preferable.
 
-		*/
+			*/
 
-		let gridSize = {width: 10, height: 10}
-		let cells = [
-			new Cell(0,0, 1), new Cell(1,1,1), new Cell(2,2,1), new Cell(3,3,1),new Cell(4,4,1),
-			new Cell(5,5,1),new Cell(6,6,1),new Cell(7,7,1),new Cell(8,8,1),
-			new Cell(9,9,1)]
+			let gridSize = {width: 10, height: 10}
+			let cells = [
+				new Cell(0,0, 1), new Cell(1,1,1), new Cell(2,2,1), new Cell(3,3,1),new Cell(4,4,1),
+				new Cell(5,5,1),new Cell(6,6,1),new Cell(7,7,1),new Cell(8,8,1),
+				new Cell(9,9,1)]
 
 			let tree = new QuadTree(cells)
 			let root = tree.index()
@@ -69,13 +70,32 @@ describe('QuadTree Spike', function(){
 			let canvas = createCanvas(gridSize.width * scalingFactor, gridSize.height * scalingFactor)
 			let ctx = canvas.getContext('2d')
 
-		uniformScale(root, scalingFactor)
-		drawImageBoarder(ctx, gridSize.width * scalingFactor, gridSize.height * scalingFactor, 'purple')
-		drawTree(root, ctx, 1)
-		drawCells(scaledCells,ctx,scalingFactor,scalingFactor,'red')
-		console.log(`Indexed Nodes: ${indexedNodes}`)
-		mkImageFile('quadtree.png', canvas)
-	});
+			uniformScale(root, scalingFactor)
+			drawImageBoarder(ctx, gridSize.width * scalingFactor, gridSize.height * scalingFactor, 'purple')
+			drawTree(root, ctx, 1)
+			mkImageFile('quadtree.png', canvas, () => {
+				drawCells(scaledCells,ctx,scalingFactor,scalingFactor,'red')
+				mkImageFile('quadtreeWithCells.png', canvas, ()=>{})
+			})
+
+		});
+		it ('should handle the worst case of all cells being populated')
+
+
+		it ('should handle a grid of 10k cells randomly distributed')
+	})
+
+	/*
+	I need to change the QTNode structure to have pointers to each box directly for the search function.
+	Right now, the structure won't provide the full benefit of the spatial partitioning.
+	https://www.geeksforgeeks.org/quad-tree/
+	*/
+	//http://homepage.divms.uiowa.edu/~kvaradar/sp2012/daa/ann.pdf
+	//https://stackoverflow.com/questions/32412107/quadtree-find-neighbor
+	describe('Range Queries', function(){
+		it ('should find if a given cell if it exists')
+		it ('should find all alive (existing) neighboring cells')
+	})
 
 	describe('QTNode', function(){
 		it ('should not detect a point outside the boundary', function(){
@@ -110,11 +130,11 @@ function mkFile(filename, dotFile){
 	});
 }
 
-function mkImageFile(filename, canvas){
+function mkImageFile(filename, canvas, callback){
 	const out = fs.createWriteStream(__dirname + filename)
 	const stream = canvas.createPNGStream()
 	stream.pipe(out)
-	out.on('finish', () =>  console.log('The PNG file was created.'))
+	out.on('finish', callback)
 }
 
 //Use GraphViz
@@ -135,8 +155,8 @@ function buildDag(node, treeNodes, relationships){
 		relationships.set(node.id, []) // of the form: 218->{219 241}
 	}
 
-	if(node.subdivided()){
-		node.children.forEach((child)=>{
+	if(node.subdivided){
+		node.children().forEach((child)=>{
 			relationships.get(node.id).push(child.id)
 			buildDag(child, treeNodes, relationships)
 		})
@@ -178,7 +198,7 @@ function uniformScale(node, factor){
 	node.rect.y = node.rect.y * factor
 	node.rect.xx = node.rect.xx * factor
 	node.rect.yy = node.rect.yy * factor
-	node.children.forEach((child) => uniformScale(child, factor))
+	node.children().forEach((child) => uniformScale(child, factor))
 }
 
 function drawImageBoarder(ctx, width, height, color){
@@ -191,7 +211,7 @@ function drawTree(node, ctx, depth){
 	// console.log(`${'|\t'.repeat(depth)}| Area: ${node.area} Index: ${node.index}`)
 	if (node.index != null){
 		indexedNodes++
-		if (node.children.length != 0){
+		if (node.children().length != 0){
 			console.log(`Node ${node.id} incorrectly has children.`)
 		}
 		ctx.strokeStyle = 'green'
@@ -204,8 +224,8 @@ function drawTree(node, ctx, depth){
 	}
 
 	// ctx.strokeStyle = (node.index)?'green':'blue'
-	if(node.subdivided()){
-		node.children.forEach((child)=>{
+	if(node.subdivided){
+		node.children().forEach((child)=>{
 			drawTree(child, ctx, depth + 1)
 		})
 	}
@@ -258,10 +278,30 @@ class QTNode{
 			yy: yy
 		}
 		this.area = this.area()
-		this.children = []
+		this.subdivided = false //Flag indicating this node has been subdivided.
 
-		//How to refer to the leaf?
+		//The potential children of this node.
+		this.upperLeft = null
+		this.upperRight = null
+		this.lowerLeft =  null
+		this.lowerRight = null
+
+		//The index is a pointer to the data in the array containing all the live cells.
+		//If it is null, then this node is empty or not a leaf.
 		this.index = null
+	}
+
+	/**
+	 * Returns the all the children as an array. Returns an empty array if the children have not been initialized yet.
+	 */
+	children(){
+		let kids = null
+		if (this.subdivided){
+			kids = [this.upperLeft, this.upperRight, this.lowerLeft, this.lowerRight]
+		}else{
+			kids = []
+		}
+		return kids
 	}
 
 	/**
@@ -313,13 +353,6 @@ class QTNode{
 	}
 
 	/**
-	 * Returns if the node has been subdivided
-	 */
-	subdivided(){
-		return this.children.length == 4
-	}
-
-	/**
 	 * Divides the node's region into 4 equal quadrants.
 	 *
 	 * Given the bounding box BB divide into the Quadrants Q1, Q2, Q3 & Q4 where:
@@ -333,7 +366,7 @@ class QTNode{
 	 */
 	subdivide(){
 		//Only support the scenario of subdividing exactly once.
-		if (this.children.length != 0){
+		if (this.subdivided){
 			return
 		}
 
@@ -341,10 +374,11 @@ class QTNode{
 		let q = this.rect.y + Math.ceil( (Math.abs(this.rect.yy) - Math.abs(this.rect.y))/2 )
 
 		//How to handle overlap?..
-		this.children.push(new QTNode(generateId(), this.rect.x, this.rect.y, p, q)) //Q1
-		this.children.push(new QTNode(generateId(), p,this.rect.y, this.rect.xx, q)) //Q2
-		this.children.push(new QTNode(generateId(), this.rect.x, q, p, this.rect.yy)) //Q3
-		this.children.push(new QTNode(generateId(), p,q, this.rect.xx, this.rect.yy)) //Q4
+		this.upperLeft = new QTNode(generateId(), this.rect.x, this.rect.y, p, q) //Q1
+		this.upperRight = new QTNode(generateId(), p,this.rect.y, this.rect.xx, q) //Q2
+		this.lowerLeft = new QTNode(generateId(), this.rect.x, q, p, this.rect.yy) //Q3
+		this.lowerRight = new QTNode(generateId(), p,q, this.rect.xx, this.rect.yy) //Q4
+		this.subdivided = true
 	}
 }
 
@@ -426,15 +460,13 @@ class QuadTree{
 			node.setLeaf(index)
 			return
 		}else{
-			if (!node.subdivided()){
-				//split into 4
+			if (!node.subdivided){
 				node.subdivide()
 			}
 			//make recursive call for each quadrant
-			node.children.forEach((quadrant) => {
+			node.children().forEach((quadrant) => {
 				this.addCell(quadrant, cell, index)
 			})
 		}
 	}
-
 }
