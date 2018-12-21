@@ -15,7 +15,7 @@ Considerations:
 describe('QuadTree Spike', function(){
 	describe('Indexing', function(){
 		/*
-		0 1 2 3 4 5 6 7 8 9
+			 0 1 2 3 4 5 6 7 8 9
 		0 |1|0|0|0|0|0|0|0|0|0|
 		1 |0|1|0|0|0|0|0|0|0|0|
 		2 |0|0|1|0|0|0|0|0|0|0|
@@ -93,7 +93,43 @@ describe('QuadTree Spike', function(){
 	//http://homepage.divms.uiowa.edu/~kvaradar/sp2012/daa/ann.pdf
 	//https://stackoverflow.com/questions/32412107/quadtree-find-neighbor
 	describe('Range Queries', function(){
-		it ('should find if a given cell if it exists')
+		it ('should find if a given cell if it exists', function(){
+			let gridSize = {width: 10, height: 10}
+			//10x10 Identity matrix
+			let cells = [
+				new Cell(0,0, 1), new Cell(1,1,1), new Cell(2,2,1), new Cell(3,3,1),new Cell(4,4,1),
+				new Cell(5,5,1),new Cell(6,6,1),new Cell(7,7,1),new Cell(8,8,1),
+				new Cell(9,9,1)]
+
+			let tree = new QuadTree(cells)
+			tree.index()
+
+			//Test for all alive cells.
+			cells.forEach((cell,index) => {
+				let foundNode = tree.search(cell)
+				expect(foundNode).to.not.be.null
+				expect(foundNode.index).to.be.equal(index)
+			})
+
+			//Test for all the empty cells
+			for (let x = 0; x < 10; x++){
+				for (let y = 0; y < 10; y++) {
+					if (x == y){
+						continue
+					}else{
+						let foundInErrorNode = tree.search(new Cell(x,y))
+						if (foundInErrorNode != null){
+							// console.log(`Error: Searching for the cell (${x},${y}) found ${foundInErrorNode.index}`)
+							// console.log(`Error: Node ID: ${foundInErrorNode.id} | Rect: (${foundInErrorNode.rect.x}, ${foundInErrorNode.rect.y}, ${foundInErrorNode.rect.xx}, ${foundInErrorNode.rect.yy}) | Area: ${foundInErrorNode.area}`)
+							expect.fail('Found a node in error.')
+						}else{
+							expect(foundInErrorNode).to.be.null
+						}
+					}
+				}
+			}
+		})
+
 		it ('should find all alive (existing) neighboring cells')
 	})
 
@@ -257,9 +293,11 @@ function scaleCells(cells, scalingFactor){
  * The grid is uniform.
  */
 class Cell{
-	constructor(row, col, age){
+	constructor(row, col, age=0){
 		this.location = {row: row, col: col}
 		this.age = age
+		this.width = 1
+		this.height = 1
 	}
 }
 
@@ -329,7 +367,7 @@ class QTNode{
 		//Since both the cell and bounding box are aligned to the same axes
 		//we can just check the min and max points.
 		return this.containsPoint(cell.location.row, cell.location.col) &&
-			this.containsPoint(cell.location.row+1, cell.location.col+1)
+			this.containsPoint(cell.location.row+cell.width, cell.location.col+cell.height)
 	}
 
 	/**
@@ -469,4 +507,84 @@ class QuadTree{
 			})
 		}
 	}
+
+	/**
+	 * Recursively searches for an alive cell in the tree.
+	 * @param {Number} x - The column coordinate of the cell.
+	 * @param {Number} y - The row column coordinate of the cell.
+	 *
+	 * @returns {QTNode} Returns the node that points to the alive cell if it exists. Otherwise returns null.
+	 */
+	search(cell, currentNode = this.root){
+		if (currentNode === null){
+			throw new Error('Cannot search a null tree.')
+		}
+		// End the search
+		if (currentNode.area == this.minimumCellSize){
+			if (currentNode.containsRect(cell) && currentNode.index !== null){
+				return currentNode
+			}else{
+				return null
+			}
+		}
+
+		//End Search
+		if (!currentNode.subdivided){
+			return null
+		}
+
+		//try searching on the left of the horizontal partition.
+		let cellRightBoundary = cell.location.row + cell.width
+		let cellLowerBoundary = cell.location.col + cell.height
+		let horizontalPartition = currentNode.upperLeft.rect.xx //bug
+		let verticalPartition = currentNode.upperLeft.rect.yy
+		let nextNode = null
+		if (cellRightBoundary <= horizontalPartition){ // The right most boundary of the cell is to the left horizontal partition.
+			if(cellLowerBoundary <= verticalPartition){ //try upper left
+				nextNode = currentNode.upperLeft
+			}else{ //try lower left
+				nextNode = currentNode.lowerLeft
+			}
+		}else{ //try searching on the right of the horizontal partition.
+			if(cellLowerBoundary <= verticalPartition){ //try upper right
+				nextNode = currentNode.upperRight
+			}else{ //try lower right
+				nextNode = currentNode.lowerRight
+			}
+		}
+		return (nextNode === null)? null : this.search(cell, nextNode)
+	}
 }
+
+/*
+Node* Quad::search(Point p)
+{
+    if (!inBoundary(p)) return NULL;
+
+    // We are at a quad of unit length
+    // We cannot subdivide this quad further
+    if (n != NULL) return n;
+
+    if ((topLeft.x + botRight.x) / 2 >= p.x){
+        // Indicates topLeftTree
+        if ((topLeft.y + botRight.y) / 2 >= p.y){
+            if (topLeftTree == NULL) return NULL;
+            return topLeftTree->search(p);
+        }
+        // Indicates botLeftTree
+        else{
+            if (botLeftTree == NULL) return NULL;
+            return botLeftTree->search(p);
+        }
+    }else{
+        // Indicates topRightTree
+        if ((topLeft.y + botRight.y) / 2 >= p.y) {
+            if (topRightTree == NULL) return NULL;
+            return topRightTree->search(p);
+        }else{ // Indicates botRightTree
+            if (botRightTree == NULL) return NULL;
+            return botRightTree->search(p);
+        }
+    }
+};
+*/
