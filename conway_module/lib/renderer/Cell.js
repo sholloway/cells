@@ -10,7 +10,7 @@ class Cell extends ageBasedColor(circleRenderer(Entity)){
 	- y: The upper left corner on the y-axis.
 	- width: The width of the cell.
 	- height: The height of the cell.
-	- age: The number of game interations the cell has survived.
+	- age: The number of game iterations the cell has survived.
 	*/
 	constructor(x,y, width, height, age){
 		super()
