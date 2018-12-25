@@ -14,39 +14,9 @@ Considerations:
 	*/
 describe('QuadTree Spike', function(){
 	describe('Indexing', function(){
-		/*
-			 0 1 2 3 4 5 6 7 8 9
-		0 |1|0|0|0|0|0|0|0|0|0|
-		1 |0|1|0|0|0|0|0|0|0|0|
-		2 |0|0|1|0|0|0|0|0|0|0|
-		3 |0|0|0|1|0|0|0|0|0|0|
-		4 |0|0|0|0|1|0|0|0|0|0|
-		5 |0|0|0|0|0|1|0|0|0|0|
-		6 |0|0|0|0|0|0|1|0|0|0|
-		7 |0|0|0|0|0|0|0|1|0|0|
-		8 |0|0|0|0|0|0|0|0|1|0|
-		9 |0|0|0|0|0|0|0|0|0|1|
-		*/
 		it('should build a tree from identity matrix', function(){
-			/*
-			Issues:
-			- I've implemented a point in rectangle intersection test, but really,
-			I want a rectangle in rectangle test. That is resulting in multiple hits.
-			- The convex hull needs to include width of the cells.
-
-			- Having the grid start at 0,0 might be messing up the math.
-			The quad tree should work directly with the grid. Scaling should happen after indexing.
-			Grid Location -> Index -> Scale -> Render
-			- Scaling might be the wrong way to think about this. Projection from one coordinate
-			system to another might be preferable.
-
-			*/
-
 			let gridSize = {width: 10, height: 10}
-			let cells = [
-				new Cell(0,0, 1), new Cell(1,1,1), new Cell(2,2,1), new Cell(3,3,1),new Cell(4,4,1),
-				new Cell(5,5,1),new Cell(6,6,1),new Cell(7,7,1),new Cell(8,8,1),
-				new Cell(9,9,1)]
+			let cells = makeIdentity()
 
 			let tree = new QuadTree(cells)
 			let root = tree.index()
@@ -56,6 +26,7 @@ describe('QuadTree Spike', function(){
 			expect(root.rect.xx).to.equal(10)
 			expect(root.rect.yy).to.equal(10)
 
+			/*
 			//Draw the tree via GraphViz
 			let treeNodes = new Map()
 			let relationships = new Map()
@@ -77,10 +48,9 @@ describe('QuadTree Spike', function(){
 				drawCells(scaledCells,ctx,scalingFactor,scalingFactor,'red')
 				mkImageFile('quadtreeWithCells.png', canvas, ()=>{})
 			})
-
+		*/
 		});
 		it ('should handle the worst case of all cells being populated')
-
 
 		it ('should handle a grid of 10k cells randomly distributed')
 	})
@@ -94,13 +64,7 @@ describe('QuadTree Spike', function(){
 	//https://stackoverflow.com/questions/32412107/quadtree-find-neighbor
 	describe('Range Queries', function(){
 		it ('should find if a given cell if it exists', function(){
-			let gridSize = {width: 10, height: 10}
-			//10x10 Identity matrix
-			let cells = [
-				new Cell(0,0, 1), new Cell(1,1,1), new Cell(2,2,1), new Cell(3,3,1),new Cell(4,4,1),
-				new Cell(5,5,1),new Cell(6,6,1),new Cell(7,7,1),new Cell(8,8,1),
-				new Cell(9,9,1)]
-
+			let cells = makeIdentity()
 			let tree = new QuadTree(cells)
 			tree.index()
 
@@ -119,8 +83,6 @@ describe('QuadTree Spike', function(){
 					}else{
 						let foundInErrorNode = tree.search(new Cell(x,y))
 						if (foundInErrorNode != null){
-							// console.log(`Error: Searching for the cell (${x},${y}) found ${foundInErrorNode.index}`)
-							// console.log(`Error: Node ID: ${foundInErrorNode.id} | Rect: (${foundInErrorNode.rect.x}, ${foundInErrorNode.rect.y}, ${foundInErrorNode.rect.xx}, ${foundInErrorNode.rect.yy}) | Area: ${foundInErrorNode.area}`)
 							expect.fail('Found a node in error.')
 						}else{
 							expect(foundInErrorNode).to.be.null
@@ -130,8 +92,142 @@ describe('QuadTree Spike', function(){
 			}
 		})
 
-		it ('should find all alive (existing) neighboring cells')
+		it ('should find all alive (existing) neighboring cells', function(){
+			let cells = makeFull10By10()
+			let tree = new QuadTree(cells)
+			tree.index()
+
+			let foundCells = tree.findAliveInArea(3,3,5,5)
+			expect(foundCells.length).to.equal(9)
+
+			expectCell(foundCells, new Cell(3,3))
+			expectCell(foundCells, new Cell(3,4))
+			expectCell(foundCells, new Cell(3,5))
+
+			expectCell(foundCells, new Cell(4,3))
+			expectCell(foundCells, new Cell(4,4))
+			expectCell(foundCells, new Cell(4,5))
+
+			expectCell(foundCells, new Cell(5,3))
+			expectCell(foundCells, new Cell(5,4))
+			expectCell(foundCells, new Cell(5,5))
+
+			/*
+			let gridSize = {width: 10, height: 10}
+			//Draw the tree via GraphViz
+			let treeNodes = new Map()
+			let relationships = new Map()
+			buildDag(root, treeNodes, relationships)
+			let dotFileStr = createDotFile(treeNodes, relationships)
+			mkFile('full_tree.dot', dotFileStr)
+
+			//Draw the QuadTree via HTML5 Context
+			let scalingFactor = 20
+			const {createCanvas} = require('canvas')
+			let scaledCells = scaleCells(foundCells, scalingFactor)
+			let canvas = createCanvas(gridSize.width * scalingFactor, gridSize.height * scalingFactor)
+			let ctx = canvas.getContext('2d')
+
+			uniformScale(root, scalingFactor)
+			drawImageBoarder(ctx, gridSize.width * scalingFactor, gridSize.height * scalingFactor, 'purple')
+			drawTree(root, ctx, 1)
+			mkImageFile('full_quadtree.png', canvas, () => {
+				drawCells(scaledCells,ctx,scalingFactor,scalingFactor,'red')
+				//draw the selection box...
+				ctx.strokeStyle = 'white'
+				ctx.strokeRect(3*scalingFactor, 3*scalingFactor, 3*scalingFactor, 3*scalingFactor) //x,y, width, height
+				mkImageFile('full_tree_WithCells.png', canvas, ()=>{})
+			})
+			*/
+		})
+
+		/*
+		Test for the scenario of a cell on the upper boundary of the canvas.
+		*/
+		it ('should find a range on the upper border', function(){
+			let cells = makeFull10By10()
+			let tree = new QuadTree(cells)
+			tree.index()
+
+			let foundCells = tree.findAliveInArea(2,0, 7,0)
+			expect(foundCells.length).to.equal(6)
+
+			expectCell(foundCells, new Cell(2,0))
+			expectCell(foundCells, new Cell(3,0))
+			expectCell(foundCells, new Cell(4,0))
+
+			expectCell(foundCells, new Cell(5,0))
+			expectCell(foundCells, new Cell(6,0))
+			expectCell(foundCells, new Cell(7,0))
+		})
+
+		it ('should find a range on the left border', function(){
+			let cells = makeFull10By10()
+			let tree = new QuadTree(cells)
+			let root = tree.index()
+
+			let foundCells = tree.findAliveInArea(0,0, 0,9)
+			expect(foundCells.length).to.equal(10)
+
+			expectCell(foundCells, new Cell(0,0))
+			expectCell(foundCells, new Cell(0,1))
+			expectCell(foundCells, new Cell(0,2))
+			expectCell(foundCells, new Cell(0,3))
+			expectCell(foundCells, new Cell(0,4))
+			expectCell(foundCells, new Cell(0,5))
+			expectCell(foundCells, new Cell(0,6))
+			expectCell(foundCells, new Cell(0,7))
+			expectCell(foundCells, new Cell(0,8))
+			expectCell(foundCells, new Cell(0,9))
+		})
+
+		it ('should find a range on the right border', function(){
+			let cells = makeFull10By10()
+			let tree = new QuadTree(cells)
+			tree.index()
+
+			let foundCells = tree.findAliveInArea(9,0, 9,9)
+			expect(foundCells.length).to.equal(10)
+			expectCell(foundCells, new Cell(9,0))
+			expectCell(foundCells, new Cell(9,1))
+			expectCell(foundCells, new Cell(9,2))
+			expectCell(foundCells, new Cell(9,3))
+			expectCell(foundCells, new Cell(9,4))
+			expectCell(foundCells, new Cell(9,5))
+			expectCell(foundCells, new Cell(9,6))
+			expectCell(foundCells, new Cell(9,7))
+			expectCell(foundCells, new Cell(9,8))
+			expectCell(foundCells, new Cell(9,9))
+		})
+		it ('should find a range on the bottom border', function(){
+			let cells = makeFull10By10()
+			let tree = new QuadTree(cells)
+			tree.index()
+
+			let foundCells = tree.findAliveInArea(0,9, 9,9)
+			expect(foundCells.length).to.equal(10)
+			expectCell(foundCells, new Cell(0,9))
+			expectCell(foundCells, new Cell(1,9))
+			expectCell(foundCells, new Cell(2,9))
+			expectCell(foundCells, new Cell(3,9))
+			expectCell(foundCells, new Cell(4,9))
+			expectCell(foundCells, new Cell(5,9))
+			expectCell(foundCells, new Cell(6,9))
+			expectCell(foundCells, new Cell(7,9))
+			expectCell(foundCells, new Cell(8,9))
+			expectCell(foundCells, new Cell(9,9))
+		})
 	})
+
+	function expectCell(cells, expected){
+		let foundCell = cells.find((cell)=>{
+			return (cell.location.row == expected.location.row &&
+							cell.location.col == expected.location.col)
+		})
+		expect(foundCell, `Can't find row: ${expected.location.row}, col: ${expected.location.col}`).to.exist
+		expect(foundCell.location.row).to.equal(expected.location.row)
+		expect(foundCell.location.col).to.equal(expected.location.col)
+	}
 
 	describe('QTNode', function(){
 		it ('should not detect a point outside the boundary', function(){
@@ -155,6 +251,36 @@ describe('QuadTree Spike', function(){
 		})
 	})
 });
+
+/*
+			 0 1 2 3 4 5 6 7 8 9
+		0 |1|0|0|0|0|0|0|0|0|0|
+		1 |0|1|0|0|0|0|0|0|0|0|
+		2 |0|0|1|0|0|0|0|0|0|0|
+		3 |0|0|0|1|0|0|0|0|0|0|
+		4 |0|0|0|0|1|0|0|0|0|0|
+		5 |0|0|0|0|0|1|0|0|0|0|
+		6 |0|0|0|0|0|0|1|0|0|0|
+		7 |0|0|0|0|0|0|0|1|0|0|
+		8 |0|0|0|0|0|0|0|0|1|0|
+		9 |0|0|0|0|0|0|0|0|0|1|
+*/
+function makeIdentity(){
+	return [
+		new Cell(0,0, 1), new Cell(1,1,1), new Cell(2,2,1), new Cell(3,3,1),new Cell(4,4,1),
+		new Cell(5,5,1),new Cell(6,6,1),new Cell(7,7,1),new Cell(8,8,1),
+		new Cell(9,9,1)]
+}
+
+function makeFull10By10(){
+	let cells = []
+	for(let row = 0; row < 10; row++){
+		for(let col = 0; col < 10; col++){
+			cells.push(new Cell(row,col, 1))
+		}
+	}
+	return cells
+}
 
 const fs = require('fs');
 function mkFile(filename, dotFile){
@@ -252,7 +378,7 @@ function drawTree(node, ctx, depth){
 		}
 		ctx.strokeStyle = 'green'
 		ctx.fillStyle = 'green'
-		ctx.fillRect(node.rect.x, node.rect.y, node.rect.xx - node.rect.x, node.rect.yy - node.rect.y) //x,y, width, height
+		// ctx.fillRect(node.rect.x, node.rect.y, node.rect.xx - node.rect.x, node.rect.yy - node.rect.y) //x,y, width, height
 		ctx.strokeRect(node.rect.x, node.rect.y, node.rect.xx - node.rect.x, node.rect.yy - node.rect.y) //x,y, width, height
 	}else{
 		ctx.strokeStyle = 'blue'
@@ -276,9 +402,9 @@ function drawTree(node, ctx, depth){
  * @param {string} color - The constant color of all cells.
  */
 function drawCells(listOfCells, ctx, width, height, color){
-	ctx.fillStyle = color
+	ctx.strokeStyle = color
 	listOfCells.forEach((cell) => {
-		ctx.fillRect(cell.location.row, cell.location.col, width, height)
+		ctx.strokeRect(cell.location.row, cell.location.col, width, height)
 	})
 }
 
@@ -298,6 +424,11 @@ class Cell{
 		this.age = age
 		this.width = 1
 		this.height = 1
+	}
+
+	isInsideRect(x,y,xx,yy){
+		return (x <= this.location.row && this.location.row <= xx &&
+						y <= this.location.col && this.location.col <= yy);
 	}
 }
 
@@ -368,6 +499,40 @@ class QTNode{
 		//we can just check the min and max points.
 		return this.containsPoint(cell.location.row, cell.location.col) &&
 			this.containsPoint(cell.location.row+cell.width, cell.location.col+cell.height)
+	}
+
+	/**
+	 * Axis-aligned bounding box intersection test.
+	 * @param {Number} x
+	 * @param {Number} y
+	 * @param {Number} xx
+	 * @param {Number} yy
+	 * @returns {Boolean} Returns whether or not the node's bounding box intersects the provided range.
+	 */
+	intersectsAABB(x,y,xx,yy){
+		let intersects = false
+		if ((this.rect.x <= xx && this.rect.xx >= x) &&
+		(this.rect.y <= yy && this.rect.yy >= y)){
+			intersects = true
+		}
+		return intersects
+	}
+
+	/**
+	 * Tests to see if the Node's AABB is inside the provided rectangle.
+	 * @param {*} x
+	 * @param {*} y
+	 * @param {*} xx
+	 * @param {*} yy
+	 */
+	isInsideRect(x,y,xx,yy){
+		let firstPointIntersection = (x <= this.rect.x && this.rect.x <= xx &&
+			y <= this.rect.y && this.rect.y <= yy);
+
+		let secondPointIntersection = (x <= this.rect.xx && this.rect.xx <= xx &&
+			y <= this.rect.yy && this.rect.yy <= yy)
+
+		return firstPointIntersection && secondPointIntersection
 	}
 
 	/**
@@ -475,17 +640,6 @@ class QuadTree{
 	@param {number} index - The location of the cell in the array of leaves.
 	*/
 	addCell(node, cell, index){
-		/*
-		What are the possible scenarios?
-		1. The node does not contain the point.
-		2. The node contains the point and is the smallest it can be, so stop.
-		3. The node contains the point, but is bigger than the point.
-			A. The node is already subdivided.
-			B. The node is not subdivided.
-				Divide it.
-			Pass the point to each child.
-		*/
-
 		//If the cell does not fall in the node's bounding box end.
 		if (!node.containsRect(cell)){
 			return
@@ -554,37 +708,44 @@ class QuadTree{
 		}
 		return (nextNode === null)? null : this.search(cell, nextNode)
 	}
+
+	/**
+	 * Recursive Range query. Finds all alive cells in the rectangle defined by bounds of the points (x,y), (xx,yy).
+	 * @param {Number} x
+	 * @param {Number} y
+	 * @param {Number} xx
+	 * @param {Number} yy
+	 * @param {QTNode} currentNode - The node to perform the range on. Defaults to the root of the tree.
+	 * @returns {Array[Cell]} The array of alive cells found. Returns an empty array if none are found.
+	 */
+	findAliveInArea(x,y,xx,yy, currentNode = this.root){
+		if (typeof currentNode === 'undefined' || currentNode === null){
+			throw new Error('Cannot perform a range query on an empty node.')
+		}
+		let foundCells = []
+		if (!currentNode.intersectsAABB(x,y,xx,yy)){
+			return foundCells
+		}
+
+		if (currentNode.subdivided){
+			let q1 = this.findAliveInArea(x,y,xx,yy,currentNode.upperLeft)
+			let q2 = this.findAliveInArea(x,y,xx,yy,currentNode.upperRight)
+			let q3 = this.findAliveInArea(x,y,xx,yy,currentNode.lowerLeft)
+			let q4 = this.findAliveInArea(x,y,xx,yy,currentNode.lowerRight)
+			foundCells = foundCells.concat(q1,q2,q3,q4)
+		}else{
+			if(this.validIndex(currentNode.index)){
+				let cell = this.leaves[currentNode.index]
+				if (cell.isInsideRect(x,y,xx,yy)){
+					foundCells.push(cell)
+				}
+			}
+		}
+		return foundCells
+	}
+
+	validIndex(index){
+		return (typeof index === 'number' &&
+			(index >=0 && index <= this.leaves.length - 1))
+	}
 }
-
-/*
-Node* Quad::search(Point p)
-{
-    if (!inBoundary(p)) return NULL;
-
-    // We are at a quad of unit length
-    // We cannot subdivide this quad further
-    if (n != NULL) return n;
-
-    if ((topLeft.x + botRight.x) / 2 >= p.x){
-        // Indicates topLeftTree
-        if ((topLeft.y + botRight.y) / 2 >= p.y){
-            if (topLeftTree == NULL) return NULL;
-            return topLeftTree->search(p);
-        }
-        // Indicates botLeftTree
-        else{
-            if (botLeftTree == NULL) return NULL;
-            return botLeftTree->search(p);
-        }
-    }else{
-        // Indicates topRightTree
-        if ((topLeft.y + botRight.y) / 2 >= p.y) {
-            if (topRightTree == NULL) return NULL;
-            return topRightTree->search(p);
-        }else{ // Indicates botRightTree
-            if (botRightTree == NULL) return NULL;
-            return botRightTree->search(p);
-        }
-    }
-};
-*/
