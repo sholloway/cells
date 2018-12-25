@@ -32,7 +32,7 @@ function update(frame){
 
 class AltLifeSystem{
 	constructor(window, htmlCanvasContext, config = defaultConfig){
-		//TODO: I want to be able to override the default config with out defining the entire thing.
+		//TODO: I want to be able to override the default config without defining the entire thing.
 		this.config = config
 		this.window = window
 		this.htmlCanvasContext = htmlCanvasContext
