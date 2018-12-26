@@ -3,6 +3,7 @@ const expect = chai.expect
 const {Cell, QTNode, QuadTree, uniformScale, scaleCells} = require('./../../lib/core/Quadtree.js')
 const {buildDag, createDotFile, mkFile} = require('./GraphVizUtility.js')
 const { drawImageBoarder, drawTree, drawCells, mkImageFile } = require('./CanvasUtility.js')
+const {makeIdentity, makeFull10By10} = require('./QuadTreeTestHelper.js')
 /*
 Considerations:
 1. The seeder design is 2D array specific.
@@ -230,36 +231,6 @@ describe('QuadTree Spike', function(){
 		expect(foundCell.location.row).to.equal(expected.location.row)
 		expect(foundCell.location.col).to.equal(expected.location.col)
 	}
-
-	/*
-			 0 1 2 3 4 5 6 7 8 9
-		0 |1|0|0|0|0|0|0|0|0|0|
-		1 |0|1|0|0|0|0|0|0|0|0|
-		2 |0|0|1|0|0|0|0|0|0|0|
-		3 |0|0|0|1|0|0|0|0|0|0|
-		4 |0|0|0|0|1|0|0|0|0|0|
-		5 |0|0|0|0|0|1|0|0|0|0|
-		6 |0|0|0|0|0|0|1|0|0|0|
-		7 |0|0|0|0|0|0|0|1|0|0|
-		8 |0|0|0|0|0|0|0|0|1|0|
-		9 |0|0|0|0|0|0|0|0|0|1|
-*/
-function makeIdentity(){
-	return [
-		new Cell(0,0, 1), new Cell(1,1,1), new Cell(2,2,1), new Cell(3,3,1),new Cell(4,4,1),
-		new Cell(5,5,1),new Cell(6,6,1),new Cell(7,7,1),new Cell(8,8,1),
-		new Cell(9,9,1)]
-}
-
-function makeFull10By10(){
-	let cells = []
-	for(let row = 0; row < 10; row++){
-		for(let col = 0; col < 10; col++){
-			cells.push(new Cell(row,col, 1))
-		}
-	}
-	return cells
-}
 
 	describe('QTNode', function(){
 		it ('should not detect a point outside the boundary', function(){

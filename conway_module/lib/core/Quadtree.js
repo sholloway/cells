@@ -171,6 +171,76 @@ class QTNode{
 	}
 }
 
+/**
+* Create an empty Axis-aligned bounding box.
+*/
+function emptyAABB(){
+	return {
+		rowMin: 0, colMin: 0,
+		rowMax: 0, colMax: 0
+	}
+}
+
+/**
+* Constructs an axis aligned bounding box from a set of cells
+* on a uniform grid.
+*
+* @param {Array[Cell]} cells - An array of alive cells.
+* @returns {object} An AABB defined by two points.
+*/
+function buildAxisAlignedBoundingBox(cells){
+	let rowMin = cells[0].location.row
+	let rowMax = cells[0].location.row
+	let colMin = cells[0].location.col
+	let colMax = cells[0].location.col
+	cells.forEach((cell)=>{
+		rowMin = Math.min(rowMin, cell.location.row)
+		rowMax = Math.max(rowMax, cell.location.row)
+		colMin = Math.min(colMin, cell.location.col)
+		colMax = Math.max(colMax, cell.location.col)
+	})
+	// The max is increased by one in both axis to
+	// account for including the farthest cell rather
+	// than intersecting it.
+	return {
+		rowMin: rowMin, colMin: colMin,
+		rowMax: rowMax+1, colMax: colMax+1
+	}
+}
+
+/**
+We want to use recursion to add a cell to quad tree.
+Starting with the root, check to see if the cell belongs the active node,
+if it does not, then subdivide by 4 and call each new child recursively.
+
+@param {number} minimumCellSize - The smallest area a partition can have.
+@param {QTNode} node - The node in the QuadTree to start the test.
+@param {Cell} cell - The cell to be added to the QualTree.
+@param {number} index - The location of the cell in the array of leaves.
+*/
+function addCell(minimumCellSize, node, cell, index){
+	//If the cell does not fall in the node's bounding box end.
+	if (!node.containsRect(cell)){
+		return
+	}
+
+	//Is this the smallest a region can be? If so set the index otherwise subdivide.
+	if(minimumCellSize >= node.area)
+	{
+		//set the cell
+		node.setLeaf(index)
+		return
+	}else{
+		if (!node.subdivided){
+			node.subdivide()
+		}
+		//make recursive call for each quadrant
+		node.children().forEach((quadrant) => {
+			addCell(minimumCellSize, quadrant, cell, index)
+		})
+	}
+}
+
 class QuadTree{
 	constructor(liveCells){
 		this.leaves = liveCells
@@ -179,73 +249,15 @@ class QuadTree{
 	}
 
 	index(){
-		//find the bounds of the landscape
-		this.boundary = this.buildAxisAlignedBoundingBox()
+		this.boundary = (this.leaves.length > 0)? buildAxisAlignedBoundingBox(this.leaves) : emptyAABB()
 		this.root = new QTNode(generateId(),
 			this.boundary.rowMin, this.boundary.colMin,
 			this.boundary.rowMax, this.boundary.colMax)
 
-		//Traverse the cells and build a compacted quad tree
-		this.leaves.forEach((cell, index, leaves) => {
-			this.addCell(this.root, cell, index)
+		this.leaves.forEach((cell, index) => {
+			addCell(this.minimumCellSize, this.root, cell, index)
 		})
 		return this.root
-	}
-
-	/**
-	 * Constructs an axis aligned bounding box from a set of cells
-	 * on a uniform grid.
-	 */
-	buildAxisAlignedBoundingBox(){
-		let rowMin = this.leaves[0].location.row
-		let rowMax = this.leaves[0].location.row
-		let colMin = this.leaves[0].location.col
-		let colMax = this.leaves[0].location.col
-		this.leaves.forEach((cell)=>{
-			rowMin = Math.min(rowMin, cell.location.row)
-			rowMax = Math.max(rowMax, cell.location.row)
-			colMin = Math.min(colMin, cell.location.col)
-			colMax = Math.max(colMax, cell.location.col)
-		})
-		// The max is increased by one in both axis to
-		// account for including the farthest cell rather
-		// than intersecting it.
-		return {
-			rowMin: rowMin, colMin: colMin,
-			rowMax: rowMax+1, colMax: colMax+1
-		}
-	}
-
-	/**
-	We want to use recursion to add a cell to quad tree.
-	Starting with the root, check to see if the cell belongs the active node,
-	if it does not, then subdivide by 4 and call each new child recursively.
-
-	@param {QTNode} node - The node in the QuadTree to start the test.
-	@param {Cell} cell - The cell to be added to the QualTree.
-	@param {number} index - The location of the cell in the array of leaves.
-	*/
-	addCell(node, cell, index){
-		//If the cell does not fall in the node's bounding box end.
-		if (!node.containsRect(cell)){
-			return
-		}
-
-		//Is this the smallest a region can be? If so set the index otherwise subdivide.
-		if(this.minimumCellSize >= node.area)
-		{
-			//set the cell
-			node.setLeaf(index)
-			return
-		}else{
-			if (!node.subdivided){
-				node.subdivide()
-			}
-			//make recursive call for each quadrant
-			node.children().forEach((quadrant) => {
-				this.addCell(quadrant, cell, index)
-			})
-		}
 	}
 
 	/**
