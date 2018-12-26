@@ -5,6 +5,7 @@ const chai = require('chai')
 const expect = chai.expect
 const {makeIdentity, makeFull10By10, makeCellsFrom2DArray} = require('./QuadTreeTestHelper.js')
 const { Cell, QTNode, QuadTree} = require('./../../lib/core/Quadtree')
+const GameManager = require('./../../lib/core/GameManager.js')
 
 describe('Game Manager', function(){
 
@@ -169,20 +170,21 @@ describe('Game Manager', function(){
 	})
 
 	describe("Seeding the World", function(){
-		it.skip ("should initialize the nextGrid as a dead world", function(){
-			// let config = makeConfig()
-			// let mngr = new GameStateManager(config)
-			// mngr.seedWorld()
-			// let nextGrid = mngr.getNextGrid()
-			// expect(arraySum(nextGrid)).to.equal(0)
+		it ("should initialize the nextGrid as a dead world", function(){
+			let config = makeConfig()
+			let mngr = new GameManager(config)
+			mngr.seedWorld()
+			let aliveCells = mngr.nextTree.findAliveInArea(0,0,config.landscape.width, config.landscape.height)
+			expect(aliveCells.length).to.equal(0)
 		})
 
-		it.skip ("should initialize the currentGrid with some life in it", function(){
-			// let config = makeConfig()
-			// let mngr = new GameStateManager(config)
-			// mngr.seedWorld()
-			// let currentGrid = mngr.getCurrentGrid()
-			// expect(arraySum(currentGrid) > 0).to.be.true
+		it ("should initialize the currentGrid with some life in it", function(){
+			let config = makeConfig()
+			let mngr = new GameManager(config)
+			mngr.seedWorld()
+			let aliveCells = mngr.currentTree.findAliveInArea(0,0,config.landscape.width, config.landscape.height)
+			let aliveCellsCount = aliveCells.length
+			expect(aliveCellsCount > 0 && aliveCellsCount <= config.landscape.width * config.landscape.height).to.be.true
 		})
 	})
 
@@ -284,15 +286,11 @@ class AlwayAliveEvaluator{
 	}
 }
 
-function makeConfig(width=10, height=10, cellWidth=1, cellHeight=1){
+function makeConfig(width=10, height=10){
 	return {
-		canvas: {
+		landscape:{
 			width: width,
 			height: height
-		},
-		cell:{
-			width: cellWidth,
-			height: cellHeight
 		}
 	}
 }

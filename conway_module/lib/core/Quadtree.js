@@ -259,7 +259,14 @@ class QuadTree{
 		this.minimumCellSize = 1
 	}
 
-	index(){
+	static empty(){
+		return new QuadTree([])
+	}
+
+	index(liveCells = null){
+		if(liveCells !== null){
+			this.leaves = liveCells
+		}
 		this.boundary = (this.leaves.length > 0)? buildAxisAlignedBoundingBox(this.leaves) : emptyAABB()
 		this.root = new QTNode(generateId(),
 			this.boundary.rowMin, this.boundary.colMin,
