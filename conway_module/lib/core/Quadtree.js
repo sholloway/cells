@@ -241,6 +241,17 @@ function addCell(minimumCellSize, node, cell, index){
 	}
 }
 
+/**
+ * Given an array and index, verifies that the index is valid.
+ * @param {Array} array - The array to verify the index against.
+ * @param {number} index - The index to verify
+ * @returns {Boolean}
+ */
+function validIndex(array, index){
+	return (typeof index === 'number' &&
+		(index >=0 && index <=array.length - 1))
+}
+
 class QuadTree{
 	constructor(liveCells){
 		this.leaves = liveCells
@@ -332,7 +343,7 @@ class QuadTree{
 			let q4 = this.findAliveInArea(x,y,xx,yy,currentNode.lowerRight)
 			foundCells = foundCells.concat(q1,q2,q3,q4)
 		}else{
-			if(this.validIndex(currentNode.index)){
+			if(validIndex(this.leaves, currentNode.index)){
 				let cell = this.leaves[currentNode.index]
 				if (cell.isInsideRect(x,y,xx,yy)){
 					foundCells.push(cell)
@@ -340,11 +351,6 @@ class QuadTree{
 			}
 		}
 		return foundCells
-	}
-
-	validIndex(index){
-		return (typeof index === 'number' &&
-			(index >=0 && index <= this.leaves.length - 1))
 	}
 }
 
