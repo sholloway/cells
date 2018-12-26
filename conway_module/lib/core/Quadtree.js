@@ -352,6 +352,7 @@ class QuadTree{
 		}
 		return foundCells
 	}
+
 }
 
 /**

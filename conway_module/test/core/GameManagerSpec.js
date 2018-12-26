@@ -7,130 +7,142 @@ const {makeIdentity, makeFull10By10, makeCellsFrom2DArray} = require('./QuadTree
 const { Cell, QTNode, QuadTree} = require('./../../lib/core/Quadtree')
 
 describe('Game Manager', function(){
-describe('Scanning Neighbors', function(){
-	/*
-	Test the scenario where there the cell has no neighbors.
-	[[0, 0, 0],
-	 [0, 0, 0],
-	 [0, 0, 0]]
-	*/
-	it ('should return zero when the cell has no neighbors', function(){
-		/*
-		The logic for this must change since the storage mechanism changes from
-		a grid to a quad tree. New algorithm:
-		1. Given the cell being evaluated.
-		2. Find the range for the neighbors.
-			* Must clip the range to fit on the canvas.
-		3. Traverse the tree to collect all neighbors.
-		4. Remove the evaluated cell, if it is alive.
-		5. Give the count of alive neighbors.
 
-		What's the best way to setup tests? An empty canvas is just a single layer tree.
+	/**
+	 * Given a cell's coordinates, find the count of alive neighbors.
+	 * @param {number} row - The cell's coordinates on the x-axis.
+	 * @param {number} col - The cell's coordinates on the y-axis.
+	 * @returns {number} The count of alive neighbors.
+	 */
+	function findAliveNeighbors(tree, row, col){
+	// 1. Calculate the range from the cell coordinates.
+	// 2. Run the range query.
+	// 3. Filter the center cell.
+		let range = {
+			x : row - 1,
+			y : col - 1,
+			xx : row + 1,
+			yy : col + 1
+		}
+		let aliveCells = tree.findAliveInArea(range.x, range.y, range.xx, range.yy)
+		let aliveCount = aliveCells.reduce((count, cell) => {
+				if (!(cell.location.row == row && cell.location.col == col)){
+					count++
+				}
+				return count
+			}, 0)
+		return aliveCount
+	}
 
-		*/
-		let grid = [[0, 0, 0],
-								[0, 0, 0],
-								[0, 0, 0]]
+	function buildTree(grid){
 		let cells = makeCellsFrom2DArray(grid)
 		let tree = new QuadTree(cells)
 		tree.index()
-		let aliveCells = tree.findAliveInArea(0,0, 2,2)
-		expect(aliveCells.length).to.equal(0)
+		return tree
+	}
+
+	describe('Scanning Neighbors', function(){
+		it ('should return zero when the cell has no neighbors', function(){
+			let grid = [[0, 0, 0],
+									[0, 0, 0],
+									[0, 0, 0]]
+			let aliveNeighborsCount = findAliveNeighbors(buildTree(grid),1,1)
+			expect(aliveNeighborsCount).to.equal(0)
+		})
+
+		it ('should return 1 when the cell has 1 neighbor', function(){
+			let a = findAliveNeighbors(buildTree([[1, 0, 0],
+																						[0, 0, 0],
+																						[0, 0, 0]]), 1, 1)
+			expect(a).to.equal(1)
+
+			let b = findAliveNeighbors(buildTree([[0, 1, 0],
+																						[0, 0, 0],
+																						[0, 0, 0]]), 1, 1)
+			expect(b).to.equal(1)
+
+			let c = findAliveNeighbors(buildTree([[0, 0, 1],
+																						[0, 0, 0],
+																						[0, 0, 0]]), 1, 1)
+			expect(c).to.equal(1)
+
+			let d = findAliveNeighbors(buildTree([[0, 0, 0],
+																						[1, 0, 0],
+																						[0, 0, 0]]), 1, 1)
+			expect(d).to.equal(1)
+
+			let f = findAliveNeighbors(buildTree([[0, 0, 0],
+																						[0, 0, 1],
+																						[0, 0, 0]]), 1, 1)
+			expect(f).to.equal(1)
+
+			let g = findAliveNeighbors(buildTree([[0, 0, 0],
+																						[0, 0, 0],
+																						[1, 0, 0]]), 1, 1)
+			expect(g).to.equal(1)
+
+			let h = findAliveNeighbors(buildTree([[0, 0, 0],
+																						[0, 0, 0],
+																						[0, 1, 0]]), 1, 1)
+			expect(h).to.equal(1)
+
+			let i = findAliveNeighbors(buildTree([[0, 0, 0],
+																						[0, 0, 0],
+																						[0, 0, 1]]), 1, 1)
+			expect(i).to.equal(1)
+		})
+
+		it ('should not include the cell in the neighbors count', function(){
+			let e = findAliveNeighbors(buildTree([[0, 0, 0],
+																						[0, 1, 0],
+																						[0, 0, 0]]), 1, 1)
+			expect(e).to.equal(0)
+		})
+
+		it ('should return the count of neighbors', function(){
+			let a = findAliveNeighbors(buildTree([[1, 0, 0],
+																						[0, 1, 0],
+																						[0, 0, 1]]), 1, 1)
+			expect(a).to.equal(2)
+
+			let b = findAliveNeighbors(buildTree([[1, 1, 1],
+																						[0, 0, 0],
+																						[0, 0, 1]]), 1, 1)
+			expect(b).to.equal(4)
+
+			let c = findAliveNeighbors(buildTree([[1, 1, 1],
+																						[1, 0, 0],
+																						[1, 0, 0]]), 1, 1)
+			expect(c).to.equal(5)
+
+			let d = findAliveNeighbors(buildTree([[1, 1, 1],
+																						[1, 0, 0],
+																						[1, 1, 1]]), 1, 1)
+			expect(d).to.equal(7)
+
+			let e = findAliveNeighbors(buildTree([[1, 1, 1],
+																						[1, 0, 1],
+																						[1, 1, 1]]), 1, 1)
+			expect(e).to.equal(8)
+		})
+
+		it ('should ignore invalid cells', function(){
+			let a = findAliveNeighbors(buildTree([	[1, 1, 1],
+															[1, 0, 0],
+															[1, 1, 1]]), 0, 0)
+			expect(a).to.equal(2)
+
+			let b = findAliveNeighbors(buildTree([	[1, 1, 1],
+															[1, 0, 0],
+															[1, 1, 1]]), 2, 2)
+			expect(b).to.equal(1)
+
+			let c = findAliveNeighbors(buildTree([	[1, 1, 1],
+															[1, 0, 0],
+															[1, 1, 1]]), 2, 1)
+			expect(c).to.equal(3)
+		})
 	})
-
-	it.skip ('should return 1 when the cell has 1 neighbor', function(){
-		// let a = scanNeighbors([	[1, 0, 0],
-		// 												[0, 0, 0],
-		// 												[0, 0, 0]], 1, 1)
-		// expect(a).to.equal(1)
-
-		// let b = scanNeighbors([	[0, 1, 0],
-		// 												[0, 0, 0],
-		// 												[0, 0, 0]], 1, 1)
-		// expect(b).to.equal(1)
-
-		// let c = scanNeighbors([	[0, 0, 1],
-		// 												[0, 0, 0],
-		// 												[0, 0, 0]], 1, 1)
-		// expect(c).to.equal(1)
-
-		// let d = scanNeighbors([	[0, 0, 0],
-		// 												[1, 0, 0],
-		// 												[0, 0, 0]], 1, 1)
-		// expect(d).to.equal(1)
-
-		// let f = scanNeighbors([	[0, 0, 0],
-		// 												[0, 0, 1],
-		// 												[0, 0, 0]], 1, 1)
-		// expect(f).to.equal(1)
-
-		// let g = scanNeighbors([	[0, 0, 0],
-		// 												[0, 0, 0],
-		// 												[1, 0, 0]], 1, 1)
-		// expect(g).to.equal(1)
-
-		// let h = scanNeighbors([	[0, 0, 0],
-		// 												[0, 0, 0],
-		// 												[0, 1, 0]], 1, 1)
-		// expect(h).to.equal(1)
-
-		// let i = scanNeighbors([	[0, 0, 0],
-		// 												[0, 0, 0],
-		// 												[0, 0, 1]], 1, 1)
-		// expect(i).to.equal(1)
-	})
-
-	it.skip ('should not include the cell in the neighbors count', function(){
-		// let e = scanNeighbors([	[0, 0, 0],
-		// 												[0, 1, 0],
-		// 												[0, 0, 0]], 1, 1)
-		// expect(e).to.equal(0)
-	})
-
-	it.skip ('should return the count of neighbors', function(){
-		// let a = scanNeighbors([	[1, 0, 0],
-		// 												[0, 1, 0],
-		// 												[0, 0, 1]], 1, 1)
-		// expect(a).to.equal(2)
-
-		// let b = scanNeighbors([	[1, 1, 1],
-		// 												[0, 0, 0],
-		// 												[0, 0, 1]], 1, 1)
-		// expect(b).to.equal(4)
-
-		// let c = scanNeighbors([	[1, 1, 1],
-		// 												[1, 0, 0],
-		// 												[1, 0, 0]], 1, 1)
-		// expect(c).to.equal(5)
-
-		// let d = scanNeighbors([	[1, 1, 1],
-		// 												[1, 0, 0],
-		// 												[1, 1, 1]], 1, 1)
-		// expect(d).to.equal(7)
-
-		// let e = scanNeighbors([	[1, 1, 1],
-		// 												[1, 0, 1],
-		// 												[1, 1, 1]], 1, 1)
-		// expect(e).to.equal(8)
-	})
-
-	it.skip ('should ignore invalid cells', function(){
-		// let a = scanNeighbors([	[1, 1, 1],
-		// 												[1, 0, 0],
-		// 												[1, 1, 1]], 0, 0)
-		// expect(a).to.equal(2)
-
-		// let b = scanNeighbors([	[1, 1, 1],
-		// 												[1, 0, 0],
-		// 												[1, 1, 1]], 2, 2)
-		// expect(b).to.equal(1)
-
-		// let c = scanNeighbors([	[1, 1, 1],
-		// 												[1, 0, 0],
-		// 												[1, 1, 1]], 2, 1)
-		// expect(c).to.equal(3)
-	})
-})
 
 	describe('Initializing Grid Size', function(){
 		it.skip ('should create the currentGrid to fit the maximum number of cells', function(){
