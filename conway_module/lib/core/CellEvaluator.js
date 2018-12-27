@@ -11,14 +11,14 @@ class CellEvaluator{
 		this.survivalRules = survivalRules
 	}
 
-	evaluate(neghborsCount, currentCellState){
+	evaluate(neighborsCount, currentCellState){
 		let nextCellState;
 		switch (currentCellState){
 			case CellStates.DEAD:
-				nextCellState = (this.birthRules.includes(neghborsCount))? CellStates.ALIVE : CellStates.DEAD;
+				nextCellState = (this.birthRules.includes(neighborsCount))? CellStates.ALIVE : CellStates.DEAD;
 				break
 			case CellStates.ALIVE:
-				nextCellState = (this.survivalRules.includes(neghborsCount))? CellStates.ALIVE : CellStates.DEAD;
+				nextCellState = (this.survivalRules.includes(neighborsCount))? CellStates.ALIVE : CellStates.DEAD;
 				break
 			default:
 				throw new Error(`Cannot evaluate cell. Unknown cell state: ${currentCellState}`)

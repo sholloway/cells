@@ -1,3 +1,4 @@
+const {CellStates} = require('./CellStates.js')
 /**
  * Represents a single unit on an abstract 2D grid.
  *
@@ -5,18 +6,30 @@
  * The grid is uniform.
  */
 class Cell{
-	constructor(row, col, age=0){
+	constructor(row, col, age=0, state=CellStates.ALIVE){
 		this.location = {row: row, col: col}
 		this.age = age
 		this.width = 1
 		this.height = 1
+		this.state = state
 	}
 
 	isInsideRect(x,y,xx,yy){
 		return (x <= this.location.row && this.location.row <= xx &&
 						y <= this.location.col && this.location.col <= yy);
 	}
+
+	getState(){
+		return this.state
+	}
+
+	clone(){
+		return new Cell(this.location.row, this.location.col, this.age, this.state)
+	}
 }
+
+const DeadCell = new Cell(Infinity,Infinity, 0, CellStates.DEAD)
+Object.freeze(DeadCell)
 
 let idCount = 0
 function generateId(){
@@ -41,8 +54,23 @@ class QTNode{
 		this.lowerLeft =  null
 		this.lowerRight = null
 
-		//The index is a pointer to the data in the array containing all the live cells.
+		//The index is a reference to the data in the array containing all the live cells.
+		//It should be the number index, not a pointer to the data itself.
 		//If it is null, then this node is empty or not a leaf.
+		this.index = null
+	}
+
+	/**
+	 * Sets all class members to null.
+	 */
+	destroy(){
+		this.id = null
+		this.rect = null
+		this.area = null
+		this.upperLeft = null
+		this.upperRight = null
+		this.lowerLeft =  null
+		this.lowerRight = null
 		this.index = null
 	}
 
@@ -252,6 +280,21 @@ function validIndex(array, index){
 		(index >=0 && index <=array.length - 1))
 }
 
+/**
+ * Deletes the provided and all children nodes.
+ * @param {QTNode} node - The node to start the top-down delete from.
+ */
+function recursiveDelete(node){
+	if (typeof node === 'undefined' || node === null){
+		return
+	}
+	recursiveDelete(node.upperLeft)
+	recursiveDelete(node.upperRight)
+	recursiveDelete(node.lowerLeft)
+	recursiveDelete(node.lowerRight)
+	node.destroy()
+}
+
 class QuadTree{
 	constructor(liveCells){
 		this.leaves = liveCells
@@ -259,8 +302,36 @@ class QuadTree{
 		this.minimumCellSize = 1
 	}
 
+	/**
+	 * Empties the tree. It sets the leaves to an empty array and recursively deletes all nodes.
+	 */
+	clear(){
+		recursiveDelete(this.root)
+		this.root = null
+		this.leaves = []
+	}
+
 	static empty(){
 		return new QuadTree([])
+	}
+
+	/**
+	 * Creates a deep copy of the provided quad tree.
+	 * @param {QuadTree} tree
+	 * @returns {QuadTree} A deep copy of the tree. Returns an empty tree if passed null.
+	 */
+	static clone(tree){
+		if (typeof tree === 'undefined' || tree === null){
+			return QuadTree.empty()
+		}
+
+		let clonedCells = []
+		tree.leaves.forEach((leaf) => {
+			clonedCells.push(leaf.clone())
+		})
+		let clonedTree = new QuadTree(clonedCells)
+		clonedTree.index()
+		return clonedTree
 	}
 
 	index(liveCells = null){
@@ -326,6 +397,22 @@ class QuadTree{
 	}
 
 	/**
+	 * Finds a cell if it is alive in landscape.
+	 * @param {number} row
+	 * @param {number} col
+	 * @returns {Cell} Returns the found cell or the DeadCell.
+	 */
+	findCellIfAlive(row, col){
+		let foundLeafNode = this.search(new Cell(row, col))
+		if (foundLeafNode !== null && validIndex(this.leaves, foundLeafNode.index)){
+			let indexedCell = this.leaves[foundLeafNode.index]
+			return indexedCell
+		}else{
+			return DeadCell
+		}
+	}
+
+	/**
 	 * Recursive Range query. Finds all alive cells in the rectangle defined by bounds of the points (x,y), (xx,yy).
 	 * @param {Number} x
 	 * @param {Number} y
@@ -359,7 +446,6 @@ class QuadTree{
 		}
 		return foundCells
 	}
-
 }
 
 /**
@@ -380,4 +466,30 @@ function scaleCells(cells, scalingFactor){
 	return cells.map((cell) => new Cell(cell.location.row * scalingFactor, cell.location.col * scalingFactor, cell.age))
 }
 
-module.exports = { Cell, QTNode, QuadTree, uniformScale, scaleCells}
+/**
+ * Given a cell's coordinates, find the count of alive neighbors.
+ * @param {number} row - The cell's coordinates on the x-axis.
+ * @param {number} col - The cell's coordinates on the y-axis.
+ * @returns {number} The count of alive neighbors.
+ */
+function findAliveNeighbors(tree, row, col){
+// 1. Calculate the range from the cell coordinates.
+// 2. Run the range query.
+// 3. Filter the center cell.
+	let range = {
+		x : row - 1,
+		y : col - 1,
+		xx : row + 1,
+		yy : col + 1
+	}
+	let aliveCells = tree.findAliveInArea(range.x, range.y, range.xx, range.yy)
+	let aliveCount = aliveCells.reduce((count, cell) => {
+			if (!(cell.location.row == row && cell.location.col == col)){
+				count++
+			}
+			return count
+		}, 0)
+	return aliveCount
+}
+
+module.exports = { Cell, DeadCell, QTNode, QuadTree, uniformScale, scaleCells, findAliveNeighbors}

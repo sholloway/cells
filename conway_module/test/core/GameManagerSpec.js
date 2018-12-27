@@ -4,37 +4,11 @@ This is a replacement for GameStateManagerSpec that uses a Quadtree.
 const chai = require('chai')
 const expect = chai.expect
 const {makeIdentity, makeFull10By10, makeCellsFrom2DArray} = require('./QuadTreeTestHelper.js')
-const { Cell, QTNode, QuadTree} = require('./../../lib/core/Quadtree')
+const { Cell, QTNode, QuadTree, findAliveNeighbors} = require('./../../lib/core/Quadtree.js')
 const GameManager = require('./../../lib/core/GameManager.js')
+const SceneManager = require('./../../lib/core/SceneManager.js')
 
 describe('Game Manager', function(){
-
-	/**
-	 * Given a cell's coordinates, find the count of alive neighbors.
-	 * @param {number} row - The cell's coordinates on the x-axis.
-	 * @param {number} col - The cell's coordinates on the y-axis.
-	 * @returns {number} The count of alive neighbors.
-	 */
-	function findAliveNeighbors(tree, row, col){
-	// 1. Calculate the range from the cell coordinates.
-	// 2. Run the range query.
-	// 3. Filter the center cell.
-		let range = {
-			x : row - 1,
-			y : col - 1,
-			xx : row + 1,
-			yy : col + 1
-		}
-		let aliveCells = tree.findAliveInArea(range.x, range.y, range.xx, range.yy)
-		let aliveCount = aliveCells.reduce((count, cell) => {
-				if (!(cell.location.row == row && cell.location.col == col)){
-					count++
-				}
-				return count
-			}, 0)
-		return aliveCount
-	}
-
 	function buildTree(grid){
 		let cells = makeCellsFrom2DArray(grid)
 		let tree = new QuadTree(cells)
@@ -189,29 +163,37 @@ describe('Game Manager', function(){
 	})
 
 	describe('Activating the Next Grid', function(){
-		it.skip ('should replace the current grid with the next grid when activating', function(){
-			// let config = makeConfig(20,20)
-			// let mngr = new GameStateManager(config)
-			// let scene = new SceneManager()
+		it ('should replace the current grid with the next grid when activating', function(){
+			let config = makeConfig(20,20)
+			let mngr = new GameManager(config)
+			let scene = new SceneManager()
 
-			// //Seeding the world should result in a current grid that has some life and
-			// //A next grid that is completely dead.
-			// mngr.seedWorld()
-			// let originalCurrentGridSum = arraySum(mngr.getCurrentGrid())
-			// expect(originalCurrentGridSum > 0 && originalCurrentGridSum < 400).to.be.true
-			// expect(arraySum(mngr.getNextGrid()) == 0).to.be.true
+			//Seeding the world should result in a current grid that has some life and
+			//A next grid that is completely dead.
+			mngr.seedWorld()
+			let originalAliveCells = mngr.currentTree.findAliveInArea(0,0,config.landscape.width, config.landscape.height)
+			let originalAliveCellsCount = originalAliveCells.length
+			expect(originalAliveCellsCount > 0 && originalAliveCellsCount <= config.landscape.width * config.landscape.height).to.be.true
 
-			// //Evaluating the grid should result in no changes to the current grid and
-			// //The next grid should be completely alive.
-			// mngr.evaluateCells(scene, new AlwayAliveEvaluator())
-			// expect(arraySum(mngr.getCurrentGrid()) == originalCurrentGridSum).to.be.true
-			// let nextStateArraySum = arraySum(mngr.getNextGrid())
-			// expect(nextStateArraySum != 0).to.be.true
-			// expect(nextStateArraySum != originalCurrentGridSum).to.be.true
+			//Evaluating the grid should result in no changes to the current grid and
+			//The next grid should be completely alive.
+			mngr.evaluateCells(scene, new AlwayAliveEvaluator())
 
-			// //Activating the next grid should replace the current grid with the next grid.
-			// mngr.activateNextGrid()
-			// expect(arraySum(mngr.getCurrentGrid()) == nextStateArraySum).to.be.true
+			let currentTreeLiveCells = mngr.currentTree.findAliveInArea(0,0,config.landscape.width, config.landscape.height)
+			let currentTreeLiveCellsCount = currentTreeLiveCells.length
+			expect(currentTreeLiveCellsCount == originalAliveCellsCount).to.be.true
+
+
+			//verify that the nextGrid is fully alive
+			let nextTreeLiveCells = mngr.nextTree.findAliveInArea(0,0,config.landscape.width, config.landscape.height)
+			let nextTreeLiveCellsCount = nextTreeLiveCells.length
+			expect(nextTreeLiveCellsCount == config.landscape.width * config.landscape.height).to.be.true
+
+			//Activating the next grid should replace the current grid with the next grid.
+			mngr.activateNext()
+			let newCurrentTreeAliveCells = mngr.currentTree.findAliveInArea(0,0,config.landscape.width, config.landscape.height)
+			let newCurrentTreeAliveCellsCount = newCurrentTreeAliveCells.length
+			expect(newCurrentTreeAliveCellsCount == nextTreeLiveCellsCount).to.be.true
 		})
 
 		it.skip ('should replace the next grid with a dead grid when activating', function(){
@@ -281,7 +263,7 @@ describe('Game Manager', function(){
 })
 
 class AlwayAliveEvaluator{
-	evaluate(neghborsCount, currentCellState){
+	evaluate(neighborsCount, currentCellState){
 		return 1
 	}
 }

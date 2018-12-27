@@ -1,6 +1,6 @@
-const {QuadTree} = require('./Quadtree.js')
+const {Cell, QuadTree, findAliveNeighbors} = require('./Quadtree.js')
+const CellEvaluator = require('./CellEvaluator.js')
 const { CellStates } = require('./CellStates.js')
-const { Cell } = require('./Quadtree.js')
 
 function randomAliveOrDead(){
   return getRandomIntInclusive(CellStates.DEAD, CellStates.ALIVE)
@@ -29,6 +29,10 @@ class QuadTreeSeeder{
 	}
 }
 
+function defaultCellEvaluator(){
+	return new CellEvaluator()
+}
+
 class GameManager{
 	constructor(config){
 		this.config = config
@@ -36,10 +40,53 @@ class GameManager{
 		this.nextTree = QuadTree.empty()
 	}
 
+	/**
+	 * Populates the current tree.
+	 */
 	seedWorld(){
 		let aliveCells = QuadTreeSeeder.seed(this.config.landscape.width, this.config.landscape.height)
 		this.currentTree.index(aliveCells)
 		this.nextTree.index()
+	}
+
+	/**
+	 * Traverse the current grid, applying the rules defined by the evaluator and
+	 * populate the next grid accordingly. No changes are made to the current grid.
+	 *
+	 * @param {SceneManager} scene - The active list of things that need to be rendered.
+	 * @param {CellEvaluator} evaluator - Responsible for evaluating a single cell.
+	*/
+	evaluateCells(scene, evaluator = defaultCellEvaluator()){
+		//1. Traverse every possible cell on the landscape, building up a list of new alive cells.
+		let aliveNeighbors, nextCellState, foundCell;
+		let nextAliveCells = []
+		for(let row = 0; row < this.config.landscape.width; row++){
+			for(let col = 0; col < this.config.landscape.height; col++){
+				aliveNeighbors = findAliveNeighbors(this.currentTree, row, col)
+				foundCell = this.currentTree.findCellIfAlive() //Returns DeadCell if not alive.
+				nextCellState = evaluator.evaluate(aliveNeighbors.length, foundCell.getState())
+				if (nextCellState == CellStates.ALIVE){
+					nextAliveCells.push(new Cell(row,col, foundCell.age+1))
+				}
+			}
+		}
+
+		//2. Create a new quad tree from the list of alive cells.
+		this.nextTree.clear()
+		this.nextTree.index(nextAliveCells) //TODO: We need a way to force the clean up of existing QTNodes
+
+		//3. Feed the cells to the scene manager. Note: We're going to update the scene manager
+		//   to have a transformation pipeline to project from the landscape to an HTML Canvas.
+		scene.push(nextAliveCells)
+	}
+
+	/**
+	 * Replaces the current tree with the next state tree and re-initializes the next tree to be empty.
+	 * This is similar to double buffering in computer graphics.
+	 */
+	activateNext(){
+		this.currentTree = QuadTree.clone(this.nextTree)
+		this.nextTree.clear()
 	}
 }
 
