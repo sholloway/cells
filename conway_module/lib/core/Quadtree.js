@@ -304,11 +304,13 @@ class QuadTree{
 
 	/**
 	 * Empties the tree. It sets the leaves to an empty array and recursively deletes all nodes.
+	 * @returns {QuadTree} The instance of the tree being operated on.
 	 */
 	clear(){
 		recursiveDelete(this.root)
 		this.root = null
 		this.leaves = []
+		return this
 	}
 
 	static empty(){

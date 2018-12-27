@@ -183,7 +183,6 @@ describe('Game Manager', function(){
 			let currentTreeLiveCellsCount = currentTreeLiveCells.length
 			expect(currentTreeLiveCellsCount == originalAliveCellsCount).to.be.true
 
-
 			//verify that the nextGrid is fully alive
 			let nextTreeLiveCells = mngr.nextTree.findAliveInArea(0,0,config.landscape.width, config.landscape.height)
 			let nextTreeLiveCellsCount = nextTreeLiveCells.length
@@ -196,22 +195,28 @@ describe('Game Manager', function(){
 			expect(newCurrentTreeAliveCellsCount == nextTreeLiveCellsCount).to.be.true
 		})
 
-		it.skip ('should replace the next grid with a dead grid when activating', function(){
-			// let config = makeConfig(20,20)
-			// let mngr = new GameStateManager(config)
-			// let scene = new SceneManager()
+		it ('should replace the next grid with a dead grid when activating', function(){
+			let config = makeConfig(20,20)
+			let mngr = new GameManager(config)
+			let scene = new SceneManager()
 
-			// //Seeding should result in the next grid being completely dead.
-			// mngr.seedWorld()
-			// expect(arraySum(mngr.getNextGrid()) == 0).to.be.true
+			//Seeding should result in the next grid being completely dead.
+			mngr.seedWorld()
+			let nextTreeLiveCells = mngr.nextTree.findAliveInArea(0,0,config.landscape.width, config.landscape.height)
+			let nextTreeLiveCellsCount = nextTreeLiveCells.length
+			expect(nextTreeLiveCellsCount == 0).to.be.true
 
-			// //Evaluating should make the next grid completely alive.
-			// mngr.evaluateCells(scene, new AlwayAliveEvaluator())
-			// expect(arraySum(mngr.getNextGrid()) == 400).to.be.true
+			//Evaluating should make the next grid completely alive.
+			mngr.evaluateCells(scene, new AlwayAliveEvaluator())
+			nextTreeLiveCells = mngr.nextTree.findAliveInArea(0,0,config.landscape.width, config.landscape.height)
+			nextTreeLiveCellsCount = nextTreeLiveCells.length
+			expect(nextTreeLiveCellsCount == config.landscape.width * config.landscape.height).to.be.true
 
-			// //Activating should make the next grid dead again.
-			// mngr.activateNextGrid()
-			// expect(arraySum(mngr.getNextGrid()) == 0).to.be.true
+			//Activating should make the next grid dead again.
+			mngr.activateNext()
+			nextTreeLiveCells = mngr.nextTree.findAliveInArea(0,0,config.landscape.width, config.landscape.height)
+			nextTreeLiveCellsCount = nextTreeLiveCells.length
+			expect(nextTreeLiveCellsCount == 0).to.be.true
 		})
 	})
 

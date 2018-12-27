@@ -86,7 +86,7 @@ class GameManager{
 	 */
 	activateNext(){
 		this.currentTree = QuadTree.clone(this.nextTree)
-		this.nextTree.clear()
+		this.nextTree.clear().index()
 	}
 }
 
