@@ -7,6 +7,7 @@ const {makeIdentity, makeFull10By10, makeCellsFrom2DArray} = require('./QuadTree
 const { Cell, QTNode, QuadTree, findAliveNeighbors} = require('./../../lib/core/Quadtree.js')
 const GameManager = require('./../../lib/core/GameManager.js')
 const SceneManager = require('./../../lib/core/SceneManager.js')
+const ArrayAssertions = require('./ArrayAssertions.js')
 
 describe('Game Manager', function(){
 	function buildTree(grid){
@@ -220,26 +221,45 @@ describe('Game Manager', function(){
 		})
 	})
 
-	//write tests for block, blinker
+	/*
+	Desired Tests: http://conwaylife.com/wiki/List_of_common_still_lifes
+	- Beehive
+	- Boat
+	- Tub
+	- Ship
+	- Barge
+	- Dark Spark Coil
+
+	Challenge
+	- [X] Update the GameManager to take an inject-able seeder.
+	- [X] Create a seeder that works of a 2D bit array.
+	- [ ] Array of cells to 2D bit array helper function
+	*/
 	describe('Common Conway Primitives', function(){
-		it.skip('should support blocks', function(){
-			// let config = makeConfig(5, 5, 1, 1)
-			// let mngr = new GameStateManager(config)
-			// let scene = new SceneManager()
-			// let blockSeeder = new BlockSeeder()
-			// mngr.seedWorld(blockSeeder)
+		it('should support blocks', function(){
+			let config = makeConfig(5, 5)
+			let mngr = new GameManager(config)
+			let scene = new SceneManager()
+			let gridWithBlock = [	[ 0, 0, 0, 0, 0],
+														[ 0, 0, 0, 0, 0],
+														[ 0, 0, 1, 1, 0],
+														[ 0, 0, 1, 1, 0],
+														[ 0, 0, 0, 0, 0]]
+			mngr.seedWorld(new ArraySeeder(gridWithBlock))
 
-			// let blockGrid = blockSeeder.seed(5,5)
-			// ArrayAssertions.assertEqual2DArrays(blockGrid, mngr.getCurrentGrid())
+			let currentGrid = treeToGrid(mngr.currentTree, config.landscape.width, config.landscape.height)
+			ArrayAssertions.assertEqual2DArrays(gridWithBlock,currentGrid)
 
-			// //Do 100 evaluations
-			// for(let cycle = 0; cycle < 100; cycle++){
-			// 	mngr.evaluateCells(scene)
-			// 	mngr.activateNextGrid()
-			// }
+			//Do 100 evaluations
+			for(let cycle = 0; cycle < 100; cycle++){
+				mngr.evaluateCells(scene)
+				mngr.activateNext()
+				scene.purge()
+			}
 
-			// //The block should still be there.
-			// ArrayAssertions.assertEqual2DArrays(blockGrid, mngr.getCurrentGrid())
+			//The block should still be there.
+			let lastGrid = treeToGrid(mngr.currentTree, config.landscape.width, config.landscape.height)
+			ArrayAssertions.assertEqual2DArrays(gridWithBlock, lastGrid)
 		})
 
 		it.skip ('should support blinkers', function(){
@@ -263,6 +283,8 @@ describe('Game Manager', function(){
 			// 	}
 			// }
 		})
+
+		it ('should support ')
 	})
 
 })
@@ -290,6 +312,30 @@ function arraySum(array){
 		}
 	}
 	return sum
+}
+
+function treeToGrid(tree, width, height){
+	//Make an array of 0s...
+	let grid = []
+	for (let row = 0; row < width; row++){
+		let currentRow = Array(height).fill(0)
+		grid.push(currentRow)
+	}
+	//Add all alive cells directly from leaves.
+	tree.leaves.forEach((cell) =>{
+		grid[cell.location.row][cell.location.col] = 1
+	})
+	return grid
+}
+
+class ArraySeeder{
+	constructor(grid){
+		this.grid = grid
+	}
+
+	seed(width, height){
+		return makeCellsFrom2DArray(this.grid)
+	}
 }
 
 class BlockSeeder{

@@ -15,7 +15,7 @@ function getRandomIntInclusive(min, max) {
 class QuadTreeSeeder{
 	constructor(){}
 
-	static seed(width, height){
+	seed(width, height){
 		let aliveCells = []
 		for(let x = 0; x < width; x++){
 			for (let y = 0; y < height; y++){
@@ -33,6 +33,10 @@ function defaultCellEvaluator(){
 	return new CellEvaluator()
 }
 
+function defaultSeeder(){
+	return new QuadTreeSeeder()
+}
+
 class GameManager{
 	constructor(config){
 		this.config = config
@@ -43,8 +47,8 @@ class GameManager{
 	/**
 	 * Populates the current tree.
 	 */
-	seedWorld(){
-		let aliveCells = QuadTreeSeeder.seed(this.config.landscape.width, this.config.landscape.height)
+	seedWorld(seeder = defaultSeeder()){
+		let aliveCells = seeder.seed(this.config.landscape.width, this.config.landscape.height)
 		this.currentTree.index(aliveCells)
 		this.nextTree.index()
 	}
@@ -62,9 +66,12 @@ class GameManager{
 		let nextAliveCells = []
 		for(let row = 0; row < this.config.landscape.width; row++){
 			for(let col = 0; col < this.config.landscape.height; col++){
+				//TODO: There is an opportunity to combine findAliveNeighbors with findCellIfAlive.
+				//Then, only one traversal would be needed. findAliveNeighbors could be renamed and return
+				// something like { aliveNeighbors:..., aliveCenter: ... }
 				aliveNeighbors = findAliveNeighbors(this.currentTree, row, col)
-				foundCell = this.currentTree.findCellIfAlive() //Returns DeadCell if not alive.
-				nextCellState = evaluator.evaluate(aliveNeighbors.length, foundCell.getState())
+				foundCell = this.currentTree.findCellIfAlive(row,col) //Returns DeadCell if not alive.
+				nextCellState = evaluator.evaluate(aliveNeighbors, foundCell.getState())
 				if (nextCellState == CellStates.ALIVE){
 					nextAliveCells.push(new Cell(row,col, foundCell.age+1))
 				}

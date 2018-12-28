@@ -23,6 +23,10 @@ class SceneManager{
 	fullyRendered(){
 		return !(this.stack.length > 0)
 	}
+
+	purge(){
+		this.stack = []
+	}
 }
 
 module.exports = SceneManager
