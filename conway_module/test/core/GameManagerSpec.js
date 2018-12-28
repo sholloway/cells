@@ -262,26 +262,38 @@ describe('Game Manager', function(){
 			ArrayAssertions.assertEqual2DArrays(gridWithBlock, lastGrid)
 		})
 
-		it.skip ('should support blinkers', function(){
-			// let config = makeConfig(5, 5, 1, 1)
-			// let mngr = new GameStateManager(config)
-			// let scene = new SceneManager()
-			// let blinkerSeeder = new BlinkerSeeder()
+		it ('should support blinkers', function(){
+			let config = makeConfig(5, 5)
+			let mngr = new GameManager(config)
+			let scene = new SceneManager()
 
-			// mngr.seedWorld(blinkerSeeder)
-			// let initBlinker = blinkerSeeder.seed(5,5)
-			// let blink = BlinkerSeeder.blink()
+			let initBlinker = [[ 0, 0, 0, 0, 0 ],
+														[ 0, 0, 1, 0, 0 ],
+														[ 0, 0, 1, 0, 0 ],
+														[ 0, 0, 1, 0, 0 ],
+														[ 0, 0, 0, 0, 0 ] ]
 
-			// ArrayAssertions.assertEqual2DArrays(initBlinker, mngr.getCurrentGrid())
-			// for(i = 0; i < 100; i++){
-			// 	mngr.evaluateCells(scene)
-			// 	mngr.activateNextGrid()
-			// 	if(i % 2){ //Odd: i % 2 == 1
-			// 		ArrayAssertions.assertEqual2DArrays(initBlinker, mngr.getCurrentGrid())
-			// 	}else{ //Even: i % 2 == 0
-			// 		ArrayAssertions.assertEqual2DArrays(blink, mngr.getCurrentGrid())
-			// 	}
-			// }
+			let blink = [	[ 0, 0, 0, 0, 0 ],
+										[ 0, 0, 0, 0, 0 ],
+										[ 0, 1, 1, 1, 0 ],
+										[ 0, 0, 0, 0, 0 ],
+										[ 0, 0, 0, 0, 0 ] ]
+			mngr.seedWorld(new ArraySeeder(initBlinker))
+
+			let currentGrid = treeToGrid(mngr.currentTree, config.landscape.width, config.landscape.height)
+			ArrayAssertions.assertEqual2DArrays(initBlinker,currentGrid)
+
+			for(i = 0; i < 100; i++){
+				mngr.evaluateCells(scene)
+				mngr.activateNext()
+				scene.purge()
+				currentGrid = treeToGrid(mngr.currentTree, config.landscape.width, config.landscape.height)
+				if(i % 2){ //Odd: i % 2 == 1
+					ArrayAssertions.assertEqual2DArrays(initBlinker, currentGrid)
+				}else{ //Even: i % 2 == 0
+					ArrayAssertions.assertEqual2DArrays(blink, currentGrid)
+				}
+			}
 		})
 
 		it ('should support ')
@@ -338,15 +350,7 @@ class ArraySeeder{
 	}
 }
 
-class BlockSeeder{
-	seed(width, height){
-		return [[ 0, 0, 0, 0, 0],
-						[ 0, 0, 0, 0, 0],
-						[ 0, 0, 1, 1, 0],
-						[ 0, 0, 1, 1, 0],
-						[ 0, 0, 0, 0, 0]]
-	}
-}
+
 
 class BlinkerSeeder{
 	seed(width, height){
