@@ -229,11 +229,6 @@ describe('Game Manager', function(){
 	- Ship
 	- Barge
 	- Dark Spark Coil
-
-	Challenge
-	- [X] Update the GameManager to take an inject-able seeder.
-	- [X] Create a seeder that works of a 2D bit array.
-	- [ ] Array of cells to 2D bit array helper function
 	*/
 	describe('Common Conway Primitives', function(){
 		it('should support blocks', function(){
@@ -316,16 +311,6 @@ function makeConfig(width=10, height=10){
 	}
 }
 
-function arraySum(array){
-	let sum = 0;
-	for(let i = 0; i < array.length; i++){
-		for (let j = 0; j < array[i].length; j++){
-			sum += array[i][j]
-		}
-	}
-	return sum
-}
-
 function treeToGrid(tree, width, height){
 	//Make an array of 0s...
 	let grid = []
@@ -347,25 +332,5 @@ class ArraySeeder{
 
 	seed(width, height){
 		return makeCellsFrom2DArray(this.grid)
-	}
-}
-
-
-
-class BlinkerSeeder{
-	seed(width, height){
-		return [[ 0, 0, 0, 0, 0 ],
-						[ 0, 0, 1, 0, 0 ],
-						[ 0, 0, 1, 0, 0 ],
-						[ 0, 0, 1, 0, 0 ],
-						[ 0, 0, 0, 0, 0 ] ]
-	}
-
-	static blink(){
-		return [[ 0, 0, 0, 0, 0 ],
-						[ 0, 0, 0, 0, 0 ],
-						[ 0, 1, 1, 1, 0 ],
-						[ 0, 0, 0, 0, 0 ],
-						[ 0, 0, 0, 0, 0 ] ]
 	}
 }
