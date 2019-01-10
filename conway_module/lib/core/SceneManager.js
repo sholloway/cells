@@ -29,4 +29,16 @@ class SceneManager{
 	}
 }
 
+
+
 module.exports = SceneManager
+
+/*
+What do I need?
+- Render Quad tree as rectangle outlines
+- Render alive cells as shapes.
+- Cells age drives colors.
+- Cells and rectangles are in grid space coordinate system. They need to be projected into the HTML canvas coordinate system.
+- Easily swap out different rendering strategies for entities. Bolt on/Snap on style.
+	- Traits, Strategies, Composites
+*/

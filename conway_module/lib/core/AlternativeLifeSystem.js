@@ -1,5 +1,5 @@
 const defaultConfig = require('./DefaultConfig.js')
-const GameStateManager = require('./GameStateManager.js')
+const GameManager = require('./GameManager.js')
 const HTMLCanvasRenderer = require('./../renderer/HTMLCanvasRenderer.js')
 const SceneManager = require('./../core/SceneManager.js')
 
@@ -25,10 +25,10 @@ function queueUpdates(numTicks){
 }
 
 function update(frame){
-	this.gridStateManager.evaluateCells(this.scene, this.evaluator)
-	this.gridStateManager.activateNextGrid();
+	this.gameStateManager.evaluateCells(this.scene, this.evaluator)
+	//TODO: Here add a function to render the quad tree.
+	this.gameStateManager.activateNext();
 }
-
 
 class AltLifeSystem{
 	constructor(window, htmlCanvasContext, config = defaultConfig){
@@ -37,19 +37,14 @@ class AltLifeSystem{
 		this.window = window
 		this.htmlCanvasContext = htmlCanvasContext
 		this.scene = new SceneManager()
-		this.gridStateManager = new GameStateManager(this.config)
+		this.gameStateManager = new GameManager(this.config)
 		this.renderer = new HTMLCanvasRenderer(this.htmlCanvasContext, this.config)
 		this.gameState = LifeSystemState.STOPPED
 	}
 
-	/*
-	TODO: Issue #5
-	- Replace window.setInterval with window.requestAnimationFrame
-	- Use a Web Worker to run calculating the next grid.
-	*/
 	start(){
 		if (this.gameState == LifeSystemState.STOPPED){
-			this.gridStateManager.seedWorld()
+			this.gameStateManager.seedWorld()
 			this.lastTick = window.performance.now();
   		this.lastRender = this.lastTick; // Pretend the first draw was on first update.
 			this.gameState = LifeSystemState.RUNNING

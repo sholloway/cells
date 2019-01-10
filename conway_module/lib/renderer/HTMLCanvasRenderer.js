@@ -9,11 +9,10 @@ class HTMLCanvasRenderer{
 	}
 
 	render(scene){
-		//Need to either get the config in here or find a way to derive the needed info.
 		clear(this.htmlCanvasContext, this.config)
 		while(!scene.fullyRendered()){
-			let renderable = scene.nextEntity()
-			renderable.render(this.htmlCanvasContext)
+			let entity = scene.nextEntity()
+			entity.render(this.htmlCanvasContext)
 		}
 	}
 }

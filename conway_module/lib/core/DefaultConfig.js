@@ -19,8 +19,8 @@ let DefaultConfig = {
 	},
 	//New stuff below.
 	landscape:{ //used by quad tree implementation.
-		width: 100,
-		height: 100
+		width: 30,
+		height: 20
 	},
 	zoom: 20 //The projection amount to convert a 1x1 grid cell to something that is viewable on the HTML Canvas.
 };

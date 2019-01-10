@@ -1,6 +1,7 @@
 const {Cell, QuadTree, findAliveNeighbors} = require('./Quadtree.js')
 const CellEvaluator = require('./CellEvaluator.js')
 const { CellStates } = require('./CellStates.js')
+const {ColorByAgeTrait, CircleTrait, ScaleTransformer, GridCellToRenderingEntity} = require('./EntitySystem.js')
 
 function randomAliveOrDead(){
   return getRandomIntInclusive(CellStates.DEAD, CellStates.ALIVE)
@@ -35,6 +36,15 @@ function defaultCellEvaluator(){
 
 function defaultSeeder(){
 	return new QuadTreeSeeder()
+}
+
+function registerCellTraits(config, cells){
+	cells.forEach((cell) => {
+		cell.register(new GridCellToRenderingEntity())
+			.register(new ScaleTransformer(config.zoom))
+			.register(new ColorByAgeTrait())
+			.register(new CircleTrait())
+	});
 }
 
 class GameManager{
@@ -82,8 +92,8 @@ class GameManager{
 		this.nextTree.clear()
 		this.nextTree.index(nextAliveCells) //TODO: We need a way to force the clean up of existing QTNodes
 
-		//3. Feed the cells to the scene manager. Note: We're going to update the scene manager
-		//   to have a transformation pipeline to project from the landscape to an HTML Canvas.
+		//3. Feed the cells to the scene manager.
+		registerCellTraits(this.config, nextAliveCells)
 		scene.push(nextAliveCells)
 	}
 

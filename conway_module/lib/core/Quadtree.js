@@ -1,12 +1,14 @@
 const {CellStates} = require('./CellStates.js')
+const {Entity} = require('./EntitySystem.js')
 /**
  * Represents a single unit on an abstract 2D grid.
  *
  * The width and height of the cell are the equal.
  * The grid is uniform.
  */
-class Cell{
+class Cell extends Entity{
 	constructor(row, col, age=0, state=CellStates.ALIVE){
+		super()
 		this.location = {row: row, col: col}
 		this.age = age
 		this.width = 1
