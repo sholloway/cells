@@ -26,7 +26,9 @@ function queueUpdates(numTicks){
 
 function update(frame){
 	this.gameStateManager.evaluateCells(this.scene, this.evaluator)
-	//TODO: Here add a function to render the quad tree.
+	if (this.displayStorageStructure == true){
+		this.gameStateManager.stageStorage(this.scene)
+	}
 	this.gameStateManager.activateNext();
 }
 
@@ -40,6 +42,11 @@ class AltLifeSystem{
 		this.gameStateManager = new GameManager(this.config)
 		this.renderer = new HTMLCanvasRenderer(this.htmlCanvasContext, this.config)
 		this.gameState = LifeSystemState.STOPPED
+		this.displayStorageStructure = false;
+	}
+
+	displayStorage(display){
+		this.displayStorageStructure = display
 	}
 
 	start(){

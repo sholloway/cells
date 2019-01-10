@@ -36,6 +36,10 @@
 				<button id="stop_button" onclick="stop_simulation();">Stop</button>
 				<button id="resume_button" onclick="resume_simulation();">Resume</button>
 			</div>
+			<div class="container row">
+				<input type="checkbox" id="display_storage" name="display_storage" onclick="toggle_display_storage_structure();"/>
+				<label for="display_quad_tree">Display Storage Structure</label>
+			</div>
 		</div>
 
 		<script type="application/javascript">
@@ -59,6 +63,11 @@
 
 			function resume_simulation(){
 				life.resume()
+			}
+
+			function toggle_display_storage_structure(event){
+				let displayStorageCheckbox = document.getElementById('display_storage')
+				life.displayStorage(displayStorageCheckbox.checked)
 			}
 		</script>
 	</body>

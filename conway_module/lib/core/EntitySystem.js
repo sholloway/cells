@@ -92,7 +92,6 @@ class CircleTrait extends Trait{
 		let cy = context.rendering.entity.y + (context.rendering.entity.height/2)
 		let radius = context.rendering.entity.width/2
 
-		context.rendererContext
 		context.rendererContext.fillStyle = context.fillStyle || DEFAULT_CIRCLE_FILL_STYLE
 		context.rendererContext.strokeStyle = context.strokeStyle || DEFAULT_CIRCLE_STROKE_STYLE
 		context.rendererContext.beginPath()
@@ -123,14 +122,44 @@ class Entity{
 	}
 }
 
-// class Cell extends Entity{
-// 	constructor(){
-// 		super()
+class ProcessBoxAsRect extends Trait{
+	constructor(){
+		super()
+	}
 
-// 		this.register(Scale.instance()) //Is this good here, or should it somewhere else (e.g. scale all entities at once, then render)?
-// 			.register(AgeBasedColor.instance()) //How does this work?
-// 			.register(CircularShape.instance())
-// 	}
-// }
+	process(context){
+		context.rendering = context.rendering || {}
+		context.rendering.entity = {}
+		context.rendering.entity.x = context.entity.x
+		context.rendering.entity.y = context.entity.y
+		context.rendering.entity.width = context.entity.xx - context.entity.x
+		context.rendering.entity.height = context.entity.yy - context.entity.y
+	}
+}
 
-module.exports = {Entity, ColorByAgeTrait, CircleTrait, ScaleTransformer, GridCellToRenderingEntity}
+class ColorByContents extends Trait{
+	constructor(){
+		super()
+	}
+
+	process(context){
+		// context.fillStyle = (context.entity.alive)? 'rgb(0, 0, 0)':'rgb(0, 0, 0)' //not used now.
+		context.strokeStyle = (context.entity.alive)? '#c41c00':'#bbdefb'
+	}
+}
+
+class RectTrait extends Trait{
+	constructor(){
+		super()
+	}
+
+	process(context){
+		context.rendererContext.fillStyle = context.fillStyle || DEFAULT_CIRCLE_FILL_STYLE
+		context.rendererContext.strokeStyle = context.strokeStyle || DEFAULT_CIRCLE_STROKE_STYLE
+		context.rendererContext.strokeRect(context.rendering.entity.x, context.rendering.entity.y, context.rendering.entity.width, context.rendering.entity.height)
+	}
+}
+
+module.exports = {
+	Entity, ColorByAgeTrait, CircleTrait, ScaleTransformer, GridCellToRenderingEntity, ProcessBoxAsRect, ColorByContents, RectTrait
+}

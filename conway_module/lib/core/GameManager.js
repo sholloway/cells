@@ -1,7 +1,8 @@
 const {Cell, QuadTree, findAliveNeighbors} = require('./Quadtree.js')
 const CellEvaluator = require('./CellEvaluator.js')
 const { CellStates } = require('./CellStates.js')
-const {ColorByAgeTrait, CircleTrait, ScaleTransformer, GridCellToRenderingEntity} = require('./EntitySystem.js')
+const {Entity, ColorByAgeTrait, CircleTrait, ScaleTransformer, GridCellToRenderingEntity,
+	ProcessBoxAsRect, ColorByContents, RectTrait} = require('./EntitySystem.js')
 
 function randomAliveOrDead(){
   return getRandomIntInclusive(CellStates.DEAD, CellStates.ALIVE)
@@ -45,6 +46,45 @@ function registerCellTraits(config, cells){
 			.register(new ColorByAgeTrait())
 			.register(new CircleTrait())
 	});
+}
+
+// TODO: Move this to either QuadTree or EntitySystem
+/**
+ * Represents a containing box that can be processed via Traits.
+ */
+class Box extends Entity{
+	constructor(x,y,xx,yy, alive){
+		super()
+		this.x = x
+		this.y = y
+		this.xx = xx
+		this.yy = yy
+		this.alive = alive
+	}
+}
+
+/**
+ * Recursively traverses a quad tree and adds the partition boxes to the provided array.
+ * @param {QTNode} currentNode - The current node to process.
+ * @param {Array[Box]} boxes - The array to add the partition boxes to.
+ */
+function collectBoxes(currentNode, boxes){
+	let containsAliveCell = currentNode.index != null
+	boxes.push(new Box(currentNode.rect.x, currentNode.rect.y, currentNode.rect.xx, currentNode.rect.yy, containsAliveCell))
+	if(currentNode.subdivided){
+		currentNode.children().forEach((child)=>{
+			collectBoxes(child, boxes)
+		})
+	}
+}
+
+function registerBoxTraits(config, boxes){
+	boxes.forEach(box => {
+		box.register(new ProcessBoxAsRect())
+			.register(new ScaleTransformer(config.zoom))
+			.register(new ColorByContents())
+			.register(new RectTrait())
+	})
 }
 
 class GameManager{
@@ -104,6 +144,17 @@ class GameManager{
 	activateNext(){
 		this.currentTree = QuadTree.clone(this.nextTree)
 		this.nextTree.clear().index()
+	}
+
+	/**
+	 * Traverses the next state data structure and adds it to the scene to be rendered.
+	 * @param {SceneManager} scene - The active list of things that need to be rendered.
+	 */
+	stageStorage(scene){
+		let boxes = []
+		collectBoxes(this.nextTree.root,boxes)
+		registerBoxTraits(config, boxes)
+		scene.push(boxes)
 	}
 }
 
