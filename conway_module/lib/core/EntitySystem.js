@@ -3,6 +3,9 @@ class Trait{
 	process(context){throw new Error('Must implement a process method.')}
 }
 
+/*
+Light Blue to Dark
+*/
 function fillStyle(age){
 	if (typeof age !== 'number'){
 		console.log(`Entity Age was: ${age}. Type was: ${typeof age}`)
@@ -12,16 +15,34 @@ function fillStyle(age){
 	let color = null;
 	switch (true){
 		case age <= 1:
-			color = 'rgb(141, 203, 239)' //light blue
+			color = '#e3f2fd'
 			break;
 		case age > 1 && age <= 5:
-		color = 'rgb(76, 179, 239)' //darker blue
+		color = '#bbdefb'
 			break;
 		case age > 5 && age <= 10:
-			color = 'rgb(237, 61, 61)' //red
+			color = '#90caf9'
 			break;
-		case age > 10:
-			color = 'rgb(3, 153, 18)' //green
+		case age > 10 && age <= 20:
+			color = '#64b5f6'
+			break;
+		case age > 20 && age <= 30:
+			color = '#42a5f5'
+			break;
+		case age > 30 && age <= 40:
+			color = '#2196f3'
+			break;
+		case age > 40 && age <= 50:
+			color = '#1e88e5'
+			break;
+		case age > 50 && age <= 60:
+			color = '#1976d2'
+			break;
+		case age > 60 && age <= 70:
+			color = '#1565c0'
+			break;
+		case age > 70:
+			color = '#0d47a1'
 			break;
 		default:
 			throw new Error(`Unexpected Age: ${age}`)
