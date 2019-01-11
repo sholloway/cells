@@ -5,6 +5,7 @@ class Trait{
 
 /*
 Light Blue to Dark
+This might be better if the stages followed a natural curve like e, a log or Fibonacci.
 */
 function fillStyle(age){
 	if (typeof age !== 'number'){
