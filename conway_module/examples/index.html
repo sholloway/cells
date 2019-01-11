@@ -26,19 +26,23 @@
 	<script src="./../dist/conways-game.js"></script>
 	<body>
 		<div class="container col">
-			<h1>Conway's Game Of Life</h1>
-			<hr/>
+			<div id='header'>
+				<h1>Conway's Game Of Life</h1>
+				<hr/>
+			</div>
 			<div>
 				<canvas id="grid_canvas"></canvas>
 			</div>
-			<div class="container row">
-				<button id="start_button" onclick="start_simulation();">Start New World</button>
-				<button id="stop_button" onclick="stop_simulation();">Stop</button>
-				<button id="resume_button" onclick="resume_simulation();">Resume</button>
-			</div>
-			<div class="container row">
-				<input type="checkbox" id="display_storage" name="display_storage" onclick="toggle_display_storage_structure();"/>
-				<label for="display_quad_tree">Display Storage Structure</label>
+			<div id='simulation_controls'>
+				<div class="container row">
+					<button id="start_button" onclick="start_simulation();">Start New World</button>
+					<button id="stop_button" onclick="stop_simulation();">Stop</button>
+					<button id="resume_button" onclick="resume_simulation();">Resume</button>
+				</div>
+				<div class="container row">
+					<input type="checkbox" id="display_storage" name="display_storage" onclick="toggle_display_storage_structure();"/>
+					<label for="display_quad_tree">Display Storage Structure</label>
+				</div>
 			</div>
 		</div>
 
@@ -47,6 +51,19 @@
 			let config = Conways.DefaultConfig
 
 			let canvas = document.getElementById('grid_canvas')
+
+			//Override the default configuration to size the HTML Canvas
+			//to fit the document. Note: This will use the same padding/margins
+			//as the HTML Body.
+			let headerElement = document.getElementById('header')
+			let simControlsElement = document.getElementById('simulation_controls')
+			config.canvas.width = document.body.clientWidth
+			config.canvas.height = window.innerHeight - (headerElement.clientHeight + simControlsElement.clientHeight + 40)
+
+			//config.zoom = ?
+			config.landscape.width = config.canvas.width/config.zoom
+			config.landscape.height = config.canvas.height/config.zoom
+
 			canvas.setAttribute('width', config.canvas.width)
 			canvas.setAttribute('height', config.canvas.height)
 			let ctx = canvas.getContext('2d')
