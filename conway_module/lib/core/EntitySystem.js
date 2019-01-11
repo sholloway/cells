@@ -10,6 +10,7 @@ Possibilities:
 * Fibonacci Numbers - Smooth curve: 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89
 * Bernoulli Numbers - Increasing, but jagged
 *
+* Color Scheme: https://material.io/tools/color/#!/?view.left=0&view.right=0&primary.color=1E88E5&secondary.color=FFEB3B
 */
 function fillStyle(age){
 	if (typeof age !== 'number'){
