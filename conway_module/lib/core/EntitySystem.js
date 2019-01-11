@@ -6,6 +6,10 @@ class Trait{
 /*
 Light Blue to Dark
 This might be better if the stages followed a natural curve like e, a log or Fibonacci.
+Possibilities:
+* Fibonacci Numbers - Smooth curve: 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89
+* Bernoulli Numbers - Increasing, but jagged
+*
 */
 function fillStyle(age){
 	if (typeof age !== 'number'){
@@ -18,32 +22,41 @@ function fillStyle(age){
 		case age <= 1:
 			color = '#e3f2fd'
 			break;
-		case age > 1 && age <= 5:
-		color = '#bbdefb'
+		case age == 2:
+			color = '#bbdefb'
 			break;
-		case age > 5 && age <= 10:
+		case age == 3:
 			color = '#90caf9'
 			break;
-		case age > 10 && age <= 20:
+		case age > 3 && age <= 5:
 			color = '#64b5f6'
 			break;
-		case age > 20 && age <= 30:
+		case age > 5 && age <= 8:
 			color = '#42a5f5'
 			break;
-		case age > 30 && age <= 40:
+		case age > 8 && age <= 13:
 			color = '#2196f3'
 			break;
-		case age > 40 && age <= 50:
+		case age > 13 && age <= 21:
 			color = '#1e88e5'
 			break;
-		case age > 50 && age <= 60:
+		case age > 21 && age <= 34:
 			color = '#1976d2'
 			break;
-		case age > 60 && age <= 70:
+		case age > 34 && age <= 55:
 			color = '#1565c0'
 			break;
-		case age > 70:
+		case age > 55 && age <= 89:
 			color = '#0d47a1'
+			break;
+		case age > 89 && age <= 144:
+			color = '#263238' //Dark Blue Grey
+			break;
+		case age > 144 && age <= 233:
+			color = '#870000' //Dark Orange
+			break;
+		case age > 233:
+			color = '#bf360c'
 			break;
 		default:
 			throw new Error(`Unexpected Age: ${age}`)
