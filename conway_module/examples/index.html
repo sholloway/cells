@@ -42,6 +42,9 @@
 				<div class="container row">
 					<input type="checkbox" id="display_storage" name="display_storage" onclick="toggle_display_storage_structure();"/>
 					<label for="display_quad_tree">Display Storage Structure</label>
+
+					<input type="checkbox" id="display_grid_background" name="display_grid_background" onclick="toggle_display_grid_background();"/>
+					<label for="display_grid_background">Display Grid</label>
 				</div>
 			</div>
 		</div>
@@ -82,9 +85,14 @@
 				life.resume()
 			}
 
-			function toggle_display_storage_structure(event){
+			function toggle_display_storage_structure(){
 				let displayStorageCheckbox = document.getElementById('display_storage')
 				life.displayStorage(displayStorageCheckbox.checked)
+			}
+
+			function toggle_display_grid_background(){
+				let displayGridBackground = document.getElementById('display_grid_background')
+				life.displayGrid(displayGridBackground.checked)
 			}
 		</script>
 	</body>

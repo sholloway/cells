@@ -196,6 +196,60 @@ class RectTrait extends Trait{
 	}
 }
 
+class DarkThinLines extends Trait{
+	constructor(){
+		super()
+	}
+
+	process(context){
+		//TODO Make Background #f5f5f. Background is it's own enity.
+		context.rendererContext.strokeStyle = '#757575'
+		context.rendererContext.lineWidth = 1
+	}
+}
+
+class GridPattern extends Trait{
+	constructor(){
+		super()
+	}
+
+	process(context){
+		//Draw vertical lines
+		for (let x = 0; x < context.entity.width; x += context.entity.cell.width){
+			context.rendererContext.beginPath()
+			context.rendererContext.moveTo(x,0)
+			context.rendererContext.lineTo(x, context.entity.height)
+			context.rendererContext.stroke()
+		}
+
+		for (let y = 0; y < context.entity.height; y += context.entity.cell.height){
+			context.rendererContext.beginPath()
+			context.rendererContext.moveTo(0,y)
+			context.rendererContext.lineTo(context.entity.width, y)
+			context.rendererContext.stroke()
+		}
+	}
+}
+
+class GridEntity extends Entity{
+	constructor(width, height, cWidth, cHeight){
+		super()
+		this.width = width
+		this.height = height
+		this.cell = { width: cWidth, height: cHeight}
+	}
+}
+
 module.exports = {
-	Entity, ColorByAgeTrait, CircleTrait, ScaleTransformer, GridCellToRenderingEntity, ProcessBoxAsRect, ColorByContents, RectTrait
+	CircleTrait,
+	ColorByAgeTrait,
+	ColorByContents,
+	DarkThinLines,
+	Entity,
+	GridCellToRenderingEntity,
+	GridEntity,
+	GridPattern,
+	ProcessBoxAsRect,
+	RectTrait,
+	ScaleTransformer
 }

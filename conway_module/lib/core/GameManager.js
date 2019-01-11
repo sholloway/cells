@@ -2,7 +2,8 @@ const {Cell, QuadTree, findAliveNeighbors} = require('./Quadtree.js')
 const CellEvaluator = require('./CellEvaluator.js')
 const { CellStates } = require('./CellStates.js')
 const {Entity, ColorByAgeTrait, CircleTrait, ScaleTransformer, GridCellToRenderingEntity,
-	ProcessBoxAsRect, ColorByContents, RectTrait} = require('./EntitySystem.js')
+	ProcessBoxAsRect, ColorByContents, RectTrait, GridEntity,
+	DarkThinLines, GridPattern} = require('./EntitySystem.js')
 
 function randomAliveOrDead(){
   return getRandomIntInclusive(CellStates.DEAD, CellStates.ALIVE)
@@ -150,11 +151,25 @@ class GameManager{
 	 * Traverses the next state data structure and adds it to the scene to be rendered.
 	 * @param {SceneManager} scene - The active list of things that need to be rendered.
 	 */
-	stageStorage(scene){
+	stageStorage(scene, display){
+		if (!display){
+			return
+		}
 		let boxes = []
 		collectBoxes(this.nextTree.root,boxes)
 		registerBoxTraits(config, boxes)
 		scene.push(boxes)
+	}
+
+	stageGrid(scene, display){
+		if (!display){
+			return
+		}
+		let grid = new GridEntity(this.config.canvas.width, this.config.canvas.height,
+			this.config.zoom, this.config.zoom)
+			.register(new DarkThinLines())
+			.register(new GridPattern())
+		scene.push(grid)
 	}
 }
 

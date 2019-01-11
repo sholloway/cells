@@ -25,10 +25,9 @@ function queueUpdates(numTicks){
 }
 
 function update(frame){
+	this.gameStateManager.stageGrid(this.scene,this.displayGridBackground)
 	this.gameStateManager.evaluateCells(this.scene, this.evaluator)
-	if (this.displayStorageStructure == true){
-		this.gameStateManager.stageStorage(this.scene)
-	}
+	this.gameStateManager.stageStorage(this.scene, this.displayStorageStructure)
 	this.gameStateManager.activateNext();
 }
 
@@ -43,10 +42,15 @@ class AltLifeSystem{
 		this.renderer = new HTMLCanvasRenderer(this.htmlCanvasContext, this.config)
 		this.gameState = LifeSystemState.STOPPED
 		this.displayStorageStructure = false;
+		this.displayGridBackground = false;
 	}
 
 	displayStorage(display){
 		this.displayStorageStructure = display
+	}
+
+	displayGrid(display){
+		this.displayGridBackground = display
 	}
 
 	start(){
