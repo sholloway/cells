@@ -1,15 +1,18 @@
 <!doctype html>
 <html lang="en">
 	<head>
+		<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
 		<meta charset="utf-8">
 		<title>Conway's Game of Life</title>
 		<style>
 			#grid_canvas {
 				border: 1px solid black;
+				background-color: #e1e2e1;
 			}
 
 			.container{
 				display: flex;
+				background-color:#e1e2e1;
 			}
 
 			.col{
@@ -19,16 +22,41 @@
 			.row{
 				flex-direction: row;
 				padding-top: 10px;
+			}
 
+			body{
+				background-color: #000000;
+				font-family: 'Roboto', sans-serif;
+			}
+
+			#simulation_controls{
+				padding-left: 10px;
+				margin-bottom: 10px;
+			}
+
+			#block{
+				height: 24px;
+				background-color: #006db3
+			}
+			#header{
+				background-color: #039be5;
+				border-top-width: 1px;
+				border-top-color: #3fafe8;
+				border-top-style: solid;
+			}
+
+			h1{
+				color: #000000;
+				margin-left: 20px;
 			}
 		</style>
 	</head>
 	<script src="./../dist/conways-game.js"></script>
 	<body>
 		<div class="container col">
+			<div id='block'></div>
 			<div id='header'>
 				<h1>Conway's Game Of Life</h1>
-				<hr/>
 			</div>
 			<div>
 				<canvas id="grid_canvas"></canvas>
@@ -58,10 +86,11 @@
 			//Override the default configuration to size the HTML Canvas
 			//to fit the document. Note: This will use the same padding/margins
 			//as the HTML Body.
+			let blockElement = document.getElementById('header')
 			let headerElement = document.getElementById('header')
 			let simControlsElement = document.getElementById('simulation_controls')
 			config.canvas.width = document.body.clientWidth
-			config.canvas.height = window.innerHeight - (headerElement.clientHeight + simControlsElement.clientHeight + 40)
+			config.canvas.height = window.innerHeight - (blockElement.clientHeight + headerElement.clientHeight + simControlsElement.clientHeight)
 
 			//config.zoom = ?
 			config.landscape.width = config.canvas.width/config.zoom

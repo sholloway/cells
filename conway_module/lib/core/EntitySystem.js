@@ -56,8 +56,11 @@ function fillStyle(age){
 		case age > 144 && age <= 233:
 			color = '#870000' //Dark Orange
 			break;
-		case age > 233:
+		case age > 233 && age <= 377:
 			color = '#bf360c'
+			break;
+		case age > 377:
+			color = '#ffeb3b' //Bright Yellow
 			break;
 		default:
 			throw new Error(`Unexpected Age: ${age}`)
@@ -180,7 +183,8 @@ class ColorByContents extends Trait{
 
 	process(context){
 		// context.fillStyle = (context.entity.alive)? 'rgb(0, 0, 0)':'rgb(0, 0, 0)' //not used now.
-		context.strokeStyle = (context.entity.alive)? '#c41c00':'#bbdefb'
+		context.lineWidth = 2
+		context.strokeStyle = (context.entity.alive)? '#c41c00': '#0d47a1'
 	}
 }
 
@@ -204,7 +208,7 @@ class DarkThinLines extends Trait{
 	process(context){
 		//TODO Make Background #f5f5f. Background is it's own enity.
 		context.rendererContext.strokeStyle = '#757575'
-		context.rendererContext.lineWidth = 1
+		context.rendererContext.lineWidth = 0.5
 	}
 }
 
