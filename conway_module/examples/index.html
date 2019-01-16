@@ -6,8 +6,8 @@
 		<title>Conway's Game of Life</title>
 		<style>
 			#grid_canvas {
+				background-color: #FFFFFF;
 				border: 1px solid black;
-				background-color: #e1e2e1;
 			}
 
 			.container{
@@ -27,6 +27,7 @@
 			body{
 				background-color: #000000;
 				font-family: 'Roboto', sans-serif;
+				margin: 8px;
 			}
 
 			#simulation_controls{
@@ -45,6 +46,10 @@
 				border-top-style: solid;
 			}
 
+			#cell_size{
+				width: 3em;
+			}
+
 			h1{
 				color: #000000;
 				margin-left: 20px;
@@ -58,52 +63,75 @@
 			<div id='header'>
 				<h1>Conway's Game Of Life</h1>
 			</div>
-			<div>
-				<canvas id="grid_canvas"></canvas>
-			</div>
-			<div id='simulation_controls'>
+			<div id="control_bar">
 				<div class="container row">
+					<label for="cell_size">Cell Size</label>
+					<input id="cell_size" type="number" min="1" max="100" value="20" step="1" onchange="changed_cell_size();"/>
 					<button id="start_button" onclick="start_simulation();">Start New World</button>
 					<button id="stop_button" onclick="stop_simulation();">Stop</button>
 					<button id="resume_button" onclick="resume_simulation();">Resume</button>
 				</div>
 				<div class="container row">
 					<input type="checkbox" id="display_storage" name="display_storage" onclick="toggle_display_storage_structure();"/>
-					<label for="display_quad_tree">Display Storage Structure</label>
+					<label for="display_storage">Display Storage Structure</label>
 
 					<input type="checkbox" id="display_grid_background" name="display_grid_background" onclick="toggle_display_grid_background();"/>
 					<label for="display_grid_background">Display Grid</label>
 				</div>
 			</div>
+			<canvas id="grid_canvas"></canvas>
+			<div id="status_bar">
+				<span><label># Alive Cells: XX</label> <label>Generation: XX</label></span>
+			</div>
 		</div>
 
 		<script type="application/javascript">
+			//TODO: Rethink this code to load the JS on Load and Resize events. The canvas should resize appropriately.
+			window.addEventListener('load', function(event){
+				console.log(`After Page Load: ${window.innerHeight}`)
+				sizeCanvas(canvas, config)
+				life.main(window.performance.now());
+			})
+
+			window.addEventListener('resize', function(event){
+				sizeCanvas(canvas, config)
+			})
+
 			let LifeSystem = Conways.LifeSystem
 			let config = Conways.DefaultConfig
-
 			let canvas = document.getElementById('grid_canvas')
-
-			//Override the default configuration to size the HTML Canvas
-			//to fit the document. Note: This will use the same padding/margins
-			//as the HTML Body.
-			let blockElement = document.getElementById('header')
-			let headerElement = document.getElementById('header')
-			let simControlsElement = document.getElementById('simulation_controls')
-			config.canvas.width = document.body.clientWidth
-			config.canvas.height = window.innerHeight - (blockElement.clientHeight + headerElement.clientHeight + simControlsElement.clientHeight)
-
-			//config.zoom = ?
-			config.landscape.width = config.canvas.width/config.zoom
-			config.landscape.height = config.canvas.height/config.zoom
-
-			canvas.setAttribute('width', config.canvas.width)
-			canvas.setAttribute('height', config.canvas.height)
 			let ctx = canvas.getContext('2d')
 			let life = new LifeSystem(window, ctx, config)
-			life.main(window.performance.now());
+
+			function sizeCanvas(canvas, config){
+				//Override the default configuration to size the HTML Canvas
+				//to fit the document. Note: This will use the same padding/margins
+				//as the HTML Body.
+				let blockElement = document.getElementById('block')
+				let headerElement = document.getElementById('header')
+				let controlBarElement = document.getElementById('control_bar')
+				let statusBarElement = document.getElementById('status_bar')
+				let bodyMargin = 8 * 2; //Padding on body in CSS is 8 top and bottom.
+
+				config.canvas.height = window.innerHeight - bodyMargin - (blockElement.offsetHeight + headerElement.offsetHeight + controlBarElement.offsetHeight + statusBarElement.offsetHeight)
+				console.log(`Target Height: ${config.canvas.height}`)
+
+				//WARNING: Setting the canvas height changes the body width so always set the height before the width.
+				canvas.setAttribute('height', config.canvas.height)
+				config.canvas.width = document.body.clientWidth
+				canvas.setAttribute('width', config.canvas.width)
+			}
 
 			function start_simulation(){
+				config.zoom = getCellSize()
+				config.landscape.width = config.canvas.width/config.zoom
+				config.landscape.height = config.canvas.height/config.zoom
 				life.start()
+			}
+
+			function getCellSize(){
+				let cellSizeControl = document.getElementById('cell_size')
+				return Number.parseInt(cellSizeControl.value)
 			}
 
 			function stop_simulation(){
@@ -122,6 +150,10 @@
 			function toggle_display_grid_background(){
 				let displayGridBackground = document.getElementById('display_grid_background')
 				life.displayGrid(displayGridBackground.checked)
+			}
+
+			function changed_cell_size(){
+				life.setCellSize(getCellSize())
 			}
 		</script>
 	</body>

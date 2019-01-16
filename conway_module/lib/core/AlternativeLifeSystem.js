@@ -9,14 +9,6 @@ const LifeSystemState = {
 	RUNNING: 3
 }
 
-//Private methods
-
-//We've got an issue with this technique. Since I'm building a rendering queue,
-//each call to update will add multiple passes to the queue.
-//We want the rendering queue to just contain the last pass.
-//A better design might be to have nested queues. So we could create
-// A single queue for how many times we run through the simulation
-// and then add that to a master queue.
 function queueUpdates(numTicks){
 	for(var i=0; i < numTicks; i++) {
 		this.lastTick = this.lastTick + this.config.game.tickLength;
@@ -43,6 +35,10 @@ class AltLifeSystem{
 		this.gameState = LifeSystemState.STOPPED
 		this.displayStorageStructure = false;
 		this.displayGridBackground = false;
+	}
+
+	setCellSize(size){
+		this.config.zoom = size
 	}
 
 	displayStorage(display){
