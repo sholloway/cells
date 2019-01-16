@@ -75,6 +75,7 @@ class AltLifeSystem{
 	resume(){
 		if(this.gameState == LifeSystemState.STOPPED || this.gameState == LifeSystemState.PAUSED){
 			this.gameState = LifeSystemState.RUNNING
+			this.lastTick = window.performance.now()
 		}
 	}
 
