@@ -65,11 +65,37 @@
 			</div>
 			<div id="control_bar">
 				<div class="container row">
+					<!--
+					Seed Preset Combo
+					Cell Size
+					Shape Combo
+					Start/Pause Button
+					Clear Button -->
+					<label for="topology">Topology</label>
+					<select id="topology">
+						<option value="plane_with_dead_border">Finite Grid</option>
+					</select>
+
+					<label for="seed">Preset</label>
+					<select id="seed">
+						<option value="draw">Draw</option>
+						<option value="random">Random</option>
+					</select>
+
+					<label for="cell_shape">Cell Shape</label>
+					<select id="cell_shape">
+						<option value="circle">Circle</option>
+					</select>
+
 					<label for="cell_size">Cell Size</label>
 					<input id="cell_size" type="number" min="1" max="100" value="20" step="1" onchange="changed_cell_size();"/>
-					<button id="start_button" onclick="start_simulation();">Start New World</button>
+
+					<button id="play_pause_button" type="button" onclick="toggle_simulation();">Start</button>
+					<button id="clear_button" type="button" onclick="clear_simulation();">Clear</button>
+
+					<!-- <button id="start_button" onclick="start_simulation();">Start New World</button>
 					<button id="stop_button" onclick="stop_simulation();">Stop</button>
-					<button id="resume_button" onclick="resume_simulation();">Resume</button>
+					<button id="resume_button" onclick="resume_simulation();">Resume</button> -->
 				</div>
 				<div class="container row">
 					<input type="checkbox" id="display_storage" name="display_storage" onclick="toggle_display_storage_structure();"/>
@@ -85,10 +111,27 @@
 			</div>
 		</div>
 
+		<!--
+			Next Steps:
+				- Make the Stop button have three states
+					- Not Active: For before Start New World has been clicked.
+					- Stop: For when the simulation is running
+					- Resume: For when the simulation is stopped.
+						- Resume should include cells that have been drawn.
+
+				- Add a Clear/Reset Button
+
+				Drawing
+				- Add Mouse Listeners
+					- Only when the simulation is stopped.
+				- Convert Mouse click to Cell Space
+				- Draw cells that have been created by clicking.
+
+
+		 -->
 		<script type="application/javascript">
 			//TODO: Rethink this code to load the JS on Load and Resize events. The canvas should resize appropriately.
 			window.addEventListener('load', function(event){
-				console.log(`After Page Load: ${window.innerHeight}`)
 				sizeCanvas(canvas, config)
 				life.main(window.performance.now());
 			})
@@ -114,12 +157,32 @@
 				let bodyMargin = 8 * 2; //Padding on body in CSS is 8 top and bottom.
 
 				config.canvas.height = window.innerHeight - bodyMargin - (blockElement.offsetHeight + headerElement.offsetHeight + controlBarElement.offsetHeight + statusBarElement.offsetHeight)
-				console.log(`Target Height: ${config.canvas.height}`)
 
 				//WARNING: Setting the canvas height changes the body width so always set the height before the width.
 				canvas.setAttribute('height', config.canvas.height)
 				config.canvas.width = document.body.clientWidth
 				canvas.setAttribute('width', config.canvas.width)
+			}
+
+			function toggle_simulation(){
+				let button = document.getElementById('play_pause_button')
+
+				switch (button.innerText){
+					case 'Start':
+						button.innerText = 'Pause'
+						start_simulation()
+						break;
+					case 'Pause':
+						button.innerText = 'Resume'
+						stop_simulation()
+						break;
+					case 'Resume':
+						button.innerText = 'Pause'
+						resume_simulation()
+						break;
+					default:
+						break;
+				}
 			}
 
 			function start_simulation(){
