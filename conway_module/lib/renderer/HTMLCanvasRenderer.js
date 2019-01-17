@@ -1,4 +1,4 @@
-function clear(htmlCanvasContext, config){
+function clearCanvas(htmlCanvasContext, config){
   htmlCanvasContext.clearRect(0,0, config.canvas.width, config.canvas.height)
 }
 
@@ -9,11 +9,15 @@ class HTMLCanvasRenderer{
 	}
 
 	render(scene){
-		clear(this.htmlCanvasContext, this.config)
+		this.clear()
 		while(!scene.fullyRendered()){
 			let entity = scene.nextEntity()
 			entity.render(this.htmlCanvasContext)
 		}
+	}
+
+	clear(){
+		clearCanvas(this.htmlCanvasContext, this.config)
 	}
 }
 

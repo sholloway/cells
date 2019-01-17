@@ -171,6 +171,11 @@ class GameManager{
 			.register(new GridPattern())
 		scene.push(grid)
 	}
+
+	clear(){
+		this.currentTree.clear().index()
+		this.nextTree.clear().index()
+	}
 }
 
 module.exports = GameManager

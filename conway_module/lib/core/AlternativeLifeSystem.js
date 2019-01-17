@@ -72,6 +72,12 @@ class AltLifeSystem{
 		}
 	}
 
+	reset(){
+		this.scene.purge()
+		this.gameStateManager.clear()
+		this.renderer.clear()
+	}
+
 	resume(){
 		if(this.gameState == LifeSystemState.STOPPED || this.gameState == LifeSystemState.PAUSED){
 			this.gameState = LifeSystemState.RUNNING

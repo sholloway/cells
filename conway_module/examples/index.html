@@ -91,11 +91,7 @@
 					<input id="cell_size" type="number" min="1" max="100" value="20" step="1" onchange="changed_cell_size();"/>
 
 					<button id="play_pause_button" type="button" onclick="toggle_simulation();">Start</button>
-					<button id="clear_button" type="button" onclick="clear_simulation();">Clear</button>
-
-					<!-- <button id="start_button" onclick="start_simulation();">Start New World</button>
-					<button id="stop_button" onclick="stop_simulation();">Stop</button>
-					<button id="resume_button" onclick="resume_simulation();">Resume</button> -->
+					<button id="reset_button" type="button" onclick="reset_simulation();">Reset</button>
 				</div>
 				<div class="container row">
 					<input type="checkbox" id="display_storage" name="display_storage" onclick="toggle_display_storage_structure();"/>
@@ -183,6 +179,13 @@
 					default:
 						break;
 				}
+			}
+
+			function reset_simulation(){
+				stop_simulation()
+				let button = document.getElementById('play_pause_button')
+				button.innerText = "Start"
+				life.reset()
 			}
 
 			function start_simulation(){
