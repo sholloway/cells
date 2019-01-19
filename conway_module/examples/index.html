@@ -18,15 +18,16 @@
 			#grid_canvas {
 				z-index: 1;
 				position: absolute;
-				margin-top:0px;
-				margin-left:0px;
 			}
 
 			#sim_canvas {
 				z-index: 2;
 				position: absolute;
-				margin-top:0px;
-				margin-left:0px;
+			}
+
+			#draw_canvas{
+				z-index: 3;
+				position: absolute;
 			}
 
 			.container{
@@ -123,6 +124,7 @@
 			<div id="canvas_container">
 				<canvas id="grid_canvas"></canvas>
 				<canvas id="sim_canvas"></canvas>
+				<canvas id="draw_canvas"></canvas>
 			</div>
 			<div id="status_bar">
 				<span><label># Alive Cells: XX</label> <label>Generation: XX</label></span>
@@ -143,6 +145,8 @@
 			window.addEventListener('load', function(event){
 				sizeCanvas(config)
 				life.main(window.performance.now());
+				drawingSystem.main(window.performance.now());
+				allowDrawing()
 			})
 
 			window.addEventListener('resize', function(event){
@@ -152,27 +156,43 @@
 
 			let LifeSystem = Conways.LifeSystem
 			let GridSystem = Conways.GridSystem
+			let DrawingSystem = Conways.DrawingSystem
+
 			let config = Conways.DefaultConfig
 
 			let gridCanvas = document.getElementById('grid_canvas')
 			let simCanvas = document.getElementById('sim_canvas')
+			let drawCanvas = document.getElementById('draw_canvas')
 
 			let life = new LifeSystem(window, simCanvas.getContext('2d'), config)
 			let grid = new GridSystem(gridCanvas.getContext('2d'), getCellSize())
+			let drawingSystem = new DrawingSystem(window, drawCanvas.getContext('2d'), config)
+			let drawingAllowed = true
 
-			/* Hold that thought. Get Grid System working first.
-			canvas.addEventListener('click', (clickEvent) => {
-				//Get Pixel clicked.
-				let boundary = canvas.getBoundingClientRect()
-				let px = clickEvent.clientX - boundary.left
-				let py = clickEvent.clientY - boundary.top
+			function allowDrawing(){
+				drawingAllowed = true
+				drawingSystem.start()
+			}
 
-				//Project to a Cell
-				let cx = Math.round(px/config.zoom)
-				let cy = Math.round(py/config.zoom)
-				life.addCell(cx,cy)
+			function preventDrawing(){
+				drawingAllowed = false
+				drawingSystem.stop()
+			}
+
+			drawCanvas.addEventListener('click', (clickEvent) => {
+				if(drawingAllowed){
+					//Get Pixel clicked.
+					let boundary = drawCanvas.getBoundingClientRect()
+					let px = clickEvent.clientX - boundary.left
+					let py = clickEvent.clientY - boundary.top
+
+					//Project to a Cell
+					let cx = Math.floor(px/config.zoom)
+					let cy = Math.floor(py/config.zoom)
+
+					drawingSystem.toggleCell(cx,cy)
+				}
 			})
-			*/
 
 			function sizeCanvas(config){
 				//Override the default configuration to size the HTML Canvas
@@ -189,17 +209,20 @@
 				let canvasContainerDiv = document.getElementById('canvas_container')
 				let gridCanvas = document.getElementById('grid_canvas')
 				let simCanvas = document.getElementById('sim_canvas')
+				let drawCanvas = document.getElementById('draw_canvas')
 
 				//WARNING: Setting the canvas height changes the body
 				//width so always set the height before the width.
 				canvasContainerDiv.style.height = `${config.canvas.height}px`
 				gridCanvas.setAttribute('height', config.canvas.height)
 				simCanvas.setAttribute('height', config.canvas.height)
+				drawCanvas.setAttribute('height', config.canvas.height)
 
 				config.canvas.width = document.body.clientWidth
 				canvasContainerDiv.style.width = `${config.canvas.width}px`
 				gridCanvas.setAttribute('width', config.canvas.width)
 				simCanvas.setAttribute('width', config.canvas.width)
+				drawCanvas.setAttribute('width', config.canvas.width)
 			}
 
 			function toggle_simulation(){
@@ -208,14 +231,17 @@
 				switch (button.innerText){
 					case 'Start':
 						button.innerText = 'Pause'
+						preventDrawing()
 						start_simulation()
 						break;
 					case 'Pause':
 						button.innerText = 'Resume'
+						allowDrawing()
 						stop_simulation()
 						break;
 					case 'Resume':
 						button.innerText = 'Pause'
+						preventDrawing()
 						resume_simulation()
 						break;
 					default:
@@ -253,6 +279,7 @@
 			function toggle_display_storage_structure(){
 				let displayStorageCheckbox = document.getElementById('display_storage')
 				life.displayStorage(displayStorageCheckbox.checked)
+				drawingSystem.displayStorage(displayStorageCheckbox.checked)
 			}
 
 			function handle_grid_background(){

@@ -1,9 +1,9 @@
 const defaultConfig = require('./DefaultConfig.js')
-const GameManager = require('./GameManager.js')
+const DrawingStateManager = require('./DrawingStateManager.js')
 const HTMLCanvasRenderer = require('./../renderer/HTMLCanvasRenderer.js')
 const SceneManager = require('./../core/SceneManager.js')
 
-const LifeSystemState = {
+const DrawingSystemState ={
 	STOPPED: 1,
 	PAUSED: 2,
 	RUNNING: 3
@@ -17,21 +17,29 @@ function queueUpdates(numTicks){
 }
 
 function update(frame){
-	this.gameStateManager.evaluateCells(this.scene, this.evaluator)
-	this.gameStateManager.stageStorage(this.scene, this.displayStorageStructure)
-	this.gameStateManager.activateNext();
+	// this.stateManager.evaluateCells(this.scene, this.evaluator)
+	this.stateManager.stageStorage(this.scene, this.displayStorageStructure)
+	// this.stateManager.activateNext();
+	this.stateManager.processCells(this.scene)
 }
 
-class AltLifeSystem{
+/*
+TODO: Potential define a parent class for DrawingSystem, AltLifeSystem...
+*/
+class DrawingSystem{
 	constructor(window, htmlCanvasContext, config = defaultConfig){
 		this.config = config
 		this.window = window
 		this.htmlCanvasContext = htmlCanvasContext
 		this.scene = new SceneManager()
-		this.gameStateManager = new GameManager(this.config)
+		this.stateManager = new DrawingStateManager(this.config)
 		this.renderer = new HTMLCanvasRenderer(this.htmlCanvasContext, this.config)
-		this.gameState = LifeSystemState.STOPPED
+		this.state = DrawingSystemState.STOPPED
 		this.displayStorageStructure = false;
+	}
+
+	toggleCell(x,y){
+		this.stateManager.toggleCell(x,y)
 	}
 
 	setCellSize(size){
@@ -43,37 +51,36 @@ class AltLifeSystem{
 	}
 
 	start(){
-		if (this.gameState == LifeSystemState.STOPPED){
-			this.gameStateManager.seedWorld()
+		if (this.state == DrawingSystemState.STOPPED){
+		//	this.gameStateManager.seedWorld()
 			this.lastTick = window.performance.now();
   		this.lastRender = this.lastTick; // Pretend the first draw was on first update.
-			this.gameState = LifeSystemState.RUNNING
+			this.state = DrawingSystemState.RUNNING
 		}
 	}
 
 	stop(){
-		if (this.gameState == LifeSystemState.RUNNING){
-			this.gameState = LifeSystemState.STOPPED
+		if (this.state == DrawingSystemState.RUNNING){
+			this.state = DrawingSystemState.STOPPED
 		}
 	}
 
 	pause(){
-		if (this.gameState == LifeSystemState.RUNNING){
+		if (this.state == DrawingSystemState.RUNNING){
 			this.lastTick = window.performance.now();
-  		// this.lastRender = this.lastTick; // Pretend the first draw was on first update.
-			this.gameState = LifeSystemState.PAUSED
+			this.state = DrawingSystemState.PAUSED
 		}
 	}
 
 	reset(){
 		this.scene.purge()
-		this.gameStateManager.clear()
+		this.stateManager.clear()
 		this.renderer.clear()
 	}
 
 	resume(){
-		if(this.gameState == LifeSystemState.STOPPED || this.gameState == LifeSystemState.PAUSED){
-			this.gameState = LifeSystemState.RUNNING
+		if(this.state == DrawingSystemState.STOPPED || this.state == DrawingSystemState.PAUSED){
+			this.state = DrawingSystemState.RUNNING
 			this.lastTick = window.performance.now()
 		}
 	}
@@ -82,7 +89,7 @@ class AltLifeSystem{
 		// Looping via callback. Will pass the current time.
 		// Can use window.cancelAnimationFrame() to stop if needed.
 		this.stopMain = window.requestAnimationFrame(this.main.bind(this));
-		if (this.gameState == LifeSystemState.RUNNING){
+		if (this.state == DrawingSystemState.RUNNING){
 			var nextTick = this.lastTick + this.config.game.tickLength;
 			var numTicks = 0;
 
@@ -104,4 +111,4 @@ class AltLifeSystem{
 	}
 }
 
-module.exports = AltLifeSystem
+module.exports = DrawingSystem
