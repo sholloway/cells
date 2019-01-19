@@ -116,7 +116,7 @@
 					<input type="checkbox" id="display_storage" name="display_storage" onclick="toggle_display_storage_structure();"/>
 					<label for="display_storage">Display Storage Structure</label>
 
-					<input type="checkbox" id="display_grid_background" name="display_grid_background" onclick="toggle_display_grid_background();"/>
+					<input type="checkbox" id="display_grid_background" name="display_grid_background" onclick="handle_grid_background();"/>
 					<label for="display_grid_background">Display Grid</label>
 				</div>
 			</div>
@@ -147,7 +147,7 @@
 
 			window.addEventListener('resize', function(event){
 				sizeCanvas(config)
-			//	grid.setCellSize(getCellSize())
+				handle_grid_background()
 			})
 
 			let LifeSystem = Conways.LifeSystem
@@ -255,7 +255,7 @@
 				life.displayStorage(displayStorageCheckbox.checked)
 			}
 
-			function toggle_display_grid_background(){
+			function handle_grid_background(){
 				let displayGridBackground = document.getElementById('display_grid_background')
 				if(displayGridBackground.checked){
 					grid.clear(0,0, config.canvas.width, config.canvas.height)
@@ -269,7 +269,7 @@
 				let cellSize = getCellSize()
 				life.setCellSize(cellSize)
 				grid.setCellSize(cellSize)
-				toggle_display_grid_background()
+				handle_grid_background()
 			}
 		</script>
 	</body>
