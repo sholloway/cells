@@ -140,7 +140,6 @@
 				- Draw cells that have been created by clicking.
 		 -->
 		<script type="application/javascript">
-			//TODO: Rethink this code to load the JS on Load and Resize events. The canvas should resize appropriately.
 			window.addEventListener('load', function(event){
 				sizeCanvas(config)
 				life.main(window.performance.now());
@@ -148,15 +147,18 @@
 
 			window.addEventListener('resize', function(event){
 				sizeCanvas(config)
+			//	grid.setCellSize(getCellSize())
 			})
 
 			let LifeSystem = Conways.LifeSystem
+			let GridSystem = Conways.GridSystem
 			let config = Conways.DefaultConfig
 
 			let gridCanvas = document.getElementById('grid_canvas')
 			let simCanvas = document.getElementById('sim_canvas')
 
 			let life = new LifeSystem(window, simCanvas.getContext('2d'), config)
+			let grid = new GridSystem(gridCanvas.getContext('2d'), getCellSize())
 
 			/* Hold that thought. Get Grid System working first.
 			canvas.addEventListener('click', (clickEvent) => {
@@ -199,8 +201,6 @@
 				gridCanvas.setAttribute('width', config.canvas.width)
 				simCanvas.setAttribute('width', config.canvas.width)
 			}
-
-
 
 			function toggle_simulation(){
 				let button = document.getElementById('play_pause_button')
@@ -257,11 +257,19 @@
 
 			function toggle_display_grid_background(){
 				let displayGridBackground = document.getElementById('display_grid_background')
-				life.displayGrid(displayGridBackground.checked)
+				if(displayGridBackground.checked){
+					grid.clear(0,0, config.canvas.width, config.canvas.height)
+					grid.drawGrid(config.canvas.width, config.canvas.height)
+				}else{
+					grid.clear(0,0, config.canvas.width, config.canvas.height)
+				}
 			}
 
 			function changed_cell_size(){
-				life.setCellSize(getCellSize())
+				let cellSize = getCellSize()
+				life.setCellSize(cellSize)
+				grid.setCellSize(cellSize)
+				toggle_display_grid_background()
 			}
 		</script>
 	</body>
