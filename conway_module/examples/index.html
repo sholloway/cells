@@ -5,9 +5,28 @@
 		<meta charset="utf-8">
 		<title>Conway's Game of Life</title>
 		<style>
-			#grid_canvas {
+			#canvas_container{
 				background-color: #FFFFFF;
 				border: 1px solid black;
+				z-index: 0;
+	    	position: relative;
+			}
+
+			canvas{
+			}
+
+			#grid_canvas {
+				z-index: 1;
+				position: absolute;
+				margin-top:0px;
+				margin-left:0px;
+			}
+
+			#sim_canvas {
+				z-index: 2;
+				position: absolute;
+				margin-top:0px;
+				margin-left:0px;
 			}
 
 			.container{
@@ -101,7 +120,10 @@
 					<label for="display_grid_background">Display Grid</label>
 				</div>
 			</div>
-			<canvas id="grid_canvas"></canvas>
+			<div id="canvas_container">
+				<canvas id="grid_canvas"></canvas>
+				<canvas id="sim_canvas"></canvas>
+			</div>
 			<div id="status_bar">
 				<span><label># Alive Cells: XX</label> <label>Generation: XX</label></span>
 			</div>
@@ -109,40 +131,48 @@
 
 		<!--
 			Next Steps:
-				- Make the Stop button have three states
-					- Not Active: For before Start New World has been clicked.
-					- Stop: For when the simulation is running
-					- Resume: For when the simulation is stopped.
-						- Resume should include cells that have been drawn.
-
-				- Add a Clear/Reset Button
+				- Split into multiple canvases and systems. (Grid, Sim, Draw)
 
 				Drawing
 				- Add Mouse Listeners
 					- Only when the simulation is stopped.
 				- Convert Mouse click to Cell Space
 				- Draw cells that have been created by clicking.
-
-
 		 -->
 		<script type="application/javascript">
 			//TODO: Rethink this code to load the JS on Load and Resize events. The canvas should resize appropriately.
 			window.addEventListener('load', function(event){
-				sizeCanvas(canvas, config)
+				sizeCanvas(config)
 				life.main(window.performance.now());
 			})
 
 			window.addEventListener('resize', function(event){
-				sizeCanvas(canvas, config)
+				sizeCanvas(config)
 			})
 
 			let LifeSystem = Conways.LifeSystem
 			let config = Conways.DefaultConfig
-			let canvas = document.getElementById('grid_canvas')
-			let ctx = canvas.getContext('2d')
-			let life = new LifeSystem(window, ctx, config)
 
-			function sizeCanvas(canvas, config){
+			let gridCanvas = document.getElementById('grid_canvas')
+			let simCanvas = document.getElementById('sim_canvas')
+
+			let life = new LifeSystem(window, simCanvas.getContext('2d'), config)
+
+			/* Hold that thought. Get Grid System working first.
+			canvas.addEventListener('click', (clickEvent) => {
+				//Get Pixel clicked.
+				let boundary = canvas.getBoundingClientRect()
+				let px = clickEvent.clientX - boundary.left
+				let py = clickEvent.clientY - boundary.top
+
+				//Project to a Cell
+				let cx = Math.round(px/config.zoom)
+				let cy = Math.round(py/config.zoom)
+				life.addCell(cx,cy)
+			})
+			*/
+
+			function sizeCanvas(config){
 				//Override the default configuration to size the HTML Canvas
 				//to fit the document. Note: This will use the same padding/margins
 				//as the HTML Body.
@@ -150,15 +180,27 @@
 				let headerElement = document.getElementById('header')
 				let controlBarElement = document.getElementById('control_bar')
 				let statusBarElement = document.getElementById('status_bar')
-				let bodyMargin = 8 * 2; //Padding on body in CSS is 8 top and bottom.
+				let bodyMargin = 8 * 2; //Padding on body element in CSS is 8 top and bottom.
 
 				config.canvas.height = window.innerHeight - bodyMargin - (blockElement.offsetHeight + headerElement.offsetHeight + controlBarElement.offsetHeight + statusBarElement.offsetHeight)
 
-				//WARNING: Setting the canvas height changes the body width so always set the height before the width.
-				canvas.setAttribute('height', config.canvas.height)
+				let canvasContainerDiv = document.getElementById('canvas_container')
+				let gridCanvas = document.getElementById('grid_canvas')
+				let simCanvas = document.getElementById('sim_canvas')
+
+				//WARNING: Setting the canvas height changes the body
+				//width so always set the height before the width.
+				canvasContainerDiv.style.height = `${config.canvas.height}px`
+				gridCanvas.setAttribute('height', config.canvas.height)
+				simCanvas.setAttribute('height', config.canvas.height)
+
 				config.canvas.width = document.body.clientWidth
-				canvas.setAttribute('width', config.canvas.width)
+				canvasContainerDiv.style.width = `${config.canvas.width}px`
+				gridCanvas.setAttribute('width', config.canvas.width)
+				simCanvas.setAttribute('width', config.canvas.width)
 			}
+
+
 
 			function toggle_simulation(){
 				let button = document.getElementById('play_pause_button')
