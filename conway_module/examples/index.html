@@ -85,19 +85,13 @@
 			</div>
 			<div id="control_bar">
 				<div class="container row">
-					<!--
-					Seed Preset Combo
-					Cell Size
-					Shape Combo
-					Start/Pause Button
-					Clear Button -->
 					<label for="topology">Topology</label>
 					<select id="topology">
 						<option value="plane_with_dead_border">Finite Grid</option>
 					</select>
 
 					<label for="seed">Preset</label>
-					<select id="seed">
+					<select id="seed" onchange="set_seeding_option()">
 						<option value="draw">Draw</option>
 						<option value="random">Random</option>
 					</select>
@@ -227,7 +221,6 @@
 
 			function toggle_simulation(){
 				let button = document.getElementById('play_pause_button')
-
 				switch (button.innerText){
 					case 'Start':
 						button.innerText = 'Pause'
@@ -249,17 +242,47 @@
 				}
 			}
 
+			function set_seeding_option(){
+				let option = document.getElementById('seed')
+				switch(option.value){
+					case "draw":
+						reset_simulation()
+						allowDrawing()
+						break;
+					default:
+						preventDrawing()
+						reset_simulation()
+						break;
+				}
+			}
+
 			function reset_simulation(){
 				stop_simulation()
 				let button = document.getElementById('play_pause_button')
 				button.innerText = "Start"
 				life.reset()
+				drawingSystem.reset()
 			}
 
 			function start_simulation(){
 				config.zoom = getCellSize()
 				config.landscape.width = config.canvas.width/config.zoom
 				config.landscape.height = config.canvas.height/config.zoom
+
+				/*
+				Get the seed configuration. Drawing vs Random.
+				Set the Life System Seeder.
+				- Only allow drawing when seeder is set to Draw.
+				- Add seeder to LifeSystem
+				- Replace QuadTreeSeeder with a dedicated random number seeder
+				- Create a seeder that simply takes in an array of cells. (Might have one in tests.)
+				- Drawing System -> Array of Cells -> Seeder
+				- Make the LifeSystem always pass the seeder into gameManager.seedWorld() call.
+				- Set the seeder before calling life.start().
+				*/
+				let seedPicker = document.getElementById('seed')
+				let seedSetting = seedPicker.value
+				let seeder = selectSeeder()
 				life.start()
 			}
 
