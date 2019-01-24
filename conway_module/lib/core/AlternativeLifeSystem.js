@@ -32,6 +32,11 @@ class AltLifeSystem{
 		this.renderer = new HTMLCanvasRenderer(this.htmlCanvasContext, this.config)
 		this.gameState = LifeSystemState.STOPPED
 		this.displayStorageStructure = false;
+		this.seeder = null
+	}
+
+	setSeeder(seeder){
+		this.seeder = seeder
 	}
 
 	setCellSize(size){
@@ -44,7 +49,7 @@ class AltLifeSystem{
 
 	start(){
 		if (this.gameState == LifeSystemState.STOPPED){
-			this.gameStateManager.seedWorld()
+			this.gameStateManager.seedWorld(this.seeder)
 			this.lastTick = window.performance.now();
   		this.lastRender = this.lastTick; // Pretend the first draw was on first update.
 			this.gameState = LifeSystemState.RUNNING

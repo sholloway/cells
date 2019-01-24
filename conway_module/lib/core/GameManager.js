@@ -5,16 +5,19 @@ const {Entity, ColorByAgeTrait, CircleTrait, ScaleTransformer, GridCellToRenderi
 	ProcessBoxAsRect, ColorByContents, RectTrait, GridEntity,
 	DarkThinLines, GridPattern} = require('./EntitySystem.js')
 
+//TODO: Delete
 function randomAliveOrDead(){
   return getRandomIntInclusive(CellStates.DEAD, CellStates.ALIVE)
 }
 
+//TODO: Delete
 function getRandomIntInclusive(min, max) {
   min = Math.ceil(min);
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive
 }
 
+// TODO: Replace with Factory
 class QuadTreeSeeder{
 	constructor(){}
 

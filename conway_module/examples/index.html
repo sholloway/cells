@@ -151,6 +151,8 @@
 			let LifeSystem = Conways.LifeSystem
 			let GridSystem = Conways.GridSystem
 			let DrawingSystem = Conways.DrawingSystem
+			let SeederFactory = Conways.SeederFactorySystemModule.SeederFactory
+			let SeederModels = Conways.SeederFactorySystemModule.SeederModels
 
 			let config = Conways.DefaultConfig
 
@@ -283,6 +285,7 @@
 				let seedPicker = document.getElementById('seed')
 				let seedSetting = seedPicker.value
 				let seeder = selectSeeder()
+				life.setSeeder(seeder)
 				life.start()
 			}
 
