@@ -38,6 +38,10 @@ class DrawingSystem{
 		this.displayStorageStructure = false;
 	}
 
+	getCells(){
+		return this.stateManager.getCells()
+	}
+
 	toggleCell(x,y){
 		this.stateManager.toggleCell(x,y)
 	}

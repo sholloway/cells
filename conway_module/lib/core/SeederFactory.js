@@ -9,42 +9,43 @@ function getRandomIntInclusive(min, max) {
 }
 
 class Seeder{
-	constructor(){}
+	constructor(){
+		this.cells = []
+	}
+
 	seed(width, height){
 		throw new Error('Seeder implementations must implement the seed(width, height) method.')
+	}
+
+	setCells(cells){
+		this.cells = cells
 	}
 }
 class RandomSeeder extends Seeder{
 	constructor(){
-		this.super()
+		super()
 	}
 
 	seed(width, height){
-		let aliveCells = []
 		for(let x = 0; x < width; x++){
 			for (let y = 0; y < height; y++){
 				let birthChance = randomAliveOrDead()
 				if (birthChance == 1){
-					aliveCells.push(new Cell(x,y, 1))
+					this.cells.push(new Cell(x,y, 1))
 				}
 			}
 		}
-		return aliveCells
+		return this.cells
 	}
 }
 
 class StaticCellsSeeder extends Seeder{
 	constructor(){
-		this.super()
-		this.staticCells = null
-	}
-
-	setCells(cells){
-		this.staticCells = cell
+		super()
 	}
 
 	seed(width, height){
-		return this.staticCells
+		return this.cells
 	}
 }
 
@@ -63,7 +64,7 @@ class SeederFactory{
 			case SeederModels.RANDOM:
 				seeder = new RandomSeeder()
 				break
-			case SeederFactory.DRAWING:
+			case SeederModels.DRAWING:
 				seeder = new StaticCellsSeeder()
 				break
 			default:
@@ -73,4 +74,4 @@ class SeederFactory{
 	}
 }
 
-modules.export = {SeederFactory, SeederModels}
+module.exports = {SeederFactory, SeederModels}

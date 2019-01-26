@@ -67,6 +67,10 @@ class DrawingStateManager{
 		this.currentTree.index(this.cells)
 	}
 
+	getCells(){
+		return clone(this.cells)
+	}
+
 	/*
 		Start really dumb...
 

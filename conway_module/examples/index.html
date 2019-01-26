@@ -148,11 +148,12 @@
 				handle_grid_background()
 			})
 
-			let LifeSystem = Conways.LifeSystem
-			let GridSystem = Conways.GridSystem
-			let DrawingSystem = Conways.DrawingSystem
-			let SeederFactory = Conways.SeederFactorySystemModule.SeederFactory
-			let SeederModels = Conways.SeederFactorySystemModule.SeederModels
+			const LifeSystem = Conways.LifeSystem
+			const GridSystem = Conways.GridSystem
+			const DrawingSystem = Conways.DrawingSystem
+			const SeederFactoryModule = Conways.SeederFactoryModule
+			const SeederFactory = SeederFactoryModule.SeederFactory
+			const SeederModels = SeederFactoryModule.SeederModels
 
 			let config = Conways.DefaultConfig
 
@@ -270,23 +271,18 @@
 				config.zoom = getCellSize()
 				config.landscape.width = config.canvas.width/config.zoom
 				config.landscape.height = config.canvas.height/config.zoom
-
-				/*
-				Get the seed configuration. Drawing vs Random.
-				Set the Life System Seeder.
-				- Only allow drawing when seeder is set to Draw.
-				- Add seeder to LifeSystem
-				- Replace QuadTreeSeeder with a dedicated random number seeder
-				- Create a seeder that simply takes in an array of cells. (Might have one in tests.)
-				- Drawing System -> Array of Cells -> Seeder
-				- Make the LifeSystem always pass the seeder into gameManager.seedWorld() call.
-				- Set the seeder before calling life.start().
-				*/
-				let seedPicker = document.getElementById('seed')
-				let seedSetting = seedPicker.value
-				let seeder = selectSeeder()
+				let seeder = buildSeeder()
+				drawingSystem.reset()
 				life.setSeeder(seeder)
 				life.start()
+			}
+
+			function buildSeeder(){
+				let seedPicker = document.getElementById('seed')
+				let seedSetting = seedPicker.value
+				let seeder = SeederFactory.build(seedSetting)
+				seeder.setCells(drawingSystem.getCells())
+				return seeder
 			}
 
 			function getCellSize(){
