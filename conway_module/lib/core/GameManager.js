@@ -1,7 +1,7 @@
 const {Cell, QuadTree, findAliveNeighbors, cloneCells} = require('./Quadtree.js')
 const CellEvaluator = require('./CellEvaluator.js')
 const {Entity, ColorByAgeTrait, CircleTrait, ScaleTransformer, GridCellToRenderingEntity,
-	ProcessBoxAsRect, ColorByContents, RectTrait, GridEntity,
+	ProcessBoxAsRect, ColorByContents, RectOutlineTrait, GridEntity,
 	DarkThinLines, GridPattern} = require('./EntitySystem.js')
 
 const {CellStates} = require('./CellStates.js')
@@ -59,7 +59,7 @@ function registerBoxTraits(config, boxes){
 		box.register(new ProcessBoxAsRect())
 			.register(new ScaleTransformer(config.zoom))
 			.register(new ColorByContents())
-			.register(new RectTrait())
+			.register(new RectOutlineTrait())
 	})
 }
 

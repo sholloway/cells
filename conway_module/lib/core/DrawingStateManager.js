@@ -1,15 +1,15 @@
 const {Cell, QuadTree, cloneCells} = require('./Quadtree.js')
 
 const {Entity, ColorByAgeTrait, CircleTrait, ScaleTransformer, GridCellToRenderingEntity,
-	ProcessBoxAsRect, ColorByContents, RectTrait} = require('./EntitySystem.js')
+	ProcessBoxAsRect, ColorByContents, DarkFillTrait, RectOutlineTrait, FilledRectTrait} = require('./EntitySystem.js')
 
 	/*TODO: Change this for drawing mode. */
 function registerCellTraits(config, cells){
 	cells.forEach((cell) => {
 		cell.register(new GridCellToRenderingEntity())
 			.register(new ScaleTransformer(config.zoom))
-			.register(new ColorByAgeTrait()) //TODO: Replace this.
-			.register(new CircleTrait()) //TODO: Replace this.
+			.register(new DarkFillTrait())
+			.register(new FilledRectTrait())
 	});
 }
 
@@ -48,7 +48,7 @@ function registerBoxTraits(config, boxes){
 		box.register(new ProcessBoxAsRect())
 			.register(new ScaleTransformer(config.zoom))
 			.register(new ColorByContents())
-			.register(new RectTrait())
+			.register(new RectOutlineTrait())
 	})
 }
 

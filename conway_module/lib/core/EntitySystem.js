@@ -188,15 +188,35 @@ class ColorByContents extends Trait{
 	}
 }
 
-class RectTrait extends Trait{
+class DarkFillTrait extends Trait{
+	constructor(){
+		super()
+	}
+
+	process(context){
+		context.fillStyle = '#263238'
+		context.strokeStyle = '#263238'
+	}
+}
+class RectOutlineTrait extends Trait{
+	constructor(){
+		super()
+	}
+
+	process(context){
+		context.rendererContext.strokeStyle = context.strokeStyle || DEFAULT_CIRCLE_STROKE_STYLE
+		context.rendererContext.strokeRect(context.rendering.entity.x, context.rendering.entity.y, context.rendering.entity.width, context.rendering.entity.height)
+	}
+}
+
+class FilledRectTrait extends Trait{
 	constructor(){
 		super()
 	}
 
 	process(context){
 		context.rendererContext.fillStyle = context.fillStyle || DEFAULT_CIRCLE_FILL_STYLE
-		context.rendererContext.strokeStyle = context.strokeStyle || DEFAULT_CIRCLE_STROKE_STYLE
-		context.rendererContext.strokeRect(context.rendering.entity.x, context.rendering.entity.y, context.rendering.entity.width, context.rendering.entity.height)
+		context.rendererContext.fillRect(context.rendering.entity.x, context.rendering.entity.y, context.rendering.entity.width, context.rendering.entity.height)
 	}
 }
 
@@ -254,6 +274,8 @@ module.exports = {
 	GridEntity,
 	GridPattern,
 	ProcessBoxAsRect,
-	RectTrait,
-	ScaleTransformer
+	ScaleTransformer,
+	DarkFillTrait,
+	RectOutlineTrait,
+	FilledRectTrait
 }
