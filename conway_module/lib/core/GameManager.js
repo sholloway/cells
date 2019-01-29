@@ -1,46 +1,18 @@
 const {Cell, QuadTree, findAliveNeighbors} = require('./Quadtree.js')
 const CellEvaluator = require('./CellEvaluator.js')
-const { CellStates } = require('./CellStates.js')
 const {Entity, ColorByAgeTrait, CircleTrait, ScaleTransformer, GridCellToRenderingEntity,
 	ProcessBoxAsRect, ColorByContents, RectTrait, GridEntity,
 	DarkThinLines, GridPattern} = require('./EntitySystem.js')
 
-//TODO: Delete
-function randomAliveOrDead(){
-  return getRandomIntInclusive(CellStates.DEAD, CellStates.ALIVE)
-}
-
-//TODO: Delete
-function getRandomIntInclusive(min, max) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive
-}
-
-// TODO: Replace with Factory
-class QuadTreeSeeder{
-	constructor(){}
-
-	seed(width, height){
-		let aliveCells = []
-		for(let x = 0; x < width; x++){
-			for (let y = 0; y < height; y++){
-				let birthChance = randomAliveOrDead()
-				if (birthChance == 1){
-					aliveCells.push(new Cell(x,y, 1))
-				}
-			}
-		}
-		return aliveCells
-	}
-}
+const {CellStates} = require('./CellStates.js')
+const {SeederFactory, SeederModels} = require('./SeederFactory.js')
 
 function defaultCellEvaluator(){
 	return new CellEvaluator()
 }
 
 function defaultSeeder(){
-	return new QuadTreeSeeder()
+	return SeederFactory.build(SeederModels.RANDOM)
 }
 
 function registerCellTraits(config, cells){
@@ -126,6 +98,7 @@ class GameManager{
 				aliveNeighbors = findAliveNeighbors(this.currentTree, row, col)
 				foundCell = this.currentTree.findCellIfAlive(row,col) //Returns DeadCell if not alive.
 				nextCellState = evaluator.evaluate(aliveNeighbors, foundCell.getState())
+				//BUG: CellStates.ALIVE is undefined....
 				if (nextCellState == CellStates.ALIVE){
 					nextAliveCells.push(new Cell(row,col, foundCell.age+1))
 				}
@@ -134,7 +107,7 @@ class GameManager{
 
 		//2. Create a new quad tree from the list of alive cells.
 		this.nextTree.clear()
-		this.nextTree.index(nextAliveCells) //TODO: We need a way to force the clean up of existing QTNodes
+		this.nextTree.index(nextAliveCells)
 
 		//3. Feed the cells to the scene manager.
 		registerCellTraits(this.config, nextAliveCells)

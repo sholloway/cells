@@ -1,3 +1,6 @@
+const { CellStates } = require('./CellStates.js')
+const {Cell} = require('./Quadtree.js')
+
 function randomAliveOrDead(){
   return getRandomIntInclusive(CellStates.DEAD, CellStates.ALIVE)
 }
