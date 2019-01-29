@@ -38,6 +38,10 @@ class DrawingSystem{
 		this.displayStorageStructure = false;
 	}
 
+	setCells(cells){
+		this.stateManager.setCells(cells)
+	}
+
 	getCells(){
 		return this.stateManager.getCells()
 	}

@@ -500,4 +500,15 @@ function findAliveNeighbors(tree, row, col){
 	return aliveCount
 }
 
-module.exports = { Cell, DeadCell, QTNode, QuadTree, uniformScale, scaleCells, findAliveNeighbors}
+/**
+ * Creates a deep copy of an array of cells.
+ * @param {Array[Cell]} cells - The array of cells to copy.
+ * @returns {Array[Cell]} The new array.
+ */
+function cloneCells(cells){
+	let clones = []
+	cells.forEach( cell => { clones.push(new Cell(cell.location.row, cell.location.col, 1))})
+	return clones
+}
+
+module.exports = { Cell, DeadCell, QTNode, QuadTree, uniformScale, scaleCells, findAliveNeighbors, cloneCells}

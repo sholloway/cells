@@ -1,4 +1,4 @@
-const {Cell, QuadTree} = require('./Quadtree.js')
+const {Cell, QuadTree, cloneCells} = require('./Quadtree.js')
 
 const {Entity, ColorByAgeTrait, CircleTrait, ScaleTransformer, GridCellToRenderingEntity,
 	ProcessBoxAsRect, ColorByContents, RectTrait} = require('./EntitySystem.js')
@@ -8,15 +8,9 @@ function registerCellTraits(config, cells){
 	cells.forEach((cell) => {
 		cell.register(new GridCellToRenderingEntity())
 			.register(new ScaleTransformer(config.zoom))
-			.register(new ColorByAgeTrait())
-			.register(new CircleTrait())
+			.register(new ColorByAgeTrait()) //TODO: Replace this.
+			.register(new CircleTrait()) //TODO: Replace this.
 	});
-}
-
-function clone(cells){
-	let clones = []
-	cells.forEach( cell => { clones.push(new Cell(cell.location.row, cell.location.col, 1))})
-	return clones
 }
 
 // TODO: Move this to either QuadTree or EntitySystem
@@ -67,8 +61,14 @@ class DrawingStateManager{
 		this.currentTree.index(this.cells)
 	}
 
+	setCells(cells){
+		this.clear()
+		this.cells = cells
+		this.currentTree.index(this.cells)
+	}
+
 	getCells(){
-		return clone(this.cells)
+		return cloneCells(this.cells)
 	}
 
 	/*
@@ -93,7 +93,7 @@ class DrawingStateManager{
 	}
 
 	processCells(scene){
-		let clones = clone(this.cells)
+		let clones = cloneCells(this.cells)
 		registerCellTraits(this.config, clones)
 		scene.push(clones)
 	}

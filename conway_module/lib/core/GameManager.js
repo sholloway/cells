@@ -1,4 +1,4 @@
-const {Cell, QuadTree, findAliveNeighbors} = require('./Quadtree.js')
+const {Cell, QuadTree, findAliveNeighbors, cloneCells} = require('./Quadtree.js')
 const CellEvaluator = require('./CellEvaluator.js')
 const {Entity, ColorByAgeTrait, CircleTrait, ScaleTransformer, GridCellToRenderingEntity,
 	ProcessBoxAsRect, ColorByContents, RectTrait, GridEntity,
@@ -72,6 +72,10 @@ class GameManager{
 
 	aliveCellsCount(){
 		return this.currentTree.aliveCellsCount()
+	}
+
+	getCells(){
+		return cloneCells(this.currentTree.leaves)
 	}
 
 	/**

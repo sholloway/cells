@@ -46,6 +46,10 @@ class AltLifeSystem{
 		return this.gameStateManager.aliveCellsCount()
 	}
 
+	getCells(){
+		return this.gameStateManager.getCells()
+	}
+
 	numberOfSimulationIterations(){
 		return this.simIterationCounter
 	}

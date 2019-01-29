@@ -129,17 +129,6 @@
 				</span>
 			</div>
 		</div>
-
-		<!--
-			Next Steps:
-				- Split into multiple canvases and systems. (Grid, Sim, Draw)
-
-				Drawing
-				- Add Mouse Listeners
-					- Only when the simulation is stopped.
-				- Convert Mouse click to Cell Space
-				- Draw cells that have been created by clicking.
-		 -->
 		<script type="application/javascript">
 			window.addEventListener('load', function(event){
 				sizeCanvas(config)
@@ -171,23 +160,12 @@
 			let drawingSystem = new DrawingSystem(window, drawCanvas.getContext('2d'), config)
 			let drawingAllowed = true
 
-
 			let simTicked = function(lifeSystem){
 				document.getElementById('alive_cells_count').value = lifeSystem.aliveCellsCount()
 				document.getElementById('sim_generation_count').value = lifeSystem.numberOfSimulationIterations()
 			}
 
 			life.subscribe('ticked', simTicked)
-
-			function allowDrawing(){
-				drawingAllowed = true
-				drawingSystem.start()
-			}
-
-			function preventDrawing(){
-				drawingAllowed = false
-				drawingSystem.stop()
-			}
 
 			drawCanvas.addEventListener('click', (clickEvent) => {
 				if(drawingAllowed){
@@ -203,6 +181,16 @@
 					drawingSystem.toggleCell(cx,cy)
 				}
 			})
+
+			function allowDrawing(){
+				drawingAllowed = true
+				drawingSystem.start()
+			}
+
+			function preventDrawing(){
+				drawingAllowed = false
+				drawingSystem.stop()
+			}
 
 			function sizeCanvas(config){
 				//Override the default configuration to size the HTML Canvas
@@ -245,13 +233,24 @@
 						break;
 					case 'Pause':
 						button.innerText = 'Resume'
-						allowDrawing()
+						//TODO: Yuck. Improve this. Isolate knowledge about the DOM.
+						if(document.getElementById('seed').value === "draw"){
+							//copy the active cells to the drawing system.
+							let activeCells = life.getCells()
+							drawingSystem.setCells(activeCells)
+							life.reset()
+							allowDrawing()
+						}
 						stop_simulation()
 						break;
 					case 'Resume':
 						button.innerText = 'Pause'
 						preventDrawing()
-						resume_simulation()
+						if(document.getElementById('seed').value === "draw"){
+							start_simulation()
+						}else{
+							resume_simulation()
+						}
 						break;
 					default:
 						break;
