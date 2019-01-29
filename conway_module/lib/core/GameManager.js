@@ -70,6 +70,10 @@ class GameManager{
 		this.nextTree = QuadTree.empty()
 	}
 
+	aliveCellsCount(){
+		return this.currentTree.aliveCellsCount()
+	}
+
 	/**
 	 * Populates the current tree.
 	 */

@@ -121,7 +121,12 @@
 				<canvas id="draw_canvas"></canvas>
 			</div>
 			<div id="status_bar">
-				<span><label># Alive Cells: XX</label> <label>Generation: XX</label></span>
+				<span>
+					<label for="alive_cells_count"># Alive Cells: </label>
+					<input id="alive_cells_count" type="text" readonly="true" value="0"/>
+					<label for="sim_generation_count">Generation:</label>
+					<input id="sim_generation_count" type="text" readonly="true" value="0"/>
+				</span>
 			</div>
 		</div>
 
@@ -165,6 +170,14 @@
 			let grid = new GridSystem(gridCanvas.getContext('2d'), getCellSize())
 			let drawingSystem = new DrawingSystem(window, drawCanvas.getContext('2d'), config)
 			let drawingAllowed = true
+
+
+			let simTicked = function(lifeSystem){
+				document.getElementById('alive_cells_count').value = lifeSystem.aliveCellsCount()
+				document.getElementById('sim_generation_count').value = lifeSystem.numberOfSimulationIterations()
+			}
+
+			life.subscribe('ticked', simTicked)
 
 			function allowDrawing(){
 				drawingAllowed = true
@@ -263,6 +276,8 @@
 				stop_simulation()
 				let button = document.getElementById('play_pause_button')
 				button.innerText = "Start"
+				document.getElementById('alive_cells_count').value = 0
+				document.getElementById('sim_generation_count').value = 0
 				life.reset()
 				drawingSystem.reset()
 			}

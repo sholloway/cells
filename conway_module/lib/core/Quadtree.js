@@ -304,6 +304,10 @@ class QuadTree{
 		this.minimumCellSize = 1
 	}
 
+	aliveCellsCount(){
+		return this.leaves.length
+	}
+
 	/**
 	 * Empties the tree. It sets the leaves to an empty array and recursively deletes all nodes.
 	 * @returns {QuadTree} The instance of the tree being operated on.

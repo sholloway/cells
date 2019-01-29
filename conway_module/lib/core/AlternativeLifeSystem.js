@@ -20,8 +20,13 @@ function update(frame){
 	this.gameStateManager.evaluateCells(this.scene, this.evaluator)
 	this.gameStateManager.stageStorage(this.scene, this.displayStorageStructure)
 	this.gameStateManager.activateNext();
+	this.simIterationCounter++
+	this.notify(LifeEvents.TICKED)
 }
 
+const LifeEvents = {
+	TICKED: 'ticked'
+}
 class AltLifeSystem{
 	constructor(window, htmlCanvasContext, config = defaultConfig){
 		this.config = config
@@ -33,6 +38,30 @@ class AltLifeSystem{
 		this.gameState = LifeSystemState.STOPPED
 		this.displayStorageStructure = false;
 		this.seeder = null
+		this.observers = new Map()
+		this.simIterationCounter = 0
+	}
+
+	aliveCellsCount(){
+		return this.gameStateManager.aliveCellsCount()
+	}
+
+	numberOfSimulationIterations(){
+		return this.simIterationCounter
+	}
+
+	subscribe(eventName, observer){
+		if(!this.observers.has(eventName)){
+			this.observers.set(eventName, [])
+		}
+		this.observers.get(eventName).push(observer)
+	}
+
+	notify(eventName){
+		if(!this.observers.has(eventName)){
+			return
+		}
+		this.observers.get(eventName).forEach(observer => observer(this))
 	}
 
 	setSeeder(seeder){
@@ -53,6 +82,7 @@ class AltLifeSystem{
 			this.lastTick = window.performance.now();
   		this.lastRender = this.lastTick; // Pretend the first draw was on first update.
 			this.gameState = LifeSystemState.RUNNING
+			this.simIterationCounter = 0
 		}
 	}
 
