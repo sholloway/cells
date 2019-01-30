@@ -1,23 +1,24 @@
 {
-  "name": "conway_module",
-  "version": "1.0.0",
-  "description": "A module for playing Conway's Game of Life in a browser.",
-  "main": "index.js",
-  "scripts": {
-    "test": "NODE_ENV=test NODE_PATH=. node_modules/mocha/bin/mocha",
-    "cov": "./node_modules/.bin/istanbul cover --report text --report html _mocha",
-    "build-dev": "node build.js dev",
-    "build-prod": "node build.js prod"
-  },
-  "author": "Samuel D. Holloway",
-  "license": "MIT",
-  "devDependencies": {
-    "canvas": "2.1.0",
-    "chai": "4.1.2",
-    "istanbul": "0.4.5",
-    "jsdoc": "3.5.5",
-    "mocha": "5.2.0",
-    "sinon": "6.0.0",
-    "systemjs-builder": "0.16.13"
-  }
+	"name": "conway_module",
+	"version": "1.0.0",
+	"description": "A module for playing Conway's Game of Life in a browser.",
+	"main": "index.js",
+	"scripts": {
+		"test": "NODE_ENV=test NODE_PATH=. node_modules/mocha/bin/mocha",
+		"cov": "./node_modules/.bin/istanbul cover --report text --report html _mocha",
+		"build-dev": "node build.js dev",
+		"build-prod": "node build.js prod",
+		"docs": "./node_modules/.bin/jsdoc -r --package ./package.json --destination ./docs --readme ./../README.md ./lib"
+	},
+	"author": "Samuel D. Holloway",
+	"license": "MIT",
+	"devDependencies": {
+		"canvas": "2.1.0",
+		"chai": "4.1.2",
+		"istanbul": "0.4.5",
+		"jsdoc": "3.5.5",
+		"mocha": "5.2.0",
+		"sinon": "6.0.0",
+		"systemjs-builder": "0.16.13"
+	}
 }
