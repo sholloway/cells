@@ -9,6 +9,11 @@ const LifeSystemState = {
 	RUNNING: 3
 }
 
+/**
+ * Runs the simulation for the required number of ticks.
+ * @private
+ * @param {*} numTicks - The number of times to update the simulation.
+ */
 function queueUpdates(numTicks){
 	for(var i=0; i < numTicks; i++) {
 		this.lastTick = this.lastTick + this.config.game.tickLength;
@@ -16,18 +21,43 @@ function queueUpdates(numTicks){
 	}
 }
 
+/**
+ * Progresses the simulation forward by one tick.
+ * @param {number} frame - Reserved. Not currently used.
+ */
 function update(frame){
 	this.gameStateManager.evaluateCells(this.scene, this.evaluator)
 	this.gameStateManager.stageStorage(this.scene, this.displayStorageStructure)
 	this.gameStateManager.activateNext();
 	this.simIterationCounter++
-	this.notify(LifeEvents.TICKED)
+	notify.bind(this)(LifeEvents.TICKED)
 }
 
 const LifeEvents = {
 	TICKED: 'ticked'
 }
+
+/**
+ * The internal method for notifying all LifeSystem event subscribers.
+ * @private
+ */
+function notify(eventName){
+	if(!this.observers.has(eventName)){
+		return
+	}
+	this.observers.get(eventName).forEach(observer => observer(this))
+}
+
+/**
+ *  A Quad tree based Conway's Game of Life simulation.
+ */
 class AltLifeSystem{
+	/**
+	 *
+	 * @param {Window} window - The DOM's window object.
+	 * @param {HTMLCanvasContext} htmlCanvasContext - An HTML5 Canvas 2D context.
+	 * @param {object} config - A configuration object.
+	 */
 	constructor(window, htmlCanvasContext, config = defaultConfig){
 		this.config = config
 		this.window = window
@@ -42,18 +72,36 @@ class AltLifeSystem{
 		this.simIterationCounter = 0
 	}
 
+	/**
+	 * Getter for the number of currently alive cells.
+	 * @returns {number} The count of alive cells.
+	 */
 	aliveCellsCount(){
 		return this.gameStateManager.aliveCellsCount()
 	}
 
+	/**
+	 * Provides a deep copy of the currently alive cells.
+	 * @returns {Cell[]}
+	 */
 	getCells(){
 		return this.gameStateManager.getCells()
 	}
 
+	/**
+	 * Provides the current simulation tick.
+	 * @returns {number}
+	 */
 	numberOfSimulationIterations(){
 		return this.simIterationCounter
 	}
 
+	/**
+	 * Implementation of the observer patter. Provides the ability
+	 * to register an event lister.
+	 * @param {string} eventName - The event to subscribe to.
+	 * @param {function} observer - The function to be invoked when the event occurs.
+	 */
 	subscribe(eventName, observer){
 		if(!this.observers.has(eventName)){
 			this.observers.set(eventName, [])
@@ -61,25 +109,33 @@ class AltLifeSystem{
 		this.observers.get(eventName).push(observer)
 	}
 
-	notify(eventName){
-		if(!this.observers.has(eventName)){
-			return
-		}
-		this.observers.get(eventName).forEach(observer => observer(this))
-	}
-
+	/**
+	 * Sets the simulation seeder to be used.
+	 * @param {Seeder} seeder - An implementation of the Seeder abstract class.
+	 */
 	setSeeder(seeder){
 		this.seeder = seeder
 	}
 
+	/**
+	 * Set's the cell size to use.
+	 * @param {number} size
+	 */
 	setCellSize(size){
 		this.config.zoom = size
 	}
 
+	/**
+	 * Sets whether to draw the quad tree.
+	 * @param {boolean} display
+	 */
 	displayStorage(display){
 		this.displayStorageStructure = display
 	}
 
+	/**
+	 * Begins the simulation
+	 */
 	start(){
 		if (this.gameState == LifeSystemState.STOPPED){
 			this.gameStateManager.seedWorld(this.seeder)
@@ -90,12 +146,18 @@ class AltLifeSystem{
 		}
 	}
 
+	/**
+	 * Stops the simulation. Not intended to be restarted.
+	 */
 	stop(){
 		if (this.gameState == LifeSystemState.RUNNING){
 			this.gameState = LifeSystemState.STOPPED
 		}
 	}
 
+	/**
+	 * Pauses the simulation. Can be restarted.
+	 */
 	pause(){
 		if (this.gameState == LifeSystemState.RUNNING){
 			this.lastTick = window.performance.now();
@@ -104,12 +166,18 @@ class AltLifeSystem{
 		}
 	}
 
+	/**
+	 * Clears the simulation.
+	 */
 	reset(){
 		this.scene.purge()
 		this.gameStateManager.clear()
 		this.renderer.clear()
 	}
 
+	/**
+	 * Restart the simulation.
+	 */
 	resume(){
 		if(this.gameState == LifeSystemState.STOPPED || this.gameState == LifeSystemState.PAUSED){
 			this.gameState = LifeSystemState.RUNNING
@@ -117,6 +185,10 @@ class AltLifeSystem{
 		}
 	}
 
+	/**
+	 * The main loop of the simulation.
+	 * @param {number} tFrame - The current frame.
+	 */
 	main(tFrame){
 		// Looping via callback. Will pass the current time.
 		// Can use window.cancelAnimationFrame() to stop if needed.
