@@ -52,6 +52,10 @@ function notify(eventName){
  * Abstract class.
  */
 class BrowserSystem{
+	/**
+	 * Creates a playable system in the context of a browser.
+	 * @param {Window} window - The DOM's window object.
+	 */
 	constructor(window){
 		this.window = window
 		this.state = SystemState.STOPPED
@@ -155,7 +159,7 @@ class BrowserSystem{
 
 /**
  * Abstract class. Runs an animation on an HTML Canvas.
- * @extends System
+ * @extends BrowserSystem
  */
 class CanvasBasedSystem extends BrowserSystem{
 	/**
