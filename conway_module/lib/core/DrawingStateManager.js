@@ -4,6 +4,12 @@ const {Box, ScaleTransformer, GridCellToRenderingEntity,
 	ProcessBoxAsRect, ColorByContents, RectOutlineTrait, FilledRectTrait, StrokeStyle,
 	FillStyle} = require('./EntitySystem.js')
 
+/**
+ * Specify what traits to render the cells with.
+ * @private
+ * @param {object} config - The simulation configuration object.
+ * @param {Cell[]} cells - The cells to configure with traits.
+ */
 function registerCellTraits(config, cells){
 	cells.forEach((cell) => {
 		cell.register(new GridCellToRenderingEntity())
@@ -17,6 +23,7 @@ function registerCellTraits(config, cells){
 
 /**
  * Recursively traverses a quad tree and adds the partition boxes to the provided array.
+ * @private
  * @param {QTNode} currentNode - The current node to process.
  * @param {Box[]} boxes - The array to add the partition boxes to.
  */
@@ -30,6 +37,12 @@ function collectBoxes(currentNode, boxes){
 	}
 }
 
+/**
+ * Specify what traits to render the quad tree boxes with.
+ * @private
+ * @param {object} config - The simulation configuration object.
+ * @param {Box[]} boxes - An array of boxes to add traits to.
+ */
 function registerBoxTraits(config, boxes){
 	boxes.forEach(box => {
 		box.register(new ProcessBoxAsRect())
@@ -39,7 +52,14 @@ function registerBoxTraits(config, boxes){
 	})
 }
 
+/**
+ * Orchestrates drawing.
+ */
 class DrawingStateManager{
+	/**
+	 * Create a new DrawingStateManager.
+	 * @param {object} config - The simulation configuration object.
+	 */
 	constructor(config){
 		this.config = config
 		this.cells = []
@@ -48,22 +68,29 @@ class DrawingStateManager{
 		this.currentTree.index(this.cells)
 	}
 
+	/**
+	 * Set's what cells should be in the initial drawing.
+	 * @param {Cell[]} cells - An array of alive cells.
+	 */
 	setCells(cells){
 		this.clear()
 		this.cells = cells
 		this.currentTree.index(this.cells)
 	}
 
+	/**
+	 * Creates a deep copy of the cells in the drawing.
+	 * @returns {Cell[]} The copy of the cells.
+	 */
 	getCells(){
 		return cloneCells(this.cells)
 	}
 
-	/*
-		Start really dumb...
-
-		Eventually:
-		Test the tree. If it doesn't exist, add it. If it does remove it and rebuild the tree.
-	*/
+	/**
+	 * Draws a cell or removes it.
+	 * @param {number} x - The X coordinate on the simulation's grid.
+	 * @param {number} y - The Y coordinate on the simulation's grid.
+	 */
 	toggleCell(x,y){
 		let node = this.currentTree.search(new Cell(x,y))
 		if (node == null){ //Doesn't exist. Add it.
@@ -79,6 +106,10 @@ class DrawingStateManager{
 		this.activateNext()
 	}
 
+	/**
+	 * Prepares the alive cells to be drawn.
+	 * @param {SceneManager} scene - The scene to add the cells to.
+	 */
 	processCells(scene){
 		let clones = cloneCells(this.cells)
 		registerCellTraits(this.config, clones)
@@ -94,6 +125,9 @@ class DrawingStateManager{
 		this.nextTree.clear().index()
 	}
 
+	/**
+	 * Empties the drawing simulation.
+	 */
 	clear(){
 		this.currentTree.clear().index()
 		this.nextTree.clear().index()
