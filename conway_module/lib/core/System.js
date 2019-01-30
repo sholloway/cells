@@ -1,6 +1,6 @@
 /**
  * An animation system for drawing to an HTML Canvas.
- * @exports system/canvas
+ * @module system/canvas
  */
 
 const HTMLCanvasRenderer = require('./../renderer/HTMLCanvasRenderer.js')

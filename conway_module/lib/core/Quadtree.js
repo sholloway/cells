@@ -1,9 +1,11 @@
 /**
  * A module for working with a 2D quadtree.
- * @exports quadtree
+ * @module quadtree
  */
+
 const {CellStates} = require('./CellStates.js')
 const {Entity} = require('./EntitySystem.js')
+
 /**
  * Represents a single unit on an abstract 2D grid.
  *
@@ -575,4 +577,13 @@ function cloneCells(cells){
 	return clones
 }
 
-module.exports = { Cell, DeadCell, QTNode, QuadTree, uniformScale, scaleCells, findAliveNeighbors, cloneCells}
+module.exports = {
+	Cell,
+	cloneCells,
+	DeadCell,
+	findAliveNeighbors,
+	QTNode,
+	QuadTree,
+	scaleCells,
+	uniformScale
+}

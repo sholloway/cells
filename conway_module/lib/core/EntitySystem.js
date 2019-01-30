@@ -1,16 +1,65 @@
+/**
+ * A module for defining render-able entities with traits.
+ * @module entity_system
+ */
+
+/**
+ * Abstract class. Defines a render-able trait that can be processed.
+ */
 class Trait{
+	/**
+	 * Creates a new trait.
+	 */
 	constructor(){}
-	process(context){throw new Error('Must implement a process method.')}
+	/**
+	 * Function that controls what the trait does.
+	 * @abstract
+	 * @param {object} context - The render context.
+	 */
+	process(context){
+		throw new Error('Traits must implement a process method.')
+	}
 }
 
-/*
-Light Blue to Dark
-This might be better if the stages followed a natural curve like e, a log or Fibonacci.
-Possibilities:
-* Fibonacci Numbers - Smooth curve: 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89
-* Bernoulli Numbers - Increasing, but jagged
-*
-* Color Scheme: https://material.io/tools/color/#!/?view.left=0&view.right=0&primary.color=1E88E5&secondary.color=FFEB3B
+/**
+ * A render-able entity. The entity is defined by registering traits.
+ */
+class Entity{
+	/**
+	 * Create a new Entity.
+	 */
+	constructor(){
+		this.traits = []
+	}
+
+	/**
+	 * Process all register traits.
+	 * @param {HTMLCanvasContext} rendererContext
+	 */
+	render(rendererContext){
+		let context = {
+			rendererContext: rendererContext,
+			entity: this
+		}
+		this.traits.forEach((trait) =>{
+			trait.process(context)
+		})
+	}
+
+	/**
+	 * Expands the definition of the entity by registering traits.
+	 * @param {Trait} trait - An implementation of the Trait abstract class.
+	 */
+	register(trait){
+		this.traits.push(trait)
+		return this
+	}
+}
+
+/**
+ * Selects a color based on the provided age.
+ * @param {number} age
+ * @returns {string} color
 */
 function fillStyle(age){
 	if (typeof age !== 'number'){
@@ -68,6 +117,9 @@ function fillStyle(age){
 	return color
 }
 
+/**
+ * Sets the fill and stroke style by the entity's age.
+ */
 class ColorByAgeTrait extends Trait{
 	constructor(){
 		super()
@@ -79,6 +131,9 @@ class ColorByAgeTrait extends Trait{
 	}
 }
 
+/**
+ * Creates a new render-able entity in the rendering context.
+ */
 class GridCellToRenderingEntity extends Trait{
 	constructor(){
 		super()
@@ -98,7 +153,14 @@ class GridCellToRenderingEntity extends Trait{
 	}
 }
 
+/**
+ * Scales a rendering entity by a constant scaling factor.
+ */
 class ScaleTransformer extends Trait{
+	/**
+	 * Create a new scale transformer.
+	 * @param {number} scalingFactor
+	 */
 	constructor(scalingFactor){
 		super()
 		this.scalingFactor = scalingFactor
@@ -119,6 +181,10 @@ class ScaleTransformer extends Trait{
 const TWO_PI = Math.PI * 2
 const DEFAULT_CIRCLE_FILL_STYLE = 'rgb(44, 193, 59)'
 const DEFAULT_CIRCLE_STROKE_STYLE = 'rgb(0, 0, 0)'
+
+/**
+ * Draws a filled in circle with a stroke.
+ */
 class CircleTrait extends Trait{
 	constructor(){
 		super()
@@ -140,27 +206,9 @@ class CircleTrait extends Trait{
 	}
 }
 
-class Entity{
-	constructor(){
-		this.traits = []
-	}
-
-	render(rendererContext){
-		let context = {
-			rendererContext: rendererContext,
-			entity: this
-		}
-		this.traits.forEach((trait) =>{
-			trait.process(context)
-		})
-	}
-
-	register(trait){
-		this.traits.push(trait)
-		return this
-	}
-}
-
+/**
+ * Creates a new render-able entity.
+ */
 class ProcessBoxAsRect extends Trait{
 	constructor(){
 		super()
@@ -176,18 +224,23 @@ class ProcessBoxAsRect extends Trait{
 	}
 }
 
+/**
+ * Defines the stroke style based on if an entity is alive.
+ */
 class ColorByContents extends Trait{
 	constructor(){
 		super()
 	}
 
 	process(context){
-		// context.fillStyle = (context.entity.alive)? 'rgb(0, 0, 0)':'rgb(0, 0, 0)' //not used now.
 		context.lineWidth = 2
 		context.strokeStyle = (context.entity.alive)? '#c41c00': '#0d47a1'
 	}
 }
 
+/**
+ * Defines a dark fill and stroke style.
+ */
 class DarkFillTrait extends Trait{
 	constructor(){
 		super()
@@ -199,6 +252,9 @@ class DarkFillTrait extends Trait{
 	}
 }
 
+/**
+ * Stroke style pass through.
+ */
 class StrokeStyle extends Trait{
 	constructor(strokeStyle){
 		super()
@@ -210,6 +266,9 @@ class StrokeStyle extends Trait{
 	}
 }
 
+/**
+ * Fill Style pass through.
+ */
 class FillStyle extends Trait{
 	constructor(fillStyle){
 		super()
@@ -221,6 +280,7 @@ class FillStyle extends Trait{
 	}
 }
 
+/** Draws a rectangle. */
 class RectOutlineTrait extends Trait{
 	constructor(){
 		super()
@@ -232,6 +292,9 @@ class RectOutlineTrait extends Trait{
 	}
 }
 
+/**
+ * Fills a rectangle.
+ */
 class FilledRectTrait extends Trait{
 	constructor(){
 		super()
@@ -243,6 +306,9 @@ class FilledRectTrait extends Trait{
 	}
 }
 
+/**
+ * Sets the stroke style to a thin, dark line.
+ */
 class DarkThinLines extends Trait{
 	constructor(){
 		super()
@@ -255,6 +321,9 @@ class DarkThinLines extends Trait{
 	}
 }
 
+/**
+ * Draws a grid.
+ */
 class GridPattern extends Trait{
 	constructor(){
 		super()
@@ -278,7 +347,17 @@ class GridPattern extends Trait{
 	}
 }
 
+/**
+ * A grid.
+ */
 class GridEntity extends Entity{
+	/**
+	 * Creates a new grid entity
+	 * @param {number} width - The total width of the grid.
+	 * @param {number} height - The total height of the grid.
+	 * @param {number} cWidth - The width of a grid cell.
+	 * @param {number} cHeight - The height of a grid cell.
+	 */
 	constructor(width, height, cWidth, cHeight){
 		super()
 		this.width = width
@@ -288,15 +367,17 @@ class GridEntity extends Entity{
 }
 
 /**
- * Represents a containing box that can be processed via Traits.
- * @typedef Box
- * @type {object}
- * @property {number} x - Left most X coordinate.
- * @property {number} y - Upper most Y coordinate.
- * @property {number} xx - Right most X coordinate.
- * @property {number} yy - Lower most Y coordinate.
+ * Represents a box that can be processed via Traits.
  */
 class Box extends Entity{
+	/**
+	 * Creates a new Box.
+	 * @param {number} x - Left most X coordinate.
+	 * @param {number} y - Upper most Y coordinate.
+	 * @param {number} xx - Right most X coordinate.
+	 * @param {number} yy - Lower most Y coordinate.
+	 * @param {boolean} alive - If the cell is alive or not.
+	 */
 	constructor(x,y,xx,yy, alive){
 		super()
 		this.x = x
