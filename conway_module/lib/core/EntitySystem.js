@@ -287,7 +287,28 @@ class GridEntity extends Entity{
 	}
 }
 
+/**
+ * Represents a containing box that can be processed via Traits.
+ * @typedef Box
+ * @type {object}
+ * @property {number} x - Left most X coordinate.
+ * @property {number} y - Upper most Y coordinate.
+ * @property {number} xx - Right most X coordinate.
+ * @property {number} yy - Lower most Y coordinate.
+ */
+class Box extends Entity{
+	constructor(x,y,xx,yy, alive){
+		super()
+		this.x = x
+		this.y = y
+		this.xx = xx
+		this.yy = yy
+		this.alive = alive
+	}
+}
+
 module.exports = {
+	Box,
 	CircleTrait,
 	ColorByAgeTrait,
 	ColorByContents,

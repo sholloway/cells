@@ -1,3 +1,7 @@
+/**
+ * A module for working with a 2D quadtree.
+ * @exports quadtree
+ */
 const {CellStates} = require('./CellStates.js')
 const {Entity} = require('./EntitySystem.js')
 /**
@@ -5,8 +9,16 @@ const {Entity} = require('./EntitySystem.js')
  *
  * The width and height of the cell are the equal.
  * The grid is uniform.
+ * @extends Entity
  */
 class Cell extends Entity{
+	/**
+	 * Create a new cell.
+	 * @param {number} row - The horizontal location of the cell on a grid.
+	 * @param {number} col - The vertical location of the cell on a grid.
+	 * @param {number} age - The number of simulation iterations the cell has been alive.
+	 * @param {CellState} state - The state of the cell.
+	 */
 	constructor(row, col, age=0, state=CellStates.ALIVE){
 		super()
 		this.location = {row: row, col: col}
@@ -16,29 +28,62 @@ class Cell extends Entity{
 		this.state = state
 	}
 
+	/**
+	 * Intersection Test. Is the cell inside of a provided rectangle.
+	 * @param {number} x
+	 * @param {number} y
+	 * @param {number} xx
+	 * @param {number} yy
+	 * @returns {boolean}
+	 */
 	isInsideRect(x,y,xx,yy){
 		return (x <= this.location.row && this.location.row <= xx &&
 						y <= this.location.col && this.location.col <= yy);
 	}
 
+	/**
+	 * Getter for the cell's state.
+	 */
 	getState(){
 		return this.state
 	}
 
+	/**
+	 * Create a deep copy of the cell.
+	 * @returns {Cell}
+	 */
 	clone(){
 		return new Cell(this.location.row, this.location.col, this.age, this.state)
 	}
 }
 
+/**
+ * Singleton instance of a dead cell.
+ * */
 const DeadCell = new Cell(Infinity,Infinity, 0, CellStates.DEAD)
 Object.freeze(DeadCell)
 
 let idCount = 0
+/**
+ * Generate a unique ID for a node in the quad tree. Used for debugging.
+ * @private
+ */
 function generateId(){
 	return idCount++;
 }
 
+/**
+ * A node in the pointer based quad tree.
+ */
 class QTNode{
+	/**
+	 * Initialize a new QTNode.
+	 * @param {number} id - The unique identifier of the node.
+	 * @param {number} x
+	 * @param {number} y
+	 * @param {number} xx
+	 * @param {number} yy
+	 */
 	constructor(id, x,y, xx, yy){
 		this.id = id
 		this.rect = {
@@ -78,6 +123,7 @@ class QTNode{
 
 	/**
 	 * Returns the all the children as an array. Returns an empty array if the children have not been initialized yet.
+	 * @return {QTNode[]}
 	 */
 	children(){
 		let kids = null
@@ -93,6 +139,7 @@ class QTNode{
 	 * Rectangle/Point intersection test
 	 * @param {number} x - Left most boundary of the rectangle
 	 * @param {number} y - Upper most boundary of the rectangle
+	 * @returns {boolean}
 	 */
 	containsPoint(x,y){
 		return (this.rect.x <= x && x <= this.rect.xx) &&
@@ -105,6 +152,7 @@ class QTNode{
 	 * of the bounding box.
 	 *
 	 * @param {Cell} cell
+	 * @returns {boolean}
 	 */
 	containsRect(cell){
 		if (cell == null || cell == undefined){
@@ -119,11 +167,11 @@ class QTNode{
 
 	/**
 	 * Axis-aligned bounding box intersection test.
-	 * @param {Number} x
-	 * @param {Number} y
-	 * @param {Number} xx
-	 * @param {Number} yy
-	 * @returns {Boolean} Returns whether or not the node's bounding box intersects the provided range.
+	 * @param {number} x
+	 * @param {number} y
+	 * @param {number} xx
+	 * @param {number} yy
+	 * @returns {boolean} Returns whether or not the node's bounding box intersects the provided range.
 	 */
 	intersectsAABB(x,y,xx,yy){
 		let intersects = false
@@ -136,10 +184,11 @@ class QTNode{
 
 	/**
 	 * Tests to see if the Node's AABB is inside the provided rectangle.
-	 * @param {*} x
-	 * @param {*} y
-	 * @param {*} xx
-	 * @param {*} yy
+	 * @param {number} x
+	 * @param {number} y
+	 * @param {number} xx
+	 * @param {number} yy
+	 * @returns {boolean}
 	 */
 	isInsideRect(x,y,xx,yy){
 		let firstPointIntersection = (x <= this.rect.x && this.rect.x <= xx &&
@@ -203,6 +252,7 @@ class QTNode{
 
 /**
 * Create an empty Axis-aligned bounding box.
+* @returns {object} An AABB defined by two points.
 */
 function emptyAABB(){
 	return {
@@ -215,7 +265,7 @@ function emptyAABB(){
 * Constructs an axis aligned bounding box from a set of cells
 * on a uniform grid.
 *
-* @param {Array[Cell]} cells - An array of alive cells.
+* @param {Cell[]} cells - An array of alive cells.
 * @returns {object} An AABB defined by two points.
 */
 function buildAxisAlignedBoundingBox(cells){
@@ -297,6 +347,9 @@ function recursiveDelete(node){
 	node.destroy()
 }
 
+/**
+ * A pointer based 2D spatial quad tree.
+ */
 class QuadTree{
 	constructor(liveCells){
 		this.leaves = liveCells
@@ -319,6 +372,9 @@ class QuadTree{
 		return this
 	}
 
+	/**
+	 * Create a new empty quad tree.
+	 */
 	static empty(){
 		return new QuadTree([])
 	}
@@ -342,6 +398,11 @@ class QuadTree{
 		return clonedTree
 	}
 
+	/**
+	 * Build the spatial data structure based on a provided array of cells.
+	 * @param {Cell[]} liveCells
+	 * @returns {QTNode} Returns the root of the tree.
+	 */
 	index(liveCells = null){
 		if(liveCells !== null){
 			this.leaves = liveCells
@@ -422,12 +483,12 @@ class QuadTree{
 
 	/**
 	 * Recursive Range query. Finds all alive cells in the rectangle defined by bounds of the points (x,y), (xx,yy).
-	 * @param {Number} x
-	 * @param {Number} y
-	 * @param {Number} xx
-	 * @param {Number} yy
+	 * @param {number} x
+	 * @param {number} y
+	 * @param {number} xx
+	 * @param {number} yy
 	 * @param {QTNode} currentNode - The node to perform the range on. Defaults to the root of the tree.
-	 * @returns {Array[Cell]} The array of alive cells found. Returns an empty array if none are found.
+	 * @returns {Cell[]} The array of alive cells found. Returns an empty array if none are found.
 	 */
 	findAliveInArea(x,y,xx,yy, currentNode = this.root){
 		if (typeof currentNode === 'undefined' || currentNode === null){
@@ -470,6 +531,12 @@ function uniformScale(node, factor){
 	node.children().forEach((child) => uniformScale(child, factor))
 }
 
+/**
+ * Uniformly scales cells along both axis from the upper left corner.
+ * @param {Cell[]} cells
+ * @param {number} scalingFactor
+ * @returns {Cell[]} A new array of cells.
+ */
 function scaleCells(cells, scalingFactor){
 	return cells.map((cell) => new Cell(cell.location.row * scalingFactor, cell.location.col * scalingFactor, cell.age))
 }
@@ -481,9 +548,6 @@ function scaleCells(cells, scalingFactor){
  * @returns {number} The count of alive neighbors.
  */
 function findAliveNeighbors(tree, row, col){
-// 1. Calculate the range from the cell coordinates.
-// 2. Run the range query.
-// 3. Filter the center cell.
 	let range = {
 		x : row - 1,
 		y : col - 1,
@@ -502,8 +566,8 @@ function findAliveNeighbors(tree, row, col){
 
 /**
  * Creates a deep copy of an array of cells.
- * @param {Array[Cell]} cells - The array of cells to copy.
- * @returns {Array[Cell]} The new array.
+ * @param {Cell[]} cells - The array of cells to copy.
+ * @returns {Cell[]} The new array.
  */
 function cloneCells(cells){
 	let clones = []

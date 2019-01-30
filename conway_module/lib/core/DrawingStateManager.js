@@ -1,6 +1,6 @@
 const {Cell, QuadTree, cloneCells} = require('./Quadtree.js')
 
-const {Entity, ScaleTransformer, GridCellToRenderingEntity,
+const {Box, ScaleTransformer, GridCellToRenderingEntity,
 	ProcessBoxAsRect, ColorByContents, RectOutlineTrait, FilledRectTrait, StrokeStyle,
 	FillStyle} = require('./EntitySystem.js')
 
@@ -15,25 +15,10 @@ function registerCellTraits(config, cells){
 	});
 }
 
-// TODO: Move this to either QuadTree or EntitySystem
-/**
- * Represents a containing box that can be processed via Traits.
- */
-class Box extends Entity{
-	constructor(x,y,xx,yy, alive){
-		super()
-		this.x = x
-		this.y = y
-		this.xx = xx
-		this.yy = yy
-		this.alive = alive
-	}
-}
-
 /**
  * Recursively traverses a quad tree and adds the partition boxes to the provided array.
  * @param {QTNode} currentNode - The current node to process.
- * @param {Array[Box]} boxes - The array to add the partition boxes to.
+ * @param {Box[]} boxes - The array to add the partition boxes to.
  */
 function collectBoxes(currentNode, boxes){
 	let containsAliveCell = currentNode.index != null
