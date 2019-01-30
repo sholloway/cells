@@ -198,6 +198,29 @@ class DarkFillTrait extends Trait{
 		context.strokeStyle = '#263238'
 	}
 }
+
+class StrokeStyle extends Trait{
+	constructor(strokeStyle){
+		super()
+		this.strokeStyle = strokeStyle
+	}
+
+	process(context){
+		context.strokeStyle = this.strokeStyle
+	}
+}
+
+class FillStyle extends Trait{
+	constructor(fillStyle){
+		super()
+		this.fillStyle = fillStyle
+	}
+
+	process(context){
+		context.fillStyle = this.fillStyle
+	}
+}
+
 class RectOutlineTrait extends Trait{
 	constructor(){
 		super()
@@ -268,14 +291,16 @@ module.exports = {
 	CircleTrait,
 	ColorByAgeTrait,
 	ColorByContents,
+	DarkFillTrait,
 	DarkThinLines,
 	Entity,
+	FilledRectTrait,
+	FillStyle,
 	GridCellToRenderingEntity,
 	GridEntity,
 	GridPattern,
 	ProcessBoxAsRect,
-	ScaleTransformer,
-	DarkFillTrait,
 	RectOutlineTrait,
-	FilledRectTrait
+	ScaleTransformer,
+	StrokeStyle
 }
