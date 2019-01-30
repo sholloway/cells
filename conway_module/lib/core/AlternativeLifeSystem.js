@@ -4,11 +4,12 @@ const GameManager = require('./GameManager.js')
 
 
 /**
- *  A Quad tree based Conway's Game of Life simulation.
+ * A Quad tree based Conway's Game of Life simulation.
+ * @extends CanvasBasedSystem
  */
 class AltLifeSystem extends CanvasBasedSystem{
 	/**
-	 *
+	 * Creates a new AltLifeSystem.
 	 * @param {Window} window - The DOM's window object.
 	 * @param {HTMLCanvasContext} htmlCanvasContext - An HTML5 Canvas 2D context.
 	 * @param {object} config - A configuration object.
@@ -19,10 +20,18 @@ class AltLifeSystem extends CanvasBasedSystem{
 		this.seeder = null
 	}
 
+	/**
+	 * Override parent
+	 * @private
+	 */
 	getStateManager(){
 		return this.stateManager
 	}
 
+	/**
+	 * Override parent
+	 * @private
+	 */
 	update(frame){
 		this.getStateManager().evaluateCells(this.scene, this.evaluator)
 		this.getStateManager().stageStorage(this.scene, this.displayStorageStructure)
@@ -45,6 +54,10 @@ class AltLifeSystem extends CanvasBasedSystem{
 		this.seeder = seeder
 	}
 
+	/**
+	 * Seeds the world when the simulation starts.
+	 * Overrides parent.
+	 */
 	initializeSimulation(){
 		this.getStateManager().seedWorld(this.seeder)
 	}
