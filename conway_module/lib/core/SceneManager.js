@@ -1,12 +1,19 @@
+/**
+ * Data structure for storing the entities ready to render.
+ */
 class SceneManager{
+	/**
+	 * Create a new SceneManager
+	 */
 	constructor(){
 		this.stack = []
 	}
 
-	//TODO: The whole partial class Entity thing is a mess. Replace.
-	//TODO: Doesn't support nested arrays.
-	//TODO: Need a transformation pipeline before rendering.
-	//TODO: The GameManager is passing in QuadTree cells, the Grid Manager is passing in Rendering Cells.
+	/**
+	 * Add a a single entity or an array of entities to the scene to be rendered.
+	 * @param {Entity | Entity[]} entity
+	 * @return {SceneManager} Returns the instance of the SceneManager.
+	 */
 	push(entity){
 		if(Array.isArray(entity)){
 			this.stack = this.stack.concat(entity)
@@ -16,14 +23,25 @@ class SceneManager{
 		return this
 	}
 
+	/**
+	 * Pop the next entity off the scene's stack.
+	 * @returns {Entity} The next entity to render.
+	 */
 	nextEntity(){
 		return this.stack.shift()
 	}
 
+	/**
+	 * Determine if the stack is empty or not.
+	 * @returns {boolean}
+	 */
 	fullyRendered(){
 		return !(this.stack.length > 0)
 	}
 
+	/**
+	 * Removes all entities from the stack.
+	 */
 	purge(){
 		this.stack = []
 	}
