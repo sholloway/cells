@@ -60,6 +60,7 @@ class BrowserSystem{
 		this.window = window
 		this.state = SystemState.STOPPED
 		this.simIterationCounter = 0
+		this.observers = new Map()
 	}
 
 	/**
@@ -149,11 +150,33 @@ class BrowserSystem{
 	}
 
 	/**
+ * Progresses the simulation forward by one tick.
+ * @abstract
+ * @param {number} frame - Reserved. Not currently used.
+ */
+	update(frame){
+		throw new Error('Children of BrowserSystem must implement an update() method')
+	}
+
+	/**
 	 * Perform post system update logic (e.g. rendering changes).
 	 * @abstract
 	 */
 	afterUpdates(){
 		throw new Error('Children of BrowserSystem must implement afterUpdates().')
+	}
+
+	/**
+	 * Implementation of the observer pattern. Provides the ability
+	 * to register an event lister.
+	 * @param {string} eventName - The event to subscribe to.
+	 * @param {function} observer - The function to be invoked when the event occurs.
+	 */
+	subscribe(eventName, observer){
+		if(!this.observers.has(eventName)){
+			this.observers.set(eventName, [])
+		}
+		this.observers.get(eventName).push(observer)
 	}
 }
 
@@ -175,7 +198,6 @@ class CanvasBasedSystem extends BrowserSystem{
 		this.scene = new SceneManager()
 		this.renderer = new HTMLCanvasRenderer(this.htmlCanvasContext, this.config)
 		this.displayStorageStructure = false;
-		this.observers = new Map()
 	}
 
 	/**
@@ -184,15 +206,6 @@ class CanvasBasedSystem extends BrowserSystem{
 	 */
 	getStateManager(){
 		throw new Error('Children of CanvasBasedSystem must implement getStateManager()')
-	}
-
-	/**
- * Progresses the simulation forward by one tick.
- * @abstract
- * @param {number} frame - Reserved. Not currently used.
- */
-	update(frame){
-		throw new Error('Children of CanvasBasedSystem must implement an update() method')
 	}
 
 	afterUpdates(){
@@ -223,19 +236,6 @@ class CanvasBasedSystem extends BrowserSystem{
 	 */
 	displayStorage(display){
 		this.displayStorageStructure = display
-	}
-
-	/**
-	 * Implementation of the observer pattern. Provides the ability
-	 * to register an event lister.
-	 * @param {string} eventName - The event to subscribe to.
-	 * @param {function} observer - The function to be invoked when the event occurs.
-	 */
-	subscribe(eventName, observer){
-		if(!this.observers.has(eventName)){
-			this.observers.set(eventName, [])
-		}
-		this.observers.get(eventName).push(observer)
 	}
 
 	/**

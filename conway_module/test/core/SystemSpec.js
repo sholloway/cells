@@ -100,7 +100,50 @@ describe('System Module', function(){
 			expect(bs.state).to.equal(SystemState.RUNNING)
 		})
 
+		it ('should enforce that children implement update()', function(){
+			let systemTime = 1345
+			let fakeWindow = createFakeWindow(systemTime)
+			let bs = new BrowserSystem(fakeWindow)
+			expect(bs.update).throws('Children of BrowserSystem must implement an update() method')
+		})
 
+		it ('should enforce that children implement afterUpdates()', function(){
+			let systemTime = 1345
+			let fakeWindow = createFakeWindow(systemTime)
+			let bs = new BrowserSystem(fakeWindow)
+			expect(bs.afterUpdates).throws('Children of BrowserSystem must implement afterUpdates().')
+		})
+
+		it ("should lastRender should be set to the frame after looping through the system's main", function(){
+			let fakeWindow = createFakeWindow(10)
+			let bs = new FakeSystem(fakeWindow)
+			bs.start()
+			bs.main(112)
+			expect(bs.lastRender).to.equal(112)
+		})
+
+		it ('should enable subscribing to events', function(){
+			let fakeWindow = createFakeWindow(10)
+			let bs = new FakeSystem(fakeWindow)
+			expect(bs.observers.size).to.equal(0)
+			bs.subscribe(SystemEvents.TICKED, function(){})
+			bs.subscribe(SystemEvents.TICKED, function(){})
+			expect(bs.observers.size).to.equal(1)
+			expect(bs.observers.get(SystemEvents.TICKED).length).to.equal(2)
+		})
+
+		class FakeSystem extends BrowserSystem{
+			constructor(window){
+				super(window)
+				this.config = {
+					game:{
+						tickLength: 1
+					}
+				}
+			}
+			afterUpdates(){}
+			update(frame){}
+		}
 
 		function createFakeWindow(time){
 			return {
@@ -108,7 +151,8 @@ describe('System Module', function(){
 					now: function(){
 						return time
 					}
-				}
+				},
+				requestAnimationFrame: function(){}
 			}
 		}
 	})
