@@ -7,14 +7,30 @@ const {Box, ColorByAgeTrait, CircleTrait, ScaleTransformer, GridCellToRenderingE
 const {CellStates} = require('./CellStates.js')
 const {SeederFactory, SeederModels} = require('./SeederFactory.js')
 
+/**
+ * Create the default cell evaluator.
+ * @private
+ * @returns {CellEvaluator}
+ */
 function defaultCellEvaluator(){
 	return new CellEvaluator()
 }
 
+/**
+ * Create the default simulation seeder.
+ * @private
+ * @returns {Seeder}
+ */
 function defaultSeeder(){
 	return SeederFactory.build(SeederModels.RANDOM)
 }
 
+/**
+ * Configure Cells to be render-able.
+ * @private
+ * @param {object} config - The simulation's configuration object.
+ * @param {Cell[]} cells - The list of cells to configure.
+ */
 function registerCellTraits(config, cells){
 	cells.forEach((cell) => {
 		cell.register(new GridCellToRenderingEntity())
@@ -26,6 +42,7 @@ function registerCellTraits(config, cells){
 
 /**
  * Recursively traverses a quad tree and adds the partition boxes to the provided array.
+ * @private
  * @param {QTNode} currentNode - The current node to process.
  * @param {Box[]} boxes - The array to add the partition boxes to.
  */
@@ -39,6 +56,12 @@ function collectBoxes(currentNode, boxes){
 	}
 }
 
+/**
+ * Configure boxes to be render-able.
+ * @private
+ * @param {object} config - The simulation's configuration object.
+ * @param {Box[]} boxes - The list of boxes to configure.
+ */
 function registerBoxTraits(config, boxes){
 	boxes.forEach(box => {
 		box.register(new ProcessBoxAsRect())
@@ -48,17 +71,32 @@ function registerBoxTraits(config, boxes){
 	})
 }
 
+/**
+ * Orchestrates Conway's Game of Life.
+ */
 class GameManager{
+	/**
+	 * Create a new GameManager instance.
+	 * @param {object} config - The simulation's configuration object.
+	 */
 	constructor(config){
 		this.config = config
 		this.currentTree = QuadTree.empty()
 		this.nextTree = QuadTree.empty()
 	}
 
+	/**
+	 * The number of cells currently alive in the simulation.
+	 * @returns {number}
+	*/
 	aliveCellsCount(){
 		return this.currentTree.aliveCellsCount()
 	}
 
+	/**
+	 * Creates a deep copy of the cells in the drawing.
+	 * @returns {Cell[]} The copy of the cells.
+	 */
 	getCells(){
 		return cloneCells(this.currentTree.leaves)
 	}
@@ -91,7 +129,6 @@ class GameManager{
 				aliveNeighbors = findAliveNeighbors(this.currentTree, row, col)
 				foundCell = this.currentTree.findCellIfAlive(row,col) //Returns DeadCell if not alive.
 				nextCellState = evaluator.evaluate(aliveNeighbors, foundCell.getState())
-				//BUG: CellStates.ALIVE is undefined....
 				if (nextCellState == CellStates.ALIVE){
 					nextAliveCells.push(new Cell(row,col, foundCell.age+1))
 				}
@@ -108,8 +145,7 @@ class GameManager{
 	}
 
 	/**
-	 * Replaces the current tree with the next state tree and re-initializes the next tree to be empty.
-	 * This is similar to double buffering in computer graphics.
+	 * Replace the current tree with the next state tree and re-initializes the next tree to be empty.
 	 */
 	activateNext(){
 		this.currentTree = QuadTree.clone(this.nextTree)
@@ -117,7 +153,7 @@ class GameManager{
 	}
 
 	/**
-	 * Traverses the next state data structure and adds it to the scene to be rendered.
+	 * Traverse the next state data structure and adds it to the scene to be rendered.
 	 * @param {SceneManager} scene - The active list of things that need to be rendered.
 	 */
 	stageStorage(scene, display){
@@ -130,17 +166,9 @@ class GameManager{
 		scene.push(boxes)
 	}
 
-	stageGrid(scene, display){
-		if (!display){
-			return
-		}
-		let grid = new GridEntity(this.config.canvas.width, this.config.canvas.height,
-			this.config.zoom, this.config.zoom)
-			.register(new DarkThinLines())
-			.register(new GridPattern())
-		scene.push(grid)
-	}
-
+	/**
+	 * Purges the game manager of all alive cells.
+	 */
 	clear(){
 		this.currentTree.clear().index()
 		this.nextTree.clear().index()
