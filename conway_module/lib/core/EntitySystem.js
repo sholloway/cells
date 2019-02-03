@@ -404,5 +404,6 @@ module.exports = {
 	ProcessBoxAsRect,
 	RectOutlineTrait,
 	ScaleTransformer,
-	StrokeStyle
+	StrokeStyle,
+	Trait
 }
