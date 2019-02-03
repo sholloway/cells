@@ -144,21 +144,24 @@ describe('System Module', function(){
 			afterUpdates(){}
 			update(frame){}
 		}
-
-		function createFakeWindow(time){
-			return {
-				performance: {
-					now: function(){
-						return time
-					}
-				},
-				requestAnimationFrame: function(){}
-			}
-		}
 	})
 
-	describe('Canvas Based System', function(){})
+	describe('Canvas Based System', function(){
+		it ('should...')
+	})
+
 	describe('Alt Life System', function(){})
 	describe('Drawing System', function(){})
 	describe('Grid System', function(){})
+
+	function createFakeWindow(time){
+		return {
+			performance: {
+				now: function(){
+					return time
+				}
+			},
+			requestAnimationFrame: function(){}
+		}
+	}
 })

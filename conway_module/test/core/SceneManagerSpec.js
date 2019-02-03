@@ -2,7 +2,6 @@ const chai = require('chai')
 const expect = chai.expect
 const ArrayAssertions = require('./ArrayAssertions.js')
 const SceneManager = require('./../../lib/core/SceneManager.js')
-const Entity = require('./../../lib/renderer/Entity.js')
 
 describe('Scene Manager', function(){
 	it('should store items in a FIFO fashion', function(){
