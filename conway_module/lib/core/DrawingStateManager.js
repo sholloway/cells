@@ -144,7 +144,7 @@ class DrawingStateManager{
 		}
 		let boxes = []
 		collectBoxes(this.currentTree.root,boxes)
-		registerBoxTraits(config, boxes)
+		registerBoxTraits(this.config, boxes)
 		scene.push(boxes)
 	}
 }
