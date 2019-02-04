@@ -63,7 +63,6 @@ class Entity{
 */
 function fillStyle(age){
 	if (typeof age !== 'number'){
-		console.log(`Entity Age was: ${age}. Type was: ${typeof age}`)
 		throw new Error('The trait ageBasedColor requires a property "age" be set to a number.')
 	}
 
@@ -168,7 +167,6 @@ class ScaleTransformer extends Trait{
 
 	process(context){
 		if (typeof context.rendering === 'undefined' || typeof context.rendering.entity === 'undefined'){
-			console.log(context)
 			throw new Error('ScaleTransformer attempted to process an entity that did not have context.rendering or context.rendering.entity defined.')
 		}
 		context.rendering.entity.x = context.rendering.entity.x * this.scalingFactor

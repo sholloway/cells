@@ -448,7 +448,7 @@ class QuadTree{
 		//try searching on the left of the horizontal partition.
 		let cellRightBoundary = cell.location.row + cell.width
 		let cellLowerBoundary = cell.location.col + cell.height
-		let horizontalPartition = currentNode.upperLeft.rect.xx //bug
+		let horizontalPartition = currentNode.upperLeft.rect.xx
 		let verticalPartition = currentNode.upperLeft.rect.yy
 		let nextNode = null
 		if (cellRightBoundary <= horizontalPartition){ // The right most boundary of the cell is to the left horizontal partition.
@@ -467,6 +467,7 @@ class QuadTree{
 		return (nextNode === null)? null : this.search(cell, nextNode)
 	}
 
+	//Most time is spent here according to profiler.
 	/**
 	 * Finds a cell if it is alive in landscape.
 	 * @param {number} row
@@ -483,6 +484,7 @@ class QuadTree{
 		}
 	}
 
+	//Most time is spent here according to profiler.
 	/**
 	 * Recursive Range query. Finds all alive cells in the rectangle defined by bounds of the points (x,y), (xx,yy).
 	 * @param {number} x

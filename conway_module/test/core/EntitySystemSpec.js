@@ -174,6 +174,9 @@ describe('The Entity System', function(){
 
 			context.entity.age = 1.5
 			expect(() => trait.process(context)).to.throw('Unexpected Age: 1.5')
+
+			context.entity.age = 'garbage'
+			expect(() => trait.process(context)).to.throw('The trait ageBasedColor requires a property "age" be set to a number.')
 		})
 
 		it ('should enable setting the color based on if the entity is alive or not', function(){
@@ -192,5 +195,150 @@ describe('The Entity System', function(){
 			expect(context.strokeStyle).to.equal('#c41c00')
 			expect(context.lineWidth).to.equal(2)
 		})
+
+		it ('should provide a dark stroke and fill', function(){
+			let trait = new DarkFillTrait()
+			let context = {}
+			trait.process(context)
+			expect(context.fillStyle).to.equal('#263238')
+			expect(context.strokeStyle).to.equal('#263238')
+		})
+
+		it ('should DarkThinLines', function(){
+			let trait = new DarkThinLines()
+			let context = {rendererContext:{}}
+			trait.process(context)
+			expect(context.rendererContext.strokeStyle).to.equal('#757575')
+			expect(context.rendererContext.lineWidth).to.equal(0.5)
+		})
+
+		it ('should FilledRectTrait', function(){
+			let trait = new FilledRectTrait()
+			let context = {
+				rendererContext:{
+					fillRect: sinon.spy()
+				},
+				rendering:{
+					entity:{
+						x:0, y:0,
+						width:0, height:0
+					}
+				}
+			}
+			trait.process(context)
+			expect(context.rendererContext.fillStyle).to.equal('rgb(44, 193, 59)')
+			expect(context.rendererContext.fillRect.calledOnce).to.be.true
+		})
+	})
+
+	it ('should FillStyle', function(){
+		let expectedColor = '123'
+		let trait = new FillStyle(expectedColor)
+		let context = {}
+		trait.process(context)
+		expect(context.fillStyle).to.equal(expectedColor)
+	})
+
+	it ('should GridCellToRenderingEntity', function(){
+		let trait = new GridCellToRenderingEntity()
+		let context = {
+			entity:{
+				location:{
+					row:1, col:2
+				},
+				width:5, height:6
+			}
+		}
+		trait.process(context)
+		expect(context.rendering.entity.x).to.equal(1)
+		expect(context.rendering.entity.y).to.equal(2)
+		expect(context.rendering.entity.width).to.equal(5)
+		expect(context.rendering.entity.height).to.equal(6)
+	})
+
+	it('should GridPattern', function(){
+		let trait = new GridPattern()
+		let context = {
+			entity:{
+				width:5, height:10,
+				cell:{
+					width:1, height:1,
+				}
+			},
+			rendererContext:{
+				beginPath: sinon.spy(),
+				moveTo: sinon.spy(),
+				lineTo: sinon.spy(),
+				stroke: sinon.spy(),
+			}
+		}
+
+		trait.process(context)
+		expect(context.rendererContext.beginPath.callCount).to.equal(15)
+		expect(context.rendererContext.moveTo.callCount).to.equal(15)
+		expect(context.rendererContext.lineTo.callCount).to.equal(15)
+		expect(context.rendererContext.stroke.callCount).to.equal(15)
+	})
+
+	it('should ProcessBoxAsRect', function(){
+		let trait = new ProcessBoxAsRect()
+		let context = {
+			entity:{
+				x: 5, y:10,
+				xx:20, yy: 30
+			}
+		}
+		trait.process(context)
+		expect(context.rendering.entity.x).to.equal(5)
+		expect(context.rendering.entity.y).to.equal(10)
+		expect(context.rendering.entity.width).to.equal(15)
+		expect(context.rendering.entity.height).to.equal(20)
+	})
+
+	it ('should RectOutlineTrait', function(){
+		let trait = new RectOutlineTrait()
+		let context = {
+			strokeStyle:'123',
+			rendering:{
+				entity:{
+					x:0, y:0,
+					width:0, height:0
+				}
+			},
+			rendererContext:{
+				strokeRect: sinon.spy()
+			}
+		}
+		trait.process(context)
+		expect(context.rendererContext.strokeStyle).to.equal('123')
+		expect(context.rendererContext.strokeRect.calledOnce).to.be.true
+	})
+
+	it('should ScaleTransformer', function(){
+		let scalingFactor = 14
+		let trait = new ScaleTransformer(scalingFactor)
+		let context = {
+			rendering:{
+				entity:{
+					x: 5, y:12,
+					width: 2, height:15
+				}
+			}
+		}
+		trait.process(context)
+		expect(context.rendering.entity.x).to.equal(5 * scalingFactor)
+		expect(context.rendering.entity.y).to.equal(12 * scalingFactor)
+		expect(context.rendering.entity.width).to.equal(2 * scalingFactor)
+		expect(context.rendering.entity.height).to.equal(15 * scalingFactor)
+
+		let badContext = {}
+		expect(() => trait.process(badContext)).to.throw('ScaleTransformer attempted to process an entity that did not have context.rendering or context.rendering.entity defined.')
+	})
+
+	it ('should StrokeStyle', function(){
+		let trait = new StrokeStyle('red')
+		let context = {}
+		trait.process(context)
+		expect(trait.strokeStyle).to.equal('red')
 	})
 })
