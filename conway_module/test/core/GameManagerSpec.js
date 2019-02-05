@@ -17,6 +17,47 @@ describe('Game Manager', function(){
 		return tree
 	}
 
+	it ('should provide the alive cell count', function(){
+		let gm = new GameManager({
+			landscape:{
+				width:20, height:20
+			}
+		})
+		expect(gm.aliveCellsCount()).to.equal(0)
+		gm.seedWorld()
+		expect(gm.aliveCellsCount() > 0).to.be.true
+		expect(gm.aliveCellsCount()).to.equal(gm.getCells().length)
+	})
+
+	it ('should enable rendering the quad tree', function(){
+		let gm = new GameManager({
+			landscape:{
+				width:200, height:200
+			}
+		})
+		gm.seedWorld()
+		let scene = new SceneManager()
+		gm.stageStorage(scene, false)
+		expect(scene.fullyRendered()).to.be.true
+
+		gm.stageStorage(scene, true)
+		expect(scene.fullyRendered()).to.be.false
+	})
+
+	it ('should clear the system', function(){
+		let gm = new GameManager({
+			landscape:{
+				width:20, height:20
+			}
+		})
+		gm.seedWorld()
+		gm.clear()
+
+		expect(gm.currentTree.aliveCellsCount()).to.equal(0)
+		expect(gm.nextTree.aliveCellsCount()).to.equal(0)
+		expect(gm.getCells().length).to.equal(0)
+	})
+
 	describe('Scanning Neighbors', function(){
 		it ('should return zero when the cell has no neighbors', function(){
 			let grid = [[0, 0, 0],
