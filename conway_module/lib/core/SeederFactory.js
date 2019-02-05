@@ -126,4 +126,4 @@ class SeederFactory{
 	}
 }
 
-module.exports = {SeederFactory, SeederModels}
+module.exports = {Seeder, SeederFactory, SeederModels}
