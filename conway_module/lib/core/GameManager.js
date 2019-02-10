@@ -123,14 +123,68 @@ class GameManager{
 		let nextAliveCells = []
 		for(let row = 0; row < this.config.landscape.width; row++){
 			for(let col = 0; col < this.config.landscape.height; col++){
-				//TODO: There is an opportunity to combine findAliveNeighbors with findCellIfAlive.
-				//Then, only one traversal would be needed. findAliveNeighbors could be renamed and return
-				// something like { aliveNeighbors:..., aliveCenter: ... }
+				/*
+				TODO: There is an opportunity to combine findAliveNeighbors with findCellIfAlive.
+				Then, only one traversal would be needed. findAliveNeighbors could be renamed and return
+				something like { aliveNeighbors:..., aliveCenter: ... }
+
+				At the moment there are two tree traversals for every single cell in the grid.
+				By combining the two, we might be able to cut the time spent in traversal in half.
+				*/
 				aliveNeighbors = findAliveNeighbors(this.currentTree, row, col)
 				foundCell = this.currentTree.findCellIfAlive(row,col) //Returns DeadCell if not alive.
 				nextCellState = evaluator.evaluate(aliveNeighbors, foundCell.getState())
 				if (nextCellState == CellStates.ALIVE){
 					nextAliveCells.push(new Cell(row,col, foundCell.age+1))
+				}
+			}
+		}
+
+		//2. Create a new quad tree from the list of alive cells.
+		this.nextTree.clear()
+		this.nextTree.index(nextAliveCells)
+
+		//3. Feed the cells to the scene manager.
+		registerCellTraits(this.config, nextAliveCells)
+		scene.push(nextAliveCells)
+	}
+
+	evaluateCellsFaster(scene, evaluator = defaultCellEvaluator()){
+		//1. Traverse every possible cell on the landscape, building up a list of new alive cells.
+		let aliveNeighborsCount, nextCellState, foundCell, x, y, xx, yy, aliveCells, currentCellState;
+		let nextAliveCells = []
+		for(let row = 0; row < this.config.landscape.width; row++){
+			for(let col = 0; col < this.config.landscape.height; col++){
+				// aliveNeighbors = findAliveNeighbors(this.currentTree, row, col)
+				// foundCell = this.currentTree.findCellIfAlive(row,col) //Returns DeadCell if not alive.
+				x = row - 1,
+				y = col - 1,
+				xx = row + 1,
+				yy = col + 1
+
+				//Note: This should never be greater than 9 cells.
+				aliveCells = this.currentTree.findAliveInArea(x, y, xx, yy)
+
+				//Assume the cell is dead.
+				currentCellState = CellStates.DEAD
+
+				//Count neighbors (O(n)) n max of 9
+				aliveNeighborsCount = aliveCells.reduce((count, cell) => {
+					if (!(cell.location.row == row && cell.location.col == col)){
+						count++
+					}else{
+						//If we stumble upon the current cell, then it is alive.
+						currentCellState = CellStates.ALIVE
+					}
+					return count
+				}, 0)
+
+				nextCellState = evaluator.evaluate(aliveNeighborsCount, currentCellState)
+				if (nextCellState == CellStates.ALIVE){
+					//Find current cell if it was included in the searched range.
+					let foundCell = aliveCells.find((cell) => { return cell.location.row == row && cell.location.col == col;})
+					let currentAge = (foundCell)? foundCell.age : 0
+					nextAliveCells.push(new Cell(row,col, currentAge + 1))
 				}
 			}
 		}

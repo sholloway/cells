@@ -331,8 +331,69 @@ describe('Game Manager', function(){
 				}
 			}
 		})
+	})
 
-		it ('should support ')
+
+	describe('Profiling Experiment', function(){
+		it('should support blocks', function(){
+			let config = makeConfig(5, 5)
+			let mngr = new GameManager(config)
+			let scene = new SceneManager()
+			let gridWithBlock = [	[ 0, 0, 0, 0, 0],
+														[ 0, 0, 0, 0, 0],
+														[ 0, 0, 1, 1, 0],
+														[ 0, 0, 1, 1, 0],
+														[ 0, 0, 0, 0, 0]]
+			mngr.seedWorld(new ArraySeeder(gridWithBlock))
+
+			let currentGrid = treeToGrid(mngr.currentTree, config.landscape.width, config.landscape.height)
+			ArrayAssertions.assertEqual2DArrays(gridWithBlock,currentGrid)
+
+			//Do 100 evaluations
+			for(let cycle = 0; cycle < 100; cycle++){
+				mngr.evaluateCellsFaster(scene)
+				mngr.activateNext()
+				scene.purge()
+			}
+
+			//The block should still be there.
+			let lastGrid = treeToGrid(mngr.currentTree, config.landscape.width, config.landscape.height)
+			ArrayAssertions.assertEqual2DArrays(gridWithBlock, lastGrid)
+		})
+
+		it ('should support blinkers', function(){
+			let config = makeConfig(5, 5)
+			let mngr = new GameManager(config)
+			let scene = new SceneManager()
+
+			let initBlinker = [[ 0, 0, 0, 0, 0 ],
+														[ 0, 0, 1, 0, 0 ],
+														[ 0, 0, 1, 0, 0 ],
+														[ 0, 0, 1, 0, 0 ],
+														[ 0, 0, 0, 0, 0 ] ]
+
+			let blink = [	[ 0, 0, 0, 0, 0 ],
+										[ 0, 0, 0, 0, 0 ],
+										[ 0, 1, 1, 1, 0 ],
+										[ 0, 0, 0, 0, 0 ],
+										[ 0, 0, 0, 0, 0 ] ]
+			mngr.seedWorld(new ArraySeeder(initBlinker))
+
+			let currentGrid = treeToGrid(mngr.currentTree, config.landscape.width, config.landscape.height)
+			ArrayAssertions.assertEqual2DArrays(initBlinker,currentGrid)
+
+			for(i = 0; i < 100; i++){
+				mngr.evaluateCellsFaster(scene)
+				mngr.activateNext()
+				scene.purge()
+				currentGrid = treeToGrid(mngr.currentTree, config.landscape.width, config.landscape.height)
+				if(i % 2){ //Odd: i % 2 == 1
+					ArrayAssertions.assertEqual2DArrays(initBlinker, currentGrid)
+				}else{ //Even: i % 2 == 0
+					ArrayAssertions.assertEqual2DArrays(blink, currentGrid)
+				}
+			}
+		})
 	})
 
 })

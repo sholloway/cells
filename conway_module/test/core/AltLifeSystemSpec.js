@@ -13,7 +13,7 @@ describe('Life System', function(){
 
 	it ('should run the game manager through its paces on update', function(){
 		let fakeGameManager = {}
-		fakeGameManager.evaluateCells = sinon.spy()
+		fakeGameManager.evaluateCellsFaster = sinon.spy()
 		fakeGameManager.stageStorage = sinon.spy()
 		fakeGameManager.activateNext = sinon.spy()
 
@@ -22,7 +22,7 @@ describe('Life System', function(){
 
 		ls.update()
 
-		expect(fakeGameManager.evaluateCells.calledOnce).to.be.true
+		expect(fakeGameManager.evaluateCellsFaster.calledOnce).to.be.true
 		expect(fakeGameManager.stageStorage.calledOnce).to.be.true
 		expect(fakeGameManager.activateNext.calledOnce).to.be.true
 	})

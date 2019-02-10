@@ -33,7 +33,7 @@ class AltLifeSystem extends CanvasBasedSystem{
 	 * @private
 	 */
 	update(frame){
-		this.getStateManager().evaluateCells(this.scene, this.evaluator)
+		this.getStateManager().evaluateCellsFaster(this.scene, this.evaluator)
 		this.getStateManager().stageStorage(this.scene, this.displayStorageStructure)
 		this.getStateManager().activateNext();
 	}
