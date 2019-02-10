@@ -110,6 +110,14 @@ class QTNode{
 	}
 
 	/**
+	 * Returns true if the region doesn't contain a point yet.
+	 * @returns {boolean}
+	 */
+	empty(){
+		return this.index === null
+	}
+
+	/**
 	 * Sets all class members to null.
 	 */
 	destroy(){
@@ -307,6 +315,10 @@ function addCell(minimumCellSize, node, cell, index){
 	}
 
 	//Is this the smallest a region can be? If so set the index otherwise subdivide.
+	//Experiment: Rather than have the cell get to the minimum area, just add the cell
+	//if none exist. However, the challenge with that, is when the second point is added,
+	//the previously added leaf needs to be moved.
+	/* Original
 	if(minimumCellSize >= node.area)
 	{
 		//set the cell
@@ -320,6 +332,32 @@ function addCell(minimumCellSize, node, cell, index){
 		node.children().forEach((quadrant) => {
 			addCell(minimumCellSize, quadrant, cell, index)
 		})
+	}
+	*/
+
+	if (node.subdivided){ //Index should always be empty
+		//make recursive call for each quadrant
+		node.children().forEach((quadrant) => {
+			addCell.bind(this)(minimumCellSize, quadrant, cell, index)
+		})
+	}else{
+		if(node.empty()){
+			node.setLeaf(index)
+			return
+		}else{
+			//If it's not empty, there's already a cell here. We need to subdivide and reposition the existing cell.
+			node.subdivide()
+			let relocateCell = this.leaves[node.index]
+			let relocateCellIndex = node.index
+			node.setLeaf(null)
+			node.children().forEach((quadrant) => {
+				//attempt to place the existing cell
+				addCell.bind(this)(minimumCellSize, quadrant, relocateCell, relocateCellIndex)
+
+				//attempt to place the current cell
+				addCell.bind(this)(minimumCellSize, quadrant, cell, index)
+			})
+		}
 	}
 }
 
@@ -415,7 +453,7 @@ class QuadTree{
 			this.boundary.rowMax, this.boundary.colMax)
 
 		this.leaves.forEach((cell, index) => {
-			addCell(this.minimumCellSize, this.root, cell, index)
+			addCell.bind(this)(this.minimumCellSize, this.root, cell, index)
 		})
 		return this.root
 	}
@@ -508,13 +546,13 @@ class QuadTree{
 			let q2 = this.findAliveInArea(x,y,xx,yy,currentNode.upperRight)
 			let q3 = this.findAliveInArea(x,y,xx,yy,currentNode.lowerLeft)
 			let q4 = this.findAliveInArea(x,y,xx,yy,currentNode.lowerRight)
-			foundCells = foundCells.concat(q1,q2,q3,q4)
+			//foundCells = foundCells.concat(q1,q2,q3,q4)
+			//683   10.7%  t v8::internal::(anonymous namespace)::Fast_ArrayConcat
+			foundCells = [...q1, ...q2, ...q3, ...q4]
 		}else{
-			if(validIndex(this.leaves, currentNode.index)){
-				let cell = this.leaves[currentNode.index]
-				if (cell.isInsideRect(x,y,xx,yy)){
-					foundCells.push(cell)
-				}
+			let cell = this.leaves[currentNode.index]
+			if (cell && cell.isInsideRect(x,y,xx,yy)){
+				foundCells.push(cell)
 			}
 		}
 		return foundCells
