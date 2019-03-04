@@ -24,6 +24,6 @@
 		"jsdoc": "3.5.5",
 		"mocha": "6.0.2",
 		"sinon": "7.2.7",
-		"systemjs": "3.0.1"
+		"systemjs-builder": "0.16.13"
 	}
 }
