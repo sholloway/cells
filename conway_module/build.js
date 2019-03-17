@@ -19,7 +19,7 @@ switch (process.argv[2]){
 }
 
 function buildDev(){
-	builder.buildStatic('./lib/conways_game.js', 'dist/conways-game.js', {
+	builder.buildStatic('./lib/conways_game.js', 'public/lib/conways-game.js', {
 		globalName: 'Conways'
 	});
 }
