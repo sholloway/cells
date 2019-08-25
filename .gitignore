@@ -5,6 +5,7 @@
 */coverage
 coverage
 */dist
+*/public/dist
 .nyc_output
 *.dot
 *.png
