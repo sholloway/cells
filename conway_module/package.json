@@ -2,6 +2,7 @@
 	"name": "conway_module",
 	"version": "1.0.0",
 	"description": "A module for playing Conway's Game of Life in a browser.",
+	"private": true,
 	"main": "index.js",
 	"scripts": {
 		"build-dev": "node build.js dev",
@@ -25,6 +26,8 @@
 		"istanbul": "0.4.5",
 		"jsdoc": "3.6.3",
 		"mocha": "6.2.0",
-		"sinon": "7.4.1"
+		"sinon": "7.4.1",
+		"webpack": "4.39.2",
+		"webpack-cli": "3.3.7"
 	}
 }
