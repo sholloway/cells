@@ -174,16 +174,7 @@
 					return;
 				}
 				let sceneObj = JSON.parse(event.data);
-				console.group('gridWorker.onmessage');
-				console.log('The Event Data Was:');
-				console.log(event.data);
-				console.log('The scene was:');
-				console.log(sceneObj);
 				let scene = SceneManager.fromObject(sceneObj, TraitBuilderFactory.select);
-				console.log(scene);
-				console.groupEnd();
-
-
 				let htmlCanvasContext = gridCanvas.getContext('2d');
 				htmlCanvasContext.strokeStyle = '#757575'
 				htmlCanvasContext.lineWidth = 0.5
