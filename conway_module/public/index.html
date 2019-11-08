@@ -146,7 +146,9 @@
 			const SeederFactoryModule = Conways.SeederFactoryModule
 			const SeederFactory = SeederFactoryModule.SeederFactory
 			const SeederModels = SeederFactoryModule.SeederModels
-			const HTMLCanvasRenderer = Conways.HTMLCanvasRenderer;
+			const HTMLCanvasRenderer = Conways.HTMLCanvasRenderer
+			const TraitBuilderFactory = Conways.TraitBuilderFactory
+			const SceneManager = Conways.SceneManager
 
 			const conwayBroker = new Conways.ConwayBroker();
 			const gridWorker = new Conways.GridSystemWorker();
@@ -171,13 +173,17 @@
 				if (!event.data){ //TODO: Need better error handling. Enforce that event.data is a SceneManager.
 					return;
 				}
-				let scene = JSON.parse(event.data);
+				let sceneObj = JSON.parse(event.data);
 				console.group('gridWorker.onmessage');
 				console.log('The Event Data Was:');
 				console.log(event.data);
 				console.log('The scene was:');
+				console.log(sceneObj);
+				let scene = SceneManager.fromObject(sceneObj, TraitBuilderFactory.select);
 				console.log(scene);
 				console.groupEnd();
+
+
 				let htmlCanvasContext = gridCanvas.getContext('2d');
 				htmlCanvasContext.strokeStyle = '#757575'
 				htmlCanvasContext.lineWidth = 0.5

@@ -38,7 +38,9 @@ onmessage = function(event) {
 }
 
 const SceneManager = require('../core/SceneManager.js');
-const {Box, ProcessBoxAsRect, GridPattern, GridEntity} = require('../core/EntitySystem.js');
+const {Box, GridEntity} = require('../entity-system/entities');
+const {ProcessBoxAsRect, GridPattern} = require('../entity-system/traits');
+
 class GridBuilder{
 	/**
 	 * Constructs a scene containing a 2D grid.

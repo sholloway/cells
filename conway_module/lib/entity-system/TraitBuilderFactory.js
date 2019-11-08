@@ -17,7 +17,7 @@ const {
 } = require('./traits.js');
 
 class TraitBuilderFactory{
-	select(traitName){
+	static select(traitName){
 		let builder;
 		switch (traitName){
 			case 'GridPattern':
@@ -35,4 +35,4 @@ class TraitBuilderFactory{
 	}
 }
 
-module.exports = {TraitBuilderFactory};
+module.exports = TraitBuilderFactory;
