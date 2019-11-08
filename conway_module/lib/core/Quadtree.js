@@ -4,7 +4,7 @@
  */
 
 const {CellStates} = require('./CellStates.js')
-const {Entity} = require('./EntitySystem.js')
+const {Entity} = require('../entity-system/entities')
 
 /**
  * Represents a single unit on an abstract 2D grid.

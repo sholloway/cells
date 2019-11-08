@@ -103,6 +103,7 @@
 
 					<button id="play_pause_button" type="button" onclick="toggle_simulation();">Start</button>
 					<button id="reset_button" type="button" onclick="reset_simulation();">Reset</button>
+					<button id="test_broker_button" type="button" onclick="sendBrokerMsg();">Broker Test</button>
 				</div>
 				<div class="container row">
 					<input type="checkbox" id="display_storage" name="display_storage" onclick="toggle_display_storage_structure();"/>
@@ -145,6 +146,60 @@
 			const SeederFactoryModule = Conways.SeederFactoryModule
 			const SeederFactory = SeederFactoryModule.SeederFactory
 			const SeederModels = SeederFactoryModule.SeederModels
+			const HTMLCanvasRenderer = Conways.HTMLCanvasRenderer
+			const TraitBuilderFactory = Conways.TraitBuilderFactory
+			const SceneManager = Conways.SceneManager
+
+			const conwayBroker = new Conways.ConwayBroker();
+			const gridWorker = new Conways.GridSystemWorker();
+
+			/////////////////////////////////////////////////////////////////////////
+			//Example Web Worker Integration. TODO: Delete
+			conwayBroker.onmessage = function(event){
+				console.log('The main thread received a msg from the Conway Broker. It was:')
+				console.log(event.data);
+			}
+
+			function sendBrokerMsg(){
+				console.log('The button was clicked');
+				conwayBroker.postMessage('Hello from the main thread.');
+			}
+			/////////////////////////////////////////////////////////////////////////
+
+			/**
+			* Render the grid canvas when a message is received from the GridSystemWorker.
+			*/
+			gridWorker.onmessage = function(event){
+				if (!event.data){ //TODO: Need better error handling. Enforce that event.data is a SceneManager.
+					return;
+				}
+				let sceneObj = JSON.parse(event.data);
+				let scene = SceneManager.fromObject(sceneObj, TraitBuilderFactory.select);
+				let htmlCanvasContext = gridCanvas.getContext('2d');
+				htmlCanvasContext.strokeStyle = '#757575'
+				htmlCanvasContext.lineWidth = 0.5
+				gridRender.render(scene);
+			}
+
+			function requestToDrawGrid(){
+				let cellSize = getCellSize();
+				//TODO: Create a function for building a message. Ideally, that should live in the web worker module.
+				gridWorker.postMessage({
+					command: 'CREATE_GRID', //TODO: Make a constant
+					parameters: {
+						cellWidth: cellSize, cellHeight: cellSize,
+						gridWidth: config.canvas.width, gridHeight: config.canvas.height}
+				});
+			}
+
+			function requestToClearGrid(){
+				/*gridWorker.postMessage({
+					command: 'CLEAR_GRID', //TODO: Make a constant
+					parameters: {
+						gridWidth: config.canvas.width, gridHeight: config.canvas.height}
+				});*/
+				gridRender.clear();
+			}
 
 			let config = Conways.DefaultConfig
 
@@ -152,8 +207,10 @@
 			let simCanvas = document.getElementById('sim_canvas')
 			let drawCanvas = document.getElementById('draw_canvas')
 
+			let gridRender = new HTMLCanvasRenderer(gridCanvas.getContext('2d'), config);
+
 			let life = new LifeSystem(window, simCanvas.getContext('2d'), config)
-			let grid = new GridSystem(gridCanvas.getContext('2d'), getCellSize())
+		//	let grid = new GridSystem(gridCanvas.getContext('2d'), getCellSize())
 			let drawingSystem = new DrawingSystem(window, drawCanvas.getContext('2d'), config)
 			let drawingAllowed = true
 
@@ -318,10 +375,12 @@
 			function handle_grid_background(){
 				let displayGridBackground = document.getElementById('display_grid_background')
 				if(displayGridBackground.checked){
-					grid.clear(0,0, config.canvas.width, config.canvas.height)
-					grid.drawGrid(config.canvas.width, config.canvas.height)
+					/*grid.clear(0,0, config.canvas.width, config.canvas.height)
+					grid.drawGrid(config.canvas.width, config.canvas.height)*/
+					requestToDrawGrid();
 				}else{
-					grid.clear(0,0, config.canvas.width, config.canvas.height)
+					//grid.clear(0,0, config.canvas.width, config.canvas.height)
+					requestToClearGrid();
 				}
 			}
 

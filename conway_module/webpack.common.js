@@ -7,4 +7,13 @@ module.exports = {
 		path: path.resolve(__dirname, 'public','dist'),
 		library: 'Conways'
 	}
+	// module: {
+	// 	rules: [
+	// 		{
+	// 			test: /\.worker\.js$/,
+	// 			exclude: /node_modules/,
+	// 			use: { loader: 'worker-loader' }
+	// 		}
+	// 	]
+	// }
 };
