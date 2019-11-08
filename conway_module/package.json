@@ -22,12 +22,12 @@
 		"canvas": "2.6.0",
 		"chai": "4.2.0",
 		"jsdoc": "3.6.3",
-		"mocha": "6.2.0",
-		"sinon": "7.4.1",
-		"webpack": "4.39.2",
-		"webpack-cli": "3.3.7",
-		"webpack-dev-server": "3.8.0",
-		"webpack-merge": "4.2.1",
+		"mocha": "6.2.2",
+		"sinon": "7.5.0",
+		"webpack": "4.41.2",
+		"webpack-cli": "3.3.10",
+		"webpack-dev-server": "3.9.0",
+		"webpack-merge": "4.2.2",
 		"worker-loader": "2.0.0"
 	}
 }
