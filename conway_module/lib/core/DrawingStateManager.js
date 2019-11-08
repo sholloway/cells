@@ -1,8 +1,10 @@
 const {Cell, QuadTree, cloneCells} = require('./Quadtree.js')
 
-const {Box, ScaleTransformer, GridCellToRenderingEntity,
-	ProcessBoxAsRect, ColorByContents, RectOutlineTrait, FilledRectTrait, StrokeStyle,
-	FillStyle} = require('./EntitySystem.js')
+const { Box } = require('../entity-system/entities')
+
+	const { ColorByContents, FilledRectTrait,
+		FillStyle, GridCellToRenderingEntity, ProcessBoxAsRect,
+		RectOutlineTrait,ScaleTransformer, StrokeStyle } = require('../entity-system/traits')
 
 /**
  * Specify what traits to render the cells with.

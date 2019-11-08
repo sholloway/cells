@@ -1,62 +1,4 @@
 /**
- * A module for defining render-able entities with traits.
- * @module entity_system
- */
-
-/**
- * Abstract class. Defines a render-able trait that can be processed.
- */
-class Trait{
-	/**
-	 * Creates a new trait.
-	 */
-	constructor(){}
-	/**
-	 * Function that controls what the trait does.
-	 * @abstract
-	 * @param {object} context - The render context.
-	 */
-	process(context){
-		throw new Error('Traits must implement a process method.')
-	}
-}
-
-/**
- * A render-able entity. The entity is defined by registering traits.
- */
-class Entity{
-	/**
-	 * Create a new Entity.
-	 */
-	constructor(){
-		this.traits = []
-	}
-
-	/**
-	 * Process all register traits.
-	 * @param {HTMLCanvasContext} rendererContext
-	 */
-	render(rendererContext){
-		let context = {
-			rendererContext: rendererContext,
-			entity: this
-		}
-		this.traits.forEach((trait) =>{
-			trait.process(context)
-		})
-	}
-
-	/**
-	 * Expands the definition of the entity by registering traits.
-	 * @param {Trait} trait - An implementation of the Trait abstract class.
-	 */
-	register(trait){
-		this.traits.push(trait)
-		return this
-	}
-}
-
-/**
  * Selects a color based on the provided age.
  * @param {number} age
  * @returns {string} color
@@ -114,6 +56,40 @@ function fillStyle(age){
 			throw new Error(`Unexpected Age: ${age}`)
 	}
 	return color
+}
+
+
+const TWO_PI = Math.PI * 2
+const DEFAULT_CIRCLE_FILL_STYLE = 'rgb(44, 193, 59)'
+const DEFAULT_CIRCLE_STROKE_STYLE = 'rgb(0, 0, 0)'
+
+/**
+ * Abstract class. Defines a render-able trait that can be processed.
+ */
+class Trait{
+	/**
+	 * Creates a new trait.
+	 */
+	constructor(){}
+	/**
+	 * Function that controls what the trait does.
+	 * @abstract
+	 * @param {object} context - The render context.
+	 */
+	process(context){
+		throw new Error('Traits must implement a process method.')
+	}
+
+	/**
+	 * Automatically called by JSON.stringify().
+	 * Injects the original class name as a property when serialized
+	 * which an be used to rebuild a Scene after communicated from a thread.
+	 * @returns Trait
+	 */
+	toJSON(){
+		this.className = this.constructor.name;
+		return this;
+	}
 }
 
 /**
@@ -175,10 +151,6 @@ class ScaleTransformer extends Trait{
 		context.rendering.entity.height = context.rendering.entity.height * this.scalingFactor
 	}
 }
-
-const TWO_PI = Math.PI * 2
-const DEFAULT_CIRCLE_FILL_STYLE = 'rgb(44, 193, 59)'
-const DEFAULT_CIRCLE_STROKE_STYLE = 'rgb(0, 0, 0)'
 
 /**
  * Draws a filled in circle with a stroke.
@@ -290,6 +262,7 @@ class RectOutlineTrait extends Trait{
 	}
 }
 
+
 /**
  * Fills a rectangle.
  */
@@ -346,58 +319,31 @@ class GridPattern extends Trait{
 }
 
 /**
- * A grid.
+ * Clears an area of a context defined by x,y, width, height.
  */
-class GridEntity extends Entity{
-	/**
-	 * Creates a new grid entity
-	 * @param {number} width - The total width of the grid.
-	 * @param {number} height - The total height of the grid.
-	 * @param {number} cWidth - The width of a grid cell.
-	 * @param {number} cHeight - The height of a grid cell.
-	 */
-	constructor(width, height, cWidth, cHeight){
+class ClearArea extends Trait{
+	constructor(){
 		super()
-		this.width = width
-		this.height = height
-		this.cell = { width: cWidth, height: cHeight}
 	}
-}
 
-/**
- * Represents a box that can be processed via Traits.
- */
-class Box extends Entity{
-	/**
-	 * Creates a new Box.
-	 * @param {number} x - Left most X coordinate.
-	 * @param {number} y - Upper most Y coordinate.
-	 * @param {number} xx - Right most X coordinate.
-	 * @param {number} yy - Lower most Y coordinate.
-	 * @param {boolean} alive - If the cell is alive or not.
-	 */
-	constructor(x,y,xx,yy, alive){
-		super()
-		this.x = x
-		this.y = y
-		this.xx = xx
-		this.yy = yy
-		this.alive = alive
+	process(context){
+		context.rendererContext.clearRect(
+			context.rendering.entity.x, context.rendering.entity.y,
+			context.rendering.entity.width, context.rendering.entity.height
+		);
 	}
 }
 
 module.exports = {
-	Box,
 	CircleTrait,
+	ClearArea,
 	ColorByAgeTrait,
 	ColorByContents,
 	DarkFillTrait,
 	DarkThinLines,
-	Entity,
 	FilledRectTrait,
 	FillStyle,
 	GridCellToRenderingEntity,
-	GridEntity,
 	GridPattern,
 	ProcessBoxAsRect,
 	RectOutlineTrait,

@@ -3,24 +3,27 @@ const expect = chai.expect
 const sinon = require('sinon');
 
 const {
-	Box,
 	CircleTrait,
 	ColorByAgeTrait,
 	ColorByContents,
 	DarkFillTrait,
 	DarkThinLines,
-	Entity,
 	FilledRectTrait,
 	FillStyle,
 	GridCellToRenderingEntity,
-	GridEntity,
 	GridPattern,
 	ProcessBoxAsRect,
 	RectOutlineTrait,
 	ScaleTransformer,
 	StrokeStyle,
 	Trait
-} = require('./../../lib/core/EntitySystem.js')
+} = require('./../../lib/entity-system/traits')
+
+const {
+	Box,
+	Entity,
+	GridEntity
+} = require('./../../lib/entity-system/entities')
 
 describe('The Entity System', function(){
 	describe('Entities', function(){
