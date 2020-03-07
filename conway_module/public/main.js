@@ -6,7 +6,6 @@ Figure out how to get window and document available in a clean way.
 */
 
 const LifeSystem = Conways.LifeSystem;
-// const GridSystem = Conways.GridSystem;
 const DrawingSystem = Conways.DrawingSystem;
 const SeederFactoryModule = Conways.SeederFactoryModule;
 const SeederFactory = SeederFactoryModule.SeederFactory;
