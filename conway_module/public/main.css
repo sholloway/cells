@@ -1,0 +1,66 @@
+#canvas_container{
+  background-color: #FFFFFF;
+  border: 1px solid black;
+  z-index: 0;
+  position: relative;
+}
+
+#grid_canvas {
+  z-index: 1;
+  position: absolute;
+}
+
+#sim_canvas {
+  z-index: 2;
+  position: absolute;
+}
+
+#draw_canvas{
+  z-index: 3;
+  position: absolute;
+}
+
+.container{
+  display: flex;
+  background-color:#e1e2e1;
+}
+
+.col{
+  flex-direction: column;
+}
+
+.row{
+  flex-direction: row;
+  padding-top: 10px;
+}
+
+body{
+  background-color: #000000;
+  font-family: 'Roboto', sans-serif;
+  margin: 8px;
+}
+
+#simulation_controls{
+  padding-left: 10px;
+  margin-bottom: 10px;
+}
+
+#block{
+  height: 24px;
+  background-color: #006db3
+}
+#header{
+  background-color: #039be5;
+  border-top-width: 1px;
+  border-top-color: #3fafe8;
+  border-top-style: solid;
+}
+
+#cell_size{
+  width: 3em;
+}
+
+h1{
+  color: #000000;
+  margin-left: 20px;
+}

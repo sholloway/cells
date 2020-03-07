@@ -1,80 +1,14 @@
 <!doctype html>
 <html lang="en">
 	<head>
+		<title>Conway's Game of Life</title>
 		<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
 		<meta charset="utf-8">
-		<title>Conway's Game of Life</title>
-		<style>
-			#canvas_container{
-				background-color: #FFFFFF;
-				border: 1px solid black;
-				z-index: 0;
-	    	position: relative;
-			}
-
-			#grid_canvas {
-				z-index: 1;
-				position: absolute;
-			}
-
-			#sim_canvas {
-				z-index: 2;
-				position: absolute;
-			}
-
-			#draw_canvas{
-				z-index: 3;
-				position: absolute;
-			}
-
-			.container{
-				display: flex;
-				background-color:#e1e2e1;
-			}
-
-			.col{
-				flex-direction: column;
-			}
-
-			.row{
-				flex-direction: row;
-				padding-top: 10px;
-			}
-
-			body{
-				background-color: #000000;
-				font-family: 'Roboto', sans-serif;
-				margin: 8px;
-			}
-
-			#simulation_controls{
-				padding-left: 10px;
-				margin-bottom: 10px;
-			}
-
-			#block{
-				height: 24px;
-				background-color: #006db3
-			}
-			#header{
-				background-color: #039be5;
-				border-top-width: 1px;
-				border-top-color: #3fafe8;
-				border-top-style: solid;
-			}
-
-			#cell_size{
-				width: 3em;
-			}
-
-			h1{
-				color: #000000;
-				margin-left: 20px;
-			}
-		</style>
+		<link href="main.css" rel="stylesheet" type="text/css" >
+		<script src="dist/conways-game.js"></script>
+		<script type="text/javascript" src="main.js"></script>
 	</head>
 	<body>
-		<script src="dist/conways-game.js"></script>
 		<div class="container col">
 			<div id='block'></div>
 			<div id='header'>
@@ -88,7 +22,7 @@
 					</select>
 
 					<label for="seed">Preset</label>
-					<select id="seed" onchange="set_seeding_option()">
+					<select id="seed" onchange="main.setSeedingOption()">
 						<option value="draw">Draw</option>
 						<option value="random">Random</option>
 					</select>
@@ -99,17 +33,17 @@
 					</select>
 
 					<label for="cell_size">Cell Size</label>
-					<input id="cell_size" type="number" min="1" max="100" value="20" step="1" onchange="changed_cell_size();"/>
+					<input id="cell_size" type="number" min="1" max="100" value="20" step="1" onchange="main.changedCellSize();"/>
 
-					<button id="play_pause_button" type="button" onclick="toggle_simulation();">Start</button>
-					<button id="reset_button" type="button" onclick="reset_simulation();">Reset</button>
-					<button id="test_broker_button" type="button" onclick="sendBrokerMsg();">Broker Test</button>
+					<button id="play_pause_button" type="button" onclick="main.toggleSimulation();">Start</button>
+					<button id="reset_button" type="button" onclick="main.resetSimulation();">Reset</button>
+					<!-- <button id="test_broker_button" type="button" onclick="sendBrokerMsg();">Broker Test</button> -->
 				</div>
 				<div class="container row">
-					<input type="checkbox" id="display_storage" name="display_storage" onclick="toggle_display_storage_structure();"/>
+					<input type="checkbox" id="display_storage" name="display_storage" onclick="main.toggleDisplayStorageStructure();"/>
 					<label for="display_storage">Display Storage Structure</label>
 
-					<input type="checkbox" id="display_grid_background" name="display_grid_background" onclick="handle_grid_background();"/>
+					<input type="checkbox" id="display_grid_background" name="display_grid_background" onclick="main.handleGridBackground();"/>
 					<label for="display_grid_background">Display Grid</label>
 				</div>
 			</div>
@@ -128,268 +62,17 @@
 			</div>
 		</div>
 		<script type="application/javascript">
-			window.addEventListener('load', function(event){
-				sizeCanvas(config)
-				life.main(window.performance.now());
-				drawingSystem.main(window.performance.now());
-				allowDrawing()
-			})
+			let gridCanvas = document.getElementById('grid_canvas');
+    	let simCanvas = document.getElementById('sim_canvas');
+			let drawCanvas = document.getElementById('draw_canvas');
+			
+			const main = new Main(gridCanvas, simCanvas, drawCanvas);
 
-			window.addEventListener('resize', function(event){
-				sizeCanvas(config)
-				handle_grid_background()
-			})
+			window.addEventListener('load', main.handlePageLoad.bind(main));
+			window.addEventListener('resize', main.handlePageResize.bind(main));
+			drawCanvas.addEventListener('click', main.handleDrawCanvasClicked.bind(main));
 
-			const LifeSystem = Conways.LifeSystem
-			const GridSystem = Conways.GridSystem
-			const DrawingSystem = Conways.DrawingSystem
-			const SeederFactoryModule = Conways.SeederFactoryModule
-			const SeederFactory = SeederFactoryModule.SeederFactory
-			const SeederModels = SeederFactoryModule.SeederModels
-			const HTMLCanvasRenderer = Conways.HTMLCanvasRenderer
-			const TraitBuilderFactory = Conways.TraitBuilderFactory
-			const SceneManager = Conways.SceneManager
-
-			const conwayBroker = new Conways.ConwayBroker();
-			const gridWorker = new Conways.GridSystemWorker();
-
-			/////////////////////////////////////////////////////////////////////////
-			//Example Web Worker Integration. TODO: Delete
-			conwayBroker.onmessage = function(event){
-				console.log('The main thread received a msg from the Conway Broker. It was:')
-				console.log(event.data);
-			}
-
-			function sendBrokerMsg(){
-				console.log('The button was clicked');
-				conwayBroker.postMessage('Hello from the main thread.');
-			}
-			/////////////////////////////////////////////////////////////////////////
-
-			/**
-			* Render the grid canvas when a message is received from the GridSystemWorker.
-			*/
-			gridWorker.onmessage = function(event){
-				if (!event.data){ //TODO: Need better error handling. Enforce that event.data is a SceneManager.
-					return;
-				}
-				let sceneObj = JSON.parse(event.data);
-				let scene = SceneManager.fromObject(sceneObj, TraitBuilderFactory.select);
-				let htmlCanvasContext = gridCanvas.getContext('2d');
-				htmlCanvasContext.strokeStyle = '#757575'
-				htmlCanvasContext.lineWidth = 0.5
-				gridRender.render(scene);
-			}
-
-			function requestToDrawGrid(){
-				let cellSize = getCellSize();
-				//TODO: Create a function for building a message. Ideally, that should live in the web worker module.
-				gridWorker.postMessage({
-					command: 'CREATE_GRID', //TODO: Make a constant
-					parameters: {
-						cellWidth: cellSize, cellHeight: cellSize,
-						gridWidth: config.canvas.width, gridHeight: config.canvas.height}
-				});
-			}
-
-			function requestToClearGrid(){
-				/*gridWorker.postMessage({
-					command: 'CLEAR_GRID', //TODO: Make a constant
-					parameters: {
-						gridWidth: config.canvas.width, gridHeight: config.canvas.height}
-				});*/
-				gridRender.clear();
-			}
-
-			let config = Conways.DefaultConfig
-
-			let gridCanvas = document.getElementById('grid_canvas')
-			let simCanvas = document.getElementById('sim_canvas')
-			let drawCanvas = document.getElementById('draw_canvas')
-
-			let gridRender = new HTMLCanvasRenderer(gridCanvas.getContext('2d'), config);
-
-			let life = new LifeSystem(window, simCanvas.getContext('2d'), config)
-		//	let grid = new GridSystem(gridCanvas.getContext('2d'), getCellSize())
-			let drawingSystem = new DrawingSystem(window, drawCanvas.getContext('2d'), config)
-			let drawingAllowed = true
-
-			let simTicked = function(lifeSystem){
-				document.getElementById('alive_cells_count').value = lifeSystem.aliveCellsCount()
-				document.getElementById('sim_generation_count').value = lifeSystem.numberOfSimulationIterations()
-			}
-
-			life.subscribe('ticked', simTicked)
-
-			drawCanvas.addEventListener('click', (clickEvent) => {
-				if(drawingAllowed){
-					//Get Pixel clicked.
-					let boundary = drawCanvas.getBoundingClientRect()
-					let px = clickEvent.clientX - boundary.left
-					let py = clickEvent.clientY - boundary.top
-
-					//Project to a Cell
-					let cx = Math.floor(px/config.zoom)
-					let cy = Math.floor(py/config.zoom)
-
-					drawingSystem.toggleCell(cx,cy)
-				}
-			})
-
-			function allowDrawing(){
-				drawingAllowed = true
-				drawingSystem.start()
-			}
-
-			function preventDrawing(){
-				drawingAllowed = false
-				drawingSystem.stop()
-			}
-
-			function sizeCanvas(config){
-				//Override the default configuration to size the HTML Canvas
-				//to fit the document. Note: This will use the same padding/margins
-				//as the HTML Body.
-				let blockElement = document.getElementById('block')
-				let headerElement = document.getElementById('header')
-				let controlBarElement = document.getElementById('control_bar')
-				let statusBarElement = document.getElementById('status_bar')
-				let bodyMargin = 8 * 2; //Padding on body element in CSS is 8 top and bottom.
-
-				config.canvas.height = window.innerHeight - bodyMargin - (blockElement.offsetHeight + headerElement.offsetHeight + controlBarElement.offsetHeight + statusBarElement.offsetHeight)
-
-				let canvasContainerDiv = document.getElementById('canvas_container')
-				let gridCanvas = document.getElementById('grid_canvas')
-				let simCanvas = document.getElementById('sim_canvas')
-				let drawCanvas = document.getElementById('draw_canvas')
-
-				//WARNING: Setting the canvas height changes the body
-				//width so always set the height before the width.
-				canvasContainerDiv.style.height = `${config.canvas.height}px`
-				gridCanvas.setAttribute('height', config.canvas.height)
-				simCanvas.setAttribute('height', config.canvas.height)
-				drawCanvas.setAttribute('height', config.canvas.height)
-
-				config.canvas.width = document.body.clientWidth
-				canvasContainerDiv.style.width = `${config.canvas.width}px`
-				gridCanvas.setAttribute('width', config.canvas.width)
-				simCanvas.setAttribute('width', config.canvas.width)
-				drawCanvas.setAttribute('width', config.canvas.width)
-			}
-
-			function toggle_simulation(){
-				let button = document.getElementById('play_pause_button')
-				switch (button.innerText){
-					case 'Start':
-						button.innerText = 'Pause'
-						preventDrawing()
-						start_simulation()
-						break;
-					case 'Pause':
-						button.innerText = 'Resume'
-						//TODO: Yuck. Improve this. Isolate knowledge about the DOM.
-						if(document.getElementById('seed').value === "draw"){
-							//copy the active cells to the drawing system.
-							let activeCells = life.getCells()
-							drawingSystem.setCells(activeCells)
-							life.reset()
-							allowDrawing()
-						}
-						stop_simulation()
-						break;
-					case 'Resume':
-						button.innerText = 'Pause'
-						preventDrawing()
-						if(document.getElementById('seed').value === "draw"){
-							start_simulation()
-						}else{
-							resume_simulation()
-						}
-						break;
-					default:
-						break;
-				}
-			}
-
-			function set_seeding_option(){
-				let option = document.getElementById('seed')
-				switch(option.value){
-					case "draw":
-						reset_simulation()
-						allowDrawing()
-						break;
-					default:
-						preventDrawing()
-						reset_simulation()
-						break;
-				}
-			}
-
-			function reset_simulation(){
-				stop_simulation()
-				let button = document.getElementById('play_pause_button')
-				button.innerText = "Start"
-				document.getElementById('alive_cells_count').value = 0
-				document.getElementById('sim_generation_count').value = 0
-				life.reset()
-				drawingSystem.reset()
-			}
-
-			function start_simulation(){
-				config.zoom = getCellSize()
-				config.landscape.width = config.canvas.width/config.zoom
-				config.landscape.height = config.canvas.height/config.zoom
-				let seeder = buildSeeder()
-				drawingSystem.reset()
-				life.setSeeder(seeder)
-				life.start()
-			}
-
-			function buildSeeder(){
-				let seedPicker = document.getElementById('seed')
-				let seedSetting = seedPicker.value
-				let seeder = SeederFactory.build(seedSetting)
-				seeder.setCells(drawingSystem.getCells())
-				return seeder
-			}
-
-			function getCellSize(){
-				let cellSizeControl = document.getElementById('cell_size')
-				return Number.parseInt(cellSizeControl.value)
-			}
-
-			function stop_simulation(){
-				life.stop()
-			}
-
-			function resume_simulation(){
-				life.resume()
-			}
-
-			function toggle_display_storage_structure(){
-				let displayStorageCheckbox = document.getElementById('display_storage')
-				life.displayStorage(displayStorageCheckbox.checked)
-				drawingSystem.displayStorage(displayStorageCheckbox.checked)
-			}
-
-			function handle_grid_background(){
-				let displayGridBackground = document.getElementById('display_grid_background')
-				if(displayGridBackground.checked){
-					/*grid.clear(0,0, config.canvas.width, config.canvas.height)
-					grid.drawGrid(config.canvas.width, config.canvas.height)*/
-					requestToDrawGrid();
-				}else{
-					//grid.clear(0,0, config.canvas.width, config.canvas.height)
-					requestToClearGrid();
-				}
-			}
-
-			function changed_cell_size(){
-				let cellSize = getCellSize()
-				life.setCellSize(cellSize)
-				grid.setCellSize(cellSize)
-				handle_grid_background()
-			}
+			main.initialize();
 		</script>
 	</body>
 </html>
