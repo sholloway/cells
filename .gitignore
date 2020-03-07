@@ -1,12 +1,20 @@
+# Local Environment
 .sfdx
 .vscode
-*/node_modules
 *.code-workspace
 */coverage
 coverage
+.nyc_output
+
+#Node.js Stuff
+*/node_modules
+npm-debug.log
+
+# Webpack Outputs
 */dist
 */public/dist
-.nyc_output
+
+# Generated stuff
 *.dot
 *.png
 docs
