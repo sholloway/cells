@@ -34,7 +34,7 @@ class Main {
     /**
     * Render the grid canvas when a message is received from the GridSystemWorker.
     */
-    this.gridWorker.onmessage = function (event) {
+    this.gridWorker.onmessage = (event) => {
       if (!event.data) { //TODO: Need better error handling. Enforce that event.data is a SceneManager.
         return;
       }
