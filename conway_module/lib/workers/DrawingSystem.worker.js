@@ -8,7 +8,10 @@
  *    Use Obersver Pattern.
  */
 
-const WorkerCommands = require('./WorkerCommands.js').DrawingSystemCommands;
+const WorkerCommands = require('./WorkerCommands.js');
+const LifeCycle = WorkerCommands.LifeCycle;
+const DrawingSystemCommands = WorkerCommands.DrawingSystemCommands;
+
 /**
  * Processes a message sent by the main thread.
  *
@@ -120,59 +123,59 @@ function processCmd(msg, commandName, commandCriteria, cmdProcessor, errMsg) {
   }
 }
 
+function processScene(msg){
+  if (workerState == WorkerState.RUNNING){
+    drawingSystem.update(); //TODO: Rename this method.
+    let scene = drawingSystem.getScene()
+    let sceneMsg = JSON.stringify(scene);
+    postMessage(JSON.stringify(sceneMsg));
+  }
+}
+
 function routeCommandToProcessor(msg){
   if (!msg.command) {
     console.error('Unexpected messaged received in DrawingSystem Worker.');
-    console.error(event);
+    console.error(msg);
     return;
   }
 
   switch (msg.command) {
-    case WorkerCommands.SEND_SCENE:
-      processCmd(msg, WorkerCommands.SEND_SCENE,
-        (msg) => workerState == WorkerState.RUNNING,
-        (msg) => {
-          // TODO: Add awareness to stop/start of the thread.
-          drawingSystem.update(); //TODO: Rename this method.
-          let scene = drawingSystem.getScene()
-          let sceneMsg = JSON.stringify(scene);
-          postMessage(JSON.stringify(sceneMsg));
-        },
-        '');
+    case LifeCycle.PROCESS_CYCLE:
+      processScene(msg);
       break;
-    case WorkerCommands.SET_CELLS:
+    case LifeCycle.START:
+      workerState = WorkerState.RUNNING;
+      break;
+    case LifeCycle.STOP:
+      workerState = WorkerState.STOPPED;
+      break;  
+    case LifeCycle.PAUSE:
+      break;  
+    case DrawingSystemCommands.SET_CELLS:
       processCmd(msg, WorkerCommands.SET_CELLS,
         (msg) => msg.cells,
         (msg) => drawingSystem.setCells(msg.cells),
         'The cells were not provided.');
       break;
-    case WorkerCommands.SET_CELL_SIZE:
+    case DrawingSystemCommands.SET_CELL_SIZE:
       processCmd(msg, WorkerCommands.SET_CELL_SIZE,
         (msg) => msg.cellSize,
         (msg) => drawingSystem.setCellSize(msg.cellSize),
         'The cell size was not provided.');
       break;
-    case WorkerCommands.RESET:
+    case DrawingSystemCommands.RESET:
       processCmd(msg, WorkerCommands.RESET,
         (msg) => msg.config,
         (msg) => drawingSystem.setConfig(msg.config),
         'The configuration was not provided.');
       break;
-    case WorkerCommands.TOGGLE_CELL:
+    case DrawingSystemCommands.TOGGLE_CELL:
       processCmd(msg, WorkerCommands.TOGGLE_CELL,
         (msg) => msg.cx !== undefined && msg.cy !== undefined,
         (msg) => drawingSystem.toggleCell(msg.cx, msg.cy),
         'The cx and cy were both not provided.');
       break;
-    case WorkerCommands.START:
-      console.log('Msg Recieved: START');
-      workerState = WorkerState.RUNNING;
-      break;
-    case WorkerCommands.STOP:
-      console.log('Msg Recieved: STOP');
-      workerState = WorkerState.STOPPED;
-      break;
-    case WorkerCommands.DISPLAY_STORAGE:
+    case DrawingSystemCommands.DISPLAY_STORAGE:
       processCmd(msg, WorkerCommands.DISPLAY_STORAGE,
         (msg) => msg.displayStorage,
         (msg) => drawingSystem.displayStorage(msg.displayStorage),

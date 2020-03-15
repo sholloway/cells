@@ -7,9 +7,7 @@
 
 const { BrowserSystem } = require('./System.js');
 
-const WorkerCommand = {
-  SEND_SCENE: 'SEND_SCENE',
-}
+const WorkerCommands = require('./../workers/WorkerCommands.js').LifeCycle;
 
 /**
  * Challenges
@@ -46,7 +44,7 @@ class WorkerSystem extends BrowserSystem {
   update(frame) {
     this.workers.forEach((worker, name) => {
       worker.postMessage({
-        command: WorkerCommand.SEND_SCENE
+        command: WorkerCommands.PROCESS_CYCLE
       });
     });
   }

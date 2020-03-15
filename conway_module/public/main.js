@@ -16,6 +16,7 @@ const SceneManager = Conways.SceneManager;
 const WorkerSystem = Conways.WorkerSystem;
 const WorkerCommands = Conways.WorkerCommands;
 
+
 class Main {
   constructor(gridCanvas, simCanvas, drawCanvas) {
     this.gridCanvas = gridCanvas;
@@ -74,7 +75,7 @@ class Main {
   handleMessageFromDrawingWorker(message){
     if (message.data) { 
       let sceneObj = JSON.parse(message.data);
-      console.log(sceneObj);
+      // console.log(sceneObj);
     }
   }
 
@@ -117,7 +118,7 @@ class Main {
     this.drawingAllowed = true;
     this.drawingSystem.start();
     this.drawingWorker.postMessage({
-      command: WorkerCommands.DrawingSystemCommands.START
+      command: WorkerCommands.LifeCycle.START
     });
   }
 
@@ -125,7 +126,7 @@ class Main {
     this.drawingAllowed = false;
     this.drawingSystem.stop();
     this.drawingWorker.postMessage({
-      command: WorkerCommands.DrawingSystemCommands.STOP
+      command: WorkerCommands.LifeCycle.STOP
     });
   }
 
