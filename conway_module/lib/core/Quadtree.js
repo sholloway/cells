@@ -57,6 +57,10 @@ class Cell extends Entity{
 	clone(){
 		return new Cell(this.location.row, this.location.col, this.age, this.state)
 	}
+
+	static buildInstance(params){
+		return new Cell().copyParams(params);
+	}
 }
 
 /**

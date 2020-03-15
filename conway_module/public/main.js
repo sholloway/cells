@@ -6,7 +6,6 @@ Figure out how to get window and document available in a clean way.
 */
 
 const LifeSystem = Conways.LifeSystem;
-const DrawingSystem = Conways.DrawingSystem;
 const SeederFactoryModule = Conways.SeederFactoryModule;
 const SeederFactory = SeederFactoryModule.SeederFactory;
 const SeederModels = SeederFactoryModule.SeederModels;
@@ -15,7 +14,7 @@ const TraitBuilderFactory = Conways.TraitBuilderFactory;
 const SceneManager = Conways.SceneManager;
 const WorkerSystem = Conways.WorkerSystem;
 const WorkerCommands = Conways.WorkerCommands;
-
+const DrawingSceneBuilder = Conways.DrawingSceneBuilder;
 
 class Main {
   constructor(gridCanvas, simCanvas, drawCanvas) {
@@ -30,10 +29,11 @@ class Main {
     this.drawingWorker = new Conways.DrawingSystemWorker();
 
     this.gridRender = new HTMLCanvasRenderer(this.gridCanvas.getContext('2d'), this.config);
+    this.drawingSystemRender = new HTMLCanvasRenderer(this.drawCanvas.getContext('2d'), this.config);
+    this.drawingScene = new SceneManager();
     
     this.workerSystem = new WorkerSystem(window, this.config);
-    this.life = new LifeSystem(window, this.simCanvas.getContext('2d'), this.config);
-    this.drawingSystem = new DrawingSystem(window, this.drawCanvas.getContext('2d'), this.config);
+    this.life = new LifeSystem(window, this.simCanvas.getContext('2d'), this.config);    
     this.drawingAllowed = true;
 
     this.gridWorker.onmessage = this.handleMessageFromGridWorker.bind(this);
@@ -61,21 +61,34 @@ class Main {
   * Render the grid canvas when a message is received from the GridSystemWorker.
   */
   handleMessageFromGridWorker(message){
-    if (!message.data) { //TODO: Need better error handling. Enforce that event.data is a SceneManager.
-      return;
-    }
-    let sceneObj = JSON.parse(message.data);
-    let scene = SceneManager.fromObject(sceneObj, TraitBuilderFactory.select);
-    let htmlCanvasContext = this.gridCanvas.getContext('2d');
-    htmlCanvasContext.strokeStyle = '#757575';
-    htmlCanvasContext.lineWidth = 0.5;
-    this.gridRender.render(scene);
-  }
-
-  handleMessageFromDrawingWorker(message){
     if (message.data) { 
       let sceneObj = JSON.parse(message.data);
-      // console.log(sceneObj);
+      let scene = SceneManager.fromObject(sceneObj, TraitBuilderFactory.select);
+      let htmlCanvasContext = this.gridCanvas.getContext('2d');
+      htmlCanvasContext.strokeStyle = '#757575';
+      htmlCanvasContext.lineWidth = 0.5;
+      this.gridRender.render(scene);
+    }
+  }
+
+  /**
+   Next Steps for drawing system.
+   - We're not going to send over the wire all of the rendering data. 
+   - Only sending cell information. The scene builder will be render specific.
+
+   1. Make Drawing State manager just send the cells array.
+   2. Have create a new class that builds a scene manager and uses the existing
+      DrawingStateManager.registerCellTraits() function to build the scene.
+   */
+  handleMessageFromDrawingWorker(message){
+    if (message.data) { 
+      let cells = JSON.parse(message.data);
+      this.drawingScene.purge();
+      DrawingSceneBuilder.buildScene(this.drawingScene, this.config, cells);
+      // let htmlCanvasContext = this.gridCanvas.getContext('2d');
+      // htmlCanvasContext.strokeStyle = '#757575';
+      // htmlCanvasContext.lineWidth = 0.5;
+      this.drawingSystemRender.render(this.drawingScene);
     }
   }
 
@@ -83,7 +96,6 @@ class Main {
     sizeCanvas(this.config);
     let now = window.performance.now();
     this.life.main(now);
-    this.drawingSystem.main(now);
     this.workerSystem.main(now);
     this.allowDrawing();
   }
@@ -103,8 +115,6 @@ class Main {
       //Project to a Cell
       let cx = Math.floor(px / this.config.zoom);
       let cy = Math.floor(py / this.config.zoom);
-  
-      this.drawingSystem.toggleCell(cx, cy);
 
       this.drawingWorker.postMessage({
         command: WorkerCommands.DrawingSystemCommands.TOGGLE_CELL,
@@ -116,7 +126,6 @@ class Main {
 
   allowDrawing() {
     this.drawingAllowed = true;
-    this.drawingSystem.start();
     this.drawingWorker.postMessage({
       command: WorkerCommands.LifeCycle.START
     });
@@ -124,7 +133,6 @@ class Main {
 
   preventDrawing() {
     this.drawingAllowed = false;
-    this.drawingSystem.stop();
     this.drawingWorker.postMessage({
       command: WorkerCommands.LifeCycle.STOP
     });
@@ -158,7 +166,6 @@ class Main {
         if (document.getElementById('seed').value === "draw") {
           //copy the active cells to the drawing system.
           let activeCells = this.life.getCells();
-          this.drawingSystem.setCells(activeCells);
           this.drawingWorker.postMessage({
             command: WorkerCommands.DrawingSystemCommands.SET_CELLS,
             cells: activeCells
@@ -189,7 +196,6 @@ class Main {
     document.getElementById('alive_cells_count').value = 0;
     document.getElementById('sim_generation_count').value = 0;
     this.life.reset();
-    this.drawingSystem.reset();
     this.drawingWorker.postMessage({
       command: WorkerCommands.DrawingSystemCommands.RESET
     });
@@ -229,7 +235,6 @@ class Main {
     this.config.landscape.width = this.config.canvas.width / this.config.zoom;
     this.config.landscape.height = this.config.canvas.height / this.config.zoom;
     let seeder = this.buildSeeder();
-    this.drawingSystem.reset();
     this.drawingWorker.postMessage({
       command: WorkerCommands.DrawingSystemCommands.RESET,
       config: this.config
@@ -246,10 +251,9 @@ class Main {
     // IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // How should I handle getting the drawing system cells
     // from the drawing worker to then pass into the seeder when the 
-    // Life System needs too be bootstrapped?
+    // Life System needs to be bootstrapped?
     // This needs to be synchronsous.
-
-    seeder.setCells(this.drawingSystem.getCells())
+    //seeder.setCells(this.drawingSystem.getCells());
     return seeder
   }
 
@@ -264,7 +268,6 @@ class Main {
   toggleDisplayStorageStructure() {
     let displayStorageCheckbox = document.getElementById('display_storage');
     this.life.displayStorage(displayStorageCheckbox.checked);
-    this.drawingSystem.displayStorage(displayStorageCheckbox.checked);
 
     this.drawingWorker.postMessage({
       command: WorkerCommands.DrawingSystemCommands.DISPLAY_STORAGE,

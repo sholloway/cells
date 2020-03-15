@@ -2,9 +2,18 @@ const {Cell, QuadTree, cloneCells} = require('./Quadtree.js')
 
 const { Box } = require('../entity-system/entities')
 
-	const { ColorByContents, FilledRectTrait,
-		FillStyle, GridCellToRenderingEntity, ProcessBoxAsRect,
-		RectOutlineTrait,ScaleTransformer, StrokeStyle } = require('../entity-system/traits')
+const { ColorByContents, FilledRectTrait,
+	FillStyle, GridCellToRenderingEntity, ProcessBoxAsRect,
+	RectOutlineTrait,ScaleTransformer, StrokeStyle } = require('../entity-system/traits')
+
+
+class DrawingSceneBuilder{
+	static buildScene(scene, config, objs){
+		let cells = objs.map((c) => Cell.buildInstance(c));
+		registerCellTraits(config, cells);
+		scene.push(cells);
+	}
+}
 
 /**
  * Specify what traits to render the cells with.
@@ -155,4 +164,7 @@ class DrawingStateManager{
 	}
 }
 
-module.exports = DrawingStateManager
+module.exports = {
+	DrawingStateManager,
+	DrawingSceneBuilder
+}

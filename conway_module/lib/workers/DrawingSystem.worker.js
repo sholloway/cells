@@ -25,7 +25,7 @@ const DrawingSystemCommands = WorkerCommands.DrawingSystemCommands;
  */
 
 const SceneManager = require('../core/SceneManager.js');
-const DrawingStateManager = require('./../core/DrawingStateManager');
+const DrawingStateManager = require('./../core/DrawingStateManager').DrawingStateManager;
 
 /**
  * Replaces ./core/DrawingSystem.js
@@ -125,10 +125,10 @@ function processCmd(msg, commandName, commandCriteria, cmdProcessor, errMsg) {
 
 function processScene(msg){
   if (workerState == WorkerState.RUNNING){
-    drawingSystem.update(); //TODO: Rename this method.
-    let scene = drawingSystem.getScene()
-    let sceneMsg = JSON.stringify(scene);
-    postMessage(JSON.stringify(sceneMsg));
+    drawingSystem.update(); 
+    // let scene = drawingSystem.getScene()
+    let cellsMsg = JSON.stringify(drawingSystem.getCells());
+    postMessage(cellsMsg);
   }
 }
 
