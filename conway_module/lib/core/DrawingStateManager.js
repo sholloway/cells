@@ -70,6 +70,10 @@ class DrawingStateManager{
 		this.currentTree.index(this.cells)
 	}
 
+	setConfig(config){
+    this.config = config;
+	}
+	
 	/**
 	 * Set's what cells should be in the initial drawing.
 	 * @param {Cell[]} cells - An array of alive cells.

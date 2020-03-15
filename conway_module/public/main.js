@@ -13,6 +13,8 @@ const SeederModels = SeederFactoryModule.SeederModels;
 const HTMLCanvasRenderer = Conways.HTMLCanvasRenderer;
 const TraitBuilderFactory = Conways.TraitBuilderFactory;
 const SceneManager = Conways.SceneManager;
+const WorkerSystem = Conways.WorkerSystem;
+const WorkerCommands = Conways.WorkerCommands;
 
 class Main {
   constructor(gridCanvas, simCanvas, drawCanvas) {
@@ -24,40 +26,64 @@ class Main {
 
     this.conwayBroker = new Conways.ConwayBroker();
     this.gridWorker = new Conways.GridSystemWorker();
+    this.drawingWorker = new Conways.DrawingSystemWorker();
 
     this.gridRender = new HTMLCanvasRenderer(this.gridCanvas.getContext('2d'), this.config);
-    this.life = new LifeSystem(window, this.simCanvas.getContext('2d'), this.config)
-    this.drawingSystem = new DrawingSystem(window, this.drawCanvas.getContext('2d'), this.config)
-    this.drawingAllowed = true
+    
+    this.workerSystem = new WorkerSystem(window, this.config);
+    this.life = new LifeSystem(window, this.simCanvas.getContext('2d'), this.config);
+    this.drawingSystem = new DrawingSystem(window, this.drawCanvas.getContext('2d'), this.config);
+    this.drawingAllowed = true;
 
-    /**
-    * Render the grid canvas when a message is received from the GridSystemWorker.
-    */
-    this.gridWorker.onmessage = (event) => {
-      if (!event.data) { //TODO: Need better error handling. Enforce that event.data is a SceneManager.
-        return;
-      }
-      let sceneObj = JSON.parse(event.data);
-      let scene = SceneManager.fromObject(sceneObj, TraitBuilderFactory.select);
-      let htmlCanvasContext = this.gridCanvas.getContext('2d');
-      htmlCanvasContext.strokeStyle = '#757575';
-      htmlCanvasContext.lineWidth = 0.5;
-      this.gridRender.render(scene);
-    }
+    this.gridWorker.onmessage = this.handleMessageFromGridWorker.bind(this);
+    this.drawingWorker.onmessage = this.handleMessageFromDrawingWorker.bind(this);
+
+    this.workerSystem.registerWorker('DRAWING_SYSTEM', this.drawingWorker);
   }
 
   initialize() {
     let simTicked = function (lifeSystem) {
-      document.getElementById('alive_cells_count').value = lifeSystem.aliveCellsCount()
-      document.getElementById('sim_generation_count').value = lifeSystem.numberOfSimulationIterations()
+      document.getElementById('alive_cells_count').value = lifeSystem.aliveCellsCount();
+      document.getElementById('sim_generation_count').value = lifeSystem.numberOfSimulationIterations();
     }
     this.life.subscribe('ticked', simTicked);
+
+    /*
+    This kicks off the main loop for all workers.
+    Need to consider the difference between running simulations and the 
+    request to get the scene data.
+    */
+    this.workerSystem.start(); 
+  }
+
+  /**
+  * Render the grid canvas when a message is received from the GridSystemWorker.
+  */
+  handleMessageFromGridWorker(message){
+    if (!message.data) { //TODO: Need better error handling. Enforce that event.data is a SceneManager.
+      return;
+    }
+    let sceneObj = JSON.parse(message.data);
+    let scene = SceneManager.fromObject(sceneObj, TraitBuilderFactory.select);
+    let htmlCanvasContext = this.gridCanvas.getContext('2d');
+    htmlCanvasContext.strokeStyle = '#757575';
+    htmlCanvasContext.lineWidth = 0.5;
+    this.gridRender.render(scene);
+  }
+
+  handleMessageFromDrawingWorker(message){
+    if (message.data) { 
+      let sceneObj = JSON.parse(message.data);
+      console.log(sceneObj);
+    }
   }
 
   handlePageLoad(event) {
     sizeCanvas(this.config);
-    this.life.main(window.performance.now());
-    this.drawingSystem.main(window.performance.now());
+    let now = window.performance.now();
+    this.life.main(now);
+    this.drawingSystem.main(now);
+    this.workerSystem.main(now);
     this.allowDrawing();
   }
 
@@ -78,17 +104,29 @@ class Main {
       let cy = Math.floor(py / this.config.zoom);
   
       this.drawingSystem.toggleCell(cx, cy);
+
+      this.drawingWorker.postMessage({
+        command: WorkerCommands.DrawingSystemCommands.TOGGLE_CELL,
+        cx: cx,
+        cy: cy
+      });
     }
   }
 
   allowDrawing() {
     this.drawingAllowed = true;
     this.drawingSystem.start();
+    this.drawingWorker.postMessage({
+      command: WorkerCommands.DrawingSystemCommands.START
+    });
   }
 
   preventDrawing() {
     this.drawingAllowed = false;
-    this.drawingSystem.stop()
+    this.drawingSystem.stop();
+    this.drawingWorker.postMessage({
+      command: WorkerCommands.DrawingSystemCommands.STOP
+    });
   }
 
   setSeedingOption() {
@@ -120,6 +158,10 @@ class Main {
           //copy the active cells to the drawing system.
           let activeCells = this.life.getCells();
           this.drawingSystem.setCells(activeCells);
+          this.drawingWorker.postMessage({
+            command: WorkerCommands.DrawingSystemCommands.SET_CELLS,
+            cells: activeCells
+          });
           this.life.reset();
           this.allowDrawing();
         }
@@ -147,6 +189,9 @@ class Main {
     document.getElementById('sim_generation_count').value = 0;
     this.life.reset();
     this.drawingSystem.reset();
+    this.drawingWorker.postMessage({
+      command: WorkerCommands.DrawingSystemCommands.RESET
+    });
   }
 
   handleGridBackground() {
@@ -184,6 +229,10 @@ class Main {
     this.config.landscape.height = this.config.canvas.height / this.config.zoom;
     let seeder = this.buildSeeder();
     this.drawingSystem.reset();
+    this.drawingWorker.postMessage({
+      command: WorkerCommands.DrawingSystemCommands.RESET,
+      config: this.config
+    });
     this.life.setSeeder(seeder);
     this.life.start();
   }
@@ -191,7 +240,14 @@ class Main {
   buildSeeder() {
     let seedPicker = document.getElementById('seed')
     let seedSetting = seedPicker.value
-    let seeder = SeederFactory.build(seedSetting)
+    let seeder = SeederFactory.build(seedSetting);
+
+    // IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // How should I handle getting the drawing system cells
+    // from the drawing worker to then pass into the seeder when the 
+    // Life System needs too be bootstrapped?
+    // This needs to be synchronsous.
+
     seeder.setCells(this.drawingSystem.getCells())
     return seeder
   }
@@ -208,11 +264,20 @@ class Main {
     let displayStorageCheckbox = document.getElementById('display_storage');
     this.life.displayStorage(displayStorageCheckbox.checked);
     this.drawingSystem.displayStorage(displayStorageCheckbox.checked);
+
+    this.drawingWorker.postMessage({
+      command: WorkerCommands.DrawingSystemCommands.DISPLAY_STORAGE,
+      displayStorage: displayStorageCheckbox.checked
+    });
   }
 
   changedCellSize() {
     let cellSize = getCellSize()
     this.life.setCellSize(cellSize);
+    this.drawingWorker.postMessage({
+      command: WorkerCommands.DrawingSystemCommands.SET_CELL_SIZE,
+      cellSize: cellSize
+    });
     this.handleGridBackground()
   }
 }
@@ -256,18 +321,3 @@ function getCellSize() {
   let cellSizeControl = document.getElementById('cell_size')
   return Number.parseInt(cellSizeControl.value)
 }
-
-/// Crap below this line
-/////////////////////////////////////////////////////////////////////////
-//Example Web Worker Integration. TODO: Delete
-/*
-conwayBroker.onmessage = function (event) {
-  console.log('The main thread received a msg from the Conway Broker. It was:')
-  console.log(event.data);
-}
-
-function sendBrokerMsg() {
-  console.log('The button was clicked');
-  conwayBroker.postMessage('Hello from the main thread.');
-}
-*/
