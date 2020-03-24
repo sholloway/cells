@@ -27,11 +27,18 @@ const DrawingSystemCommands = WorkerCommands.DrawingSystemCommands;
 const SceneManager = require('../core/SceneManager.js');
 const DrawingStateManager = require('./../core/DrawingStateManager').DrawingStateManager;
 
+//TODO: Move into DrawingSystem file.
+const States = {
+  IDLE:'idle',
+  UPDATING:'updating'
+};
+
 /**
  * Replaces ./core/DrawingSystem.js
  * Will eventually be in that file.
  */
 class DrawingSystem {
+  
   constructor() {
     this.config = {
       zoom: 1
@@ -39,6 +46,11 @@ class DrawingSystem {
     this.stateManager = new DrawingStateManager(this.config);
     this.scene = new SceneManager();
     this.displayStorageStructure = false;
+    this.state = States.IDLE
+  }
+
+  getState(){
+    return this.state;
   }
 
   setConfig(config) {
@@ -55,8 +67,11 @@ class DrawingSystem {
   }
 
   update() {
-    this.getStateManager().stageStorage(this.scene, this.displayStorageStructure)
-    this.getStateManager().processCells(this.scene)
+    this.state = States.UPDATING
+    this.scene.purge();
+    this.getStateManager().stageStorage(this.scene, this.displayStorageStructure);
+    this.getStateManager().processCells(this.scene);
+    this.state = States.IDLE;
   }
 
 	/**
@@ -89,7 +104,11 @@ class DrawingSystem {
 	 * @param {number} y - The Y coordinate of the cell.
 	 */
   toggleCell(x, y) {
-    this.getStateManager().toggleCell(x, y)
+    if(this.state === States.IDLE){
+      this.state = States.UPDATING
+      this.getStateManager().toggleCell(x, y);
+      this.state = States.IDLE;
+    }
   }
 
   /**
@@ -123,12 +142,14 @@ function processCmd(msg, commandName, commandCriteria, cmdProcessor, errMsg) {
   }
 }
 
+// Next Steps
+// - [ ] Make process scene invoke only if it's not already running.
+// - [ ] Make drawingSystem.update return a promise so it's not blocking.
 function processScene(msg){
-  if (workerState == WorkerState.RUNNING){
-    drawingSystem.update(); 
-    // let scene = drawingSystem.getScene()
-    let cellsMsg = JSON.stringify(drawingSystem.getCells());
-    postMessage(cellsMsg);
+  if (workerState === WorkerState.RUNNING && 
+      drawingSystem.getState() === States.IDLE){
+    drawingSystem.update();
+    postMessage(drawingSystem.getScene().serializeStack());
   }
 }
 
@@ -177,7 +198,7 @@ function routeCommandToProcessor(msg){
       break;
     case DrawingSystemCommands.DISPLAY_STORAGE:
       processCmd(msg, WorkerCommands.DISPLAY_STORAGE,
-        (msg) => msg.displayStorage,
+        (msg) => msg.displayStorage !== undefined,
         (msg) => drawingSystem.displayStorage(msg.displayStorage),
         'The displayStorage field was not provided.');
       break;

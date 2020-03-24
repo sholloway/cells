@@ -49,6 +49,10 @@ class SceneManager{
 		this.stack = []
 	}
 
+	serializeStack(){
+		return JSON.stringify(this.stack);
+	}
+
 	/**
  * Builds a scene from a Javascript Literal. Intended to be used to
  * reconstruct a serialized scene by a web worker.

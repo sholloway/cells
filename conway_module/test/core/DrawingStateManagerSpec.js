@@ -2,7 +2,7 @@ const chai = require('chai')
 const expect = chai.expect
 const sinon = require('sinon');
 
-const DrawingStateManager = require('./../../lib/core/DrawingStateManager.js')
+const DrawingStateManager = require('./../../lib/core/DrawingStateManager.js').DrawingStateManager;
 const {Cell} = require('./../../lib/core/Quadtree.js')
 const SceneManager = require('./../../lib/core/SceneManager.js')
 
@@ -52,21 +52,18 @@ describe('DrawingStateManager', function(){
 	})
 
 	it ('should prepare all alive cells for rendering', function(){
-		let dsm = new DrawingStateManager({})
-		dsm.toggleCell(0,0)
-		dsm.toggleCell(1,0)
-		dsm.toggleCell(2,0)
+		let dsm = new DrawingStateManager({});
+		dsm.toggleCell(0,0);
+		dsm.toggleCell(1,0);
+		dsm.toggleCell(2,0);
 
-		let scene = new SceneManager()
-		expect(scene.fullyRendered()).to.be.true
-		dsm.processCells(scene)
+		let scene = new SceneManager();
+		expect(scene.fullyRendered()).to.be.true;
+		expect(scene.stack.length).to.equal(0);
+		dsm.processCells(scene);
 
-		expect(scene.fullyRendered()).to.be.false
-		expect(scene.stack.length).to.equal(3)
-
-		scene.stack.forEach(entity => {
-			expect(entity.traits.length).to.equal(6)
-		})
+		expect(scene.fullyRendered()).to.be.false;
+		expect(scene.stack.length).to.equal(3);
 	})
 
 	it ('should clear the system', function(){

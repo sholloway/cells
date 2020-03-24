@@ -9,9 +9,28 @@ const { ColorByContents, FilledRectTrait,
 
 class DrawingSceneBuilder{
 	static buildScene(scene, config, objs){
-		let cells = objs.map((c) => Cell.buildInstance(c));
-		registerCellTraits(config, cells);
-		scene.push(cells);
+		let entities = objs.map((obj) => {
+			let entity;
+			if(obj.className === 'Box'){
+				entity = Box.buildInstance(obj);
+				entity.register(new ProcessBoxAsRect())
+					.register(new ScaleTransformer(config.zoom))
+					.register(new ColorByContents())
+					.register(new RectOutlineTrait());
+			}else if(obj.className === 'Cell'){
+				entity = Cell.buildInstance(obj);
+				entity.register(new GridCellToRenderingEntity())
+					.register(new ScaleTransformer(config.zoom))
+					.register(new StrokeStyle('#ffeb3b'))
+					.register(new FillStyle('#263238'))
+					.register(new FilledRectTrait())
+					.register(new RectOutlineTrait());
+			}else{
+				entity = new Entity();
+			}
+			return entity;
+		});
+		scene.push(entities);
 	}
 }
 
@@ -107,18 +126,21 @@ class DrawingStateManager{
 	 * @param {number} y - The Y coordinate on the simulation's grid.
 	 */
 	toggleCell(x,y){
-		let node = this.currentTree.search(new Cell(x,y))
+		let totalTime='toggleCell total time';
+		console.time(totalTime);
+		let node = this.currentTree.search(new Cell(x,y));
 		if (node == null){ //Doesn't exist. Add it.
-			this.cells.push(new Cell(x,y,1))
-			this.nextTree.clear()
-			this.nextTree.index(this.cells)
+			this.cells.push(new Cell(x,y,1));
+			this.nextTree.clear();
+			this.nextTree.index(this.cells);
 		}else{
 			//remove it.
-			this.cells.splice(node.index, 1)
-			this.nextTree.clear()
-			this.nextTree.index(this.cells)
+			this.cells.splice(node.index, 1);
+			this.nextTree.clear();
+			this.nextTree.index(this.cells);
 		}
-		this.activateNext()
+		this.activateNext();
+		console.timeEnd(totalTime);
 	}
 
 	/**
@@ -126,9 +148,10 @@ class DrawingStateManager{
 	 * @param {SceneManager} scene - The scene to add the cells to.
 	 */
 	processCells(scene){
-		let clones = cloneCells(this.cells)
-		registerCellTraits(this.config, clones)
-		scene.push(clones)
+	//	let clones = cloneCells(this.cells)
+	//	registerCellTraits(this.config, clones)
+		// scene.push(clones)
+		scene.push(this.cells);
 	}
 
 	/**
@@ -154,13 +177,12 @@ class DrawingStateManager{
 	 * @param {SceneManager} scene - The active list of things that need to be rendered.
 	 */
 	stageStorage(scene, display){
-		if (!display){
-			return
+		if (display){	
+			let boxes = []
+			collectBoxes(this.currentTree.root,boxes)
+	//		registerBoxTraits(this.config, boxes)
+			scene.push(boxes)
 		}
-		let boxes = []
-		collectBoxes(this.currentTree.root,boxes)
-		registerBoxTraits(this.config, boxes)
-		scene.push(boxes)
 	}
 }
 

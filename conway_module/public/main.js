@@ -16,6 +16,8 @@ const WorkerSystem = Conways.WorkerSystem;
 const WorkerCommands = Conways.WorkerCommands;
 const DrawingSceneBuilder = Conways.DrawingSceneBuilder;
 
+const processDrawingWorker='Render Drawing Scene';
+
 class Main {
   constructor(gridCanvas, simCanvas, drawCanvas) {
     this.gridCanvas = gridCanvas;
@@ -80,15 +82,19 @@ class Main {
    2. Have create a new class that builds a scene manager and uses the existing
       DrawingStateManager.registerCellTraits() function to build the scene.
    */
+  /**
+   Render Drawing Scene: 107.730224609375ms
+main.js:91 parse time: 30.037109375ms
+main.js:95 purge time: 0.009033203125ms
+main.js:99 build scene: 28.143798828125ms
+   */
   handleMessageFromDrawingWorker(message){
     if (message.data) { 
-      let cells = JSON.parse(message.data);
+      let stack = JSON.parse(message.data);
       this.drawingScene.purge();
-      DrawingSceneBuilder.buildScene(this.drawingScene, this.config, cells);
-      // let htmlCanvasContext = this.gridCanvas.getContext('2d');
-      // htmlCanvasContext.strokeStyle = '#757575';
-      // htmlCanvasContext.lineWidth = 0.5;
+      DrawingSceneBuilder.buildScene(this.drawingScene, this.config, stack);
       this.drawingSystemRender.render(this.drawingScene);
+      stack = null;
     }
   }
 
