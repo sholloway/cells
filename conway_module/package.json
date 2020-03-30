@@ -4,6 +4,9 @@
 	"description": "A module for playing Conway's Game of Life in a browser.",
 	"private": true,
 	"main": "./lib/index.js",
+	"engines" : { 
+		"node" : ">=12.16.1" 
+	},
 	"scripts": {
 		"build": "webpack --config webpack.prod.js",
 		"build:dev": "webpack --config webpack.dev.js",
