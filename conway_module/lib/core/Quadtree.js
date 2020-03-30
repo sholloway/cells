@@ -3,8 +3,8 @@
  * @module quadtree
  */
 
-const {CellStates} = require('./CellStates.js')
-const {Entity} = require('../entity-system/entities')
+const { CellStates } = require('./CellStates.js')
+const { Entity } = require('../entity-system/entities')
 
 /**
  * Represents a single unit on an abstract 2D grid.
@@ -13,7 +13,7 @@ const {Entity} = require('../entity-system/entities')
  * The grid is uniform.
  * @extends Entity
  */
-class Cell extends Entity{
+class Cell extends Entity {
 	/**
 	 * Create a new cell.
 	 * @param {number} row - The horizontal location of the cell on a grid.
@@ -21,9 +21,9 @@ class Cell extends Entity{
 	 * @param {number} age - The number of simulation iterations the cell has been alive.
 	 * @param {CellState} state - The state of the cell.
 	 */
-	constructor(row, col, age=0, state=CellStates.ALIVE){
+	constructor(row, col, age = 0, state = CellStates.ALIVE) {
 		super()
-		this.location = {row: row, col: col}
+		this.location = { row: row, col: col }
 		this.age = age
 		this.width = 1
 		this.height = 1
@@ -38,15 +38,15 @@ class Cell extends Entity{
 	 * @param {number} yy
 	 * @returns {boolean}
 	 */
-	isInsideRect(x,y,xx,yy){
+	isInsideRect(x, y, xx, yy) {
 		return (x <= this.location.row && this.location.row <= xx &&
-						y <= this.location.col && this.location.col <= yy);
+			y <= this.location.col && this.location.col <= yy);
 	}
 
 	/**
 	 * Getter for the cell's state.
 	 */
-	getState(){
+	getState() {
 		return this.state
 	}
 
@@ -54,11 +54,11 @@ class Cell extends Entity{
 	 * Create a deep copy of the cell.
 	 * @returns {Cell}
 	 */
-	clone(){
+	clone() {
 		return new Cell(this.location.row, this.location.col, this.age, this.state)
 	}
 
-	static buildInstance(params){
+	static buildInstance(params) {
 		return new Cell().copyParams(params);
 	}
 }
@@ -66,22 +66,13 @@ class Cell extends Entity{
 /**
  * Singleton instance of a dead cell.
  * */
-const DeadCell = new Cell(Infinity,Infinity, 0, CellStates.DEAD)
+const DeadCell = new Cell(Infinity, Infinity, 0, CellStates.DEAD)
 Object.freeze(DeadCell)
-
-let idCount = 0
-/**
- * Generate a unique ID for a node in the quad tree. Used for debugging.
- * @private
- */
-function generateId(){
-	return idCount++;
-}
 
 /**
  * A node in the pointer based quad tree.
  */
-class QTNode{
+class QTNode {
 	/**
 	 * Initialize a new QTNode.
 	 * @param {number} id - The unique identifier of the node.
@@ -90,7 +81,7 @@ class QTNode{
 	 * @param {number} xx
 	 * @param {number} yy
 	 */
-	constructor(id, x,y, xx, yy){
+	constructor(id, x, y, xx, yy) {
 		this.id = id
 		this.rect = {
 			x: x,
@@ -104,7 +95,7 @@ class QTNode{
 		//The potential children of this node.
 		this.upperLeft = null
 		this.upperRight = null
-		this.lowerLeft =  null
+		this.lowerLeft = null
 		this.lowerRight = null
 
 		//The index is a reference to the data in the array containing all the live cells.
@@ -113,24 +104,28 @@ class QTNode{
 		this.index = null
 	}
 
+	toString(){
+		return `ID: ${this.id}\nSpace: (${this.rect.x},${this.rect.y}),(${this.rect.xx},${this.rect.yy})\nArea: ${this.area}`;
+	}
+
 	/**
 	 * Returns true if the region doesn't contain a point yet.
 	 * @returns {boolean}
 	 */
-	empty(){
+	empty() {
 		return this.index === null
 	}
 
 	/**
 	 * Sets all class members to null.
 	 */
-	destroy(){
+	destroy() {
 		this.id = null
 		this.rect = null
 		this.area = null
 		this.upperLeft = null
 		this.upperRight = null
-		this.lowerLeft =  null
+		this.lowerLeft = null
 		this.lowerRight = null
 		this.index = null
 	}
@@ -139,11 +134,11 @@ class QTNode{
 	 * Returns the all the children as an array. Returns an empty array if the children have not been initialized yet.
 	 * @return {QTNode[]}
 	 */
-	children(){
+	children() {
 		let kids = null
-		if (this.subdivided){
+		if (this.subdivided) {
 			kids = [this.upperLeft, this.upperRight, this.lowerLeft, this.lowerRight]
-		}else{
+		} else {
 			kids = []
 		}
 		return kids
@@ -155,7 +150,7 @@ class QTNode{
 	 * @param {number} y - Upper most boundary of the rectangle
 	 * @returns {boolean}
 	 */
-	containsPoint(x,y){
+	containsPoint(x, y) {
 		return (this.rect.x <= x && x <= this.rect.xx) &&
 			(this.rect.y <= y && y <= this.rect.yy);
 	}
@@ -168,15 +163,15 @@ class QTNode{
 	 * @param {Cell} cell
 	 * @returns {boolean}
 	 */
-	containsRect(cell){
-		if (cell == null || cell == undefined){
+	containsRect(cell) {
+		if (cell == null || cell == undefined) {
 			throw new Exception('QTNode.contains cannot process a null cell.')
 		}
 
 		//Since both the cell and bounding box are aligned to the same axes
 		//we can just check the min and max points.
 		return this.containsPoint(cell.location.row, cell.location.col) &&
-			this.containsPoint(cell.location.row+cell.width, cell.location.col+cell.height)
+			this.containsPoint(cell.location.row + cell.width, cell.location.col + cell.height)
 	}
 
 	/**
@@ -187,10 +182,10 @@ class QTNode{
 	 * @param {number} yy
 	 * @returns {boolean} Returns whether or not the node's bounding box intersects the provided range.
 	 */
-	intersectsAABB(x,y,xx,yy){
+	intersectsAABB(x, y, xx, yy) {
 		let intersects = false
 		if ((this.rect.x <= xx && this.rect.xx >= x) &&
-		(this.rect.y <= yy && this.rect.yy >= y)){
+			(this.rect.y <= yy && this.rect.yy >= y)) {
 			intersects = true
 		}
 		return intersects
@@ -204,7 +199,7 @@ class QTNode{
 	 * @param {number} yy
 	 * @returns {boolean}
 	 */
-	isInsideRect(x,y,xx,yy){
+	isInsideRect(x, y, xx, yy) {
 		let firstPointIntersection = (x <= this.rect.x && this.rect.x <= xx &&
 			y <= this.rect.y && this.rect.y <= yy);
 
@@ -220,7 +215,7 @@ class QTNode{
 	 *
 	 * @returns {number} The area of the rectangle.
 	 */
-	area(){
+	area() {
 		let length = Math.abs(this.rect.xx) - Math.abs(this.rect.x)
 		let height = Math.abs(this.rect.yy) - Math.abs(this.rect.y)
 		return length * height
@@ -230,7 +225,7 @@ class QTNode{
 	 * Set the node to a leaf. This is where the data lives.
 	 * @param {number} index - The location of the leaf.
 	 */
-	setLeaf(index){
+	setLeaf(index) {
 		this.index = index
 	}
 
@@ -246,20 +241,20 @@ class QTNode{
 	 *
 	 * And the quadrants being divided by the point (p,q).
 	 */
-	subdivide(){
+	subdivide(tree) {
 		//Only support the scenario of subdividing exactly once.
-		if (this.subdivided){
+		if (this.subdivided) {
 			return
 		}
 
-		let p = this.rect.x + Math.ceil( (Math.abs(this.rect.xx) - Math.abs(this.rect.x))/2 )
-		let q = this.rect.y + Math.ceil( (Math.abs(this.rect.yy) - Math.abs(this.rect.y))/2 )
+		let p = this.rect.x + Math.ceil((Math.abs(this.rect.xx) - Math.abs(this.rect.x)) / 2)
+		let q = this.rect.y + Math.ceil((Math.abs(this.rect.yy) - Math.abs(this.rect.y)) / 2)
 
 		//How to handle overlap?..
-		this.upperLeft = new QTNode(generateId(), this.rect.x, this.rect.y, p, q) //Q1
-		this.upperRight = new QTNode(generateId(), p,this.rect.y, this.rect.xx, q) //Q2
-		this.lowerLeft = new QTNode(generateId(), this.rect.x, q, p, this.rect.yy) //Q3
-		this.lowerRight = new QTNode(generateId(), p,q, this.rect.xx, this.rect.yy) //Q4
+		this.upperLeft = new QTNode(tree.generateId(), this.rect.x, this.rect.y, p, q) //Q1
+		this.upperRight = new QTNode(tree.generateId(), p, this.rect.y, this.rect.xx, q) //Q2
+		this.lowerLeft = new QTNode(tree.generateId(), this.rect.x, q, p, this.rect.yy) //Q3
+		this.lowerRight = new QTNode(tree.generateId(), p, q, this.rect.xx, this.rect.yy) //Q4
 		this.subdivided = true
 	}
 }
@@ -268,7 +263,7 @@ class QTNode{
 * Create an empty Axis-aligned bounding box.
 * @returns {object} An AABB defined by two points.
 */
-function emptyAABB(){
+function emptyAABB() {
 	return {
 		rowMin: 0, colMin: 0,
 		rowMax: 0, colMax: 0
@@ -282,12 +277,12 @@ function emptyAABB(){
 * @param {Cell[]} cells - An array of alive cells.
 * @returns {object} An AABB defined by two points.
 */
-function buildAxisAlignedBoundingBox(cells){
+function buildAxisAlignedBoundingBox(cells) {
 	let rowMin = cells[0].location.row
 	let rowMax = cells[0].location.row
 	let colMin = cells[0].location.col
 	let colMax = cells[0].location.col
-	cells.forEach((cell)=>{
+	cells.forEach((cell) => {
 		rowMin = Math.min(rowMin, cell.location.row)
 		rowMax = Math.max(rowMax, cell.location.row)
 		colMin = Math.min(colMin, cell.location.col)
@@ -298,70 +293,7 @@ function buildAxisAlignedBoundingBox(cells){
 	// than intersecting it.
 	return {
 		rowMin: rowMin, colMin: colMin,
-		rowMax: rowMax+1, colMax: colMax+1
-	}
-}
-
-/**
-We want to use recursion to add a cell to quad tree.
-Starting with the root, check to see if the cell belongs the active node,
-if it does not, then subdivide by 4 and call each new child recursively.
-
-@param {number} minimumCellSize - The smallest area a partition can have.
-@param {QTNode} node - The node in the QuadTree to start the test.
-@param {Cell} cell - The cell to be added to the QualTree.
-@param {number} index - The location of the cell in the array of leaves.
-*/
-function addCell(minimumCellSize, node, cell, index){
-	//If the cell does not fall in the node's bounding box end.
-	if (!node.containsRect(cell)){
-		return
-	}
-
-	//Is this the smallest a region can be? If so set the index otherwise subdivide.
-	//Experiment: Rather than have the cell get to the minimum area, just add the cell
-	//if none exist. However, the challenge with that, is when the second point is added,
-	//the previously added leaf needs to be moved.
-	/* Original
-	if(minimumCellSize >= node.area)
-	{
-		//set the cell
-		node.setLeaf(index)
-		return
-	}else{
-		if (!node.subdivided){
-			node.subdivide()
-		}
-		//make recursive call for each quadrant
-		node.children().forEach((quadrant) => {
-			addCell(minimumCellSize, quadrant, cell, index)
-		})
-	}
-	*/
-
-	if (node.subdivided){ //Index should always be empty
-		//make recursive call for each quadrant
-		node.children().forEach((quadrant) => {
-			addCell.bind(this)(minimumCellSize, quadrant, cell, index)
-		})
-	}else{
-		if(node.empty()){
-			node.setLeaf(index)
-			return
-		}else{
-			//If it's not empty, there's already a cell here. We need to subdivide and reposition the existing cell.
-			node.subdivide()
-			let relocateCell = this.leaves[node.index]
-			let relocateCellIndex = node.index
-			node.setLeaf(null)
-			node.children().forEach((quadrant) => {
-				//attempt to place the existing cell
-				addCell.bind(this)(minimumCellSize, quadrant, relocateCell, relocateCellIndex)
-
-				//attempt to place the current cell
-				addCell.bind(this)(minimumCellSize, quadrant, cell, index)
-			})
-		}
+		rowMax: rowMax + 1, colMax: colMax + 1
 	}
 }
 
@@ -371,17 +303,17 @@ function addCell(minimumCellSize, node, cell, index){
  * @param {number} index - The index to verify
  * @returns {Boolean}
  */
-function validIndex(array, index){
+function validIndex(array, index) {
 	return (typeof index === 'number' &&
-		(index >=0 && index <=array.length - 1))
+		(index >= 0 && index <= array.length - 1))
 }
 
 /**
  * Deletes the provided and all children nodes.
  * @param {QTNode} node - The node to start the top-down delete from.
  */
-function recursiveDelete(node){
-	if (typeof node === 'undefined' || node === null){
+function recursiveDelete(node) {
+	if (typeof node === 'undefined' || node === null) {
 		return
 	}
 	recursiveDelete(node.upperLeft)
@@ -394,14 +326,23 @@ function recursiveDelete(node){
 /**
  * A pointer based 2D spatial quad tree.
  */
-class QuadTree{
-	constructor(liveCells){
+class QuadTree {
+	constructor(liveCells) {
 		this.leaves = liveCells
 		this.root = null
 		this.minimumCellSize = 1
+		this.idCount = 0
 	}
 
-	aliveCellsCount(){
+	/**
+	 * Generate a unique ID for a node in the quad tree. Used for debugging.
+	 * @private
+	 */
+	generateId() {
+		return this.idCount++;
+	}
+
+	aliveCellsCount() {
 		return this.leaves.length
 	}
 
@@ -409,17 +350,18 @@ class QuadTree{
 	 * Empties the tree. It sets the leaves to an empty array and recursively deletes all nodes.
 	 * @returns {QuadTree} The instance of the tree being operated on.
 	 */
-	clear(){
+	clear() {
 		recursiveDelete(this.root)
 		this.root = null
 		this.leaves = []
+		this.idCount = 0;
 		return this
 	}
 
 	/**
 	 * Create a new empty quad tree.
 	 */
-	static empty(){
+	static empty() {
 		return new QuadTree([])
 	}
 
@@ -428,8 +370,8 @@ class QuadTree{
 	 * @param {QuadTree} tree
 	 * @returns {QuadTree} A deep copy of the tree. Returns an empty tree if passed null.
 	 */
-	static clone(tree){
-		if (typeof tree === 'undefined' || tree === null){
+	static clone(tree) {
+		if (typeof tree === 'undefined' || tree === null) {
 			return QuadTree.empty()
 		}
 
@@ -443,22 +385,161 @@ class QuadTree{
 	}
 
 	/**
+	We want to use recursion to add a cell to quad tree.
+	Starting with the root, check to see if the cell belongs the active node,
+	if it does not, then subdivide by 4 and call each new child recursively.
+
+	@param {number} minimumCellSize - The smallest area a partition can have.
+	@param {QTNode} node - The node in the QuadTree to start the test.
+	@param {Cell} cell - The cell to be added to the QuadTree.
+	@param {number} index - The location of the cell in the array of leaves.
+	*/
+	addCell(minimumCellSize, node, cell, index) {
+		//If the cell does not fall in the node's bounding box end.
+		if (!node.containsRect(cell)) {
+			return
+		}
+
+		if (node.subdivided) {
+			let quadrants = node.children();
+
+			for (var quadrant = 0; quadrant < quadrants.length; quadrant++) {
+				if (quadrants[quadrant].containsRect(cell)) {
+					this.addCell(minimumCellSize, quadrants[quadrant], cell, index);
+				}
+			}
+		} else {
+			if (node.empty()) {
+				node.setLeaf(index)
+				return
+			} else {
+				// If it's not empty, there's already a cell here. 
+				// We need to subdivide and reposition the existing cell.
+				node.subdivide(this);
+				let relocateCell = this.leaves[node.index]
+				let relocateCellIndex = node.index
+				node.setLeaf(null)
+
+				let quadrants = node.children();
+
+				for (var quadrant = 0; quadrant < quadrants.length; quadrant++) {
+					//attempt to place the existing cell
+					if (quadrants[quadrant].containsRect(relocateCell)) {
+						this.addCell(minimumCellSize, quadrants[quadrant], relocateCell, relocateCellIndex)
+					}
+
+					//attempt to place the current cell
+					if (quadrants[quadrant].containsRect(cell)) {
+						this.addCell(minimumCellSize, quadrants[quadrant], cell, index)
+					}
+				}
+			}
+		}
+	}
+
+	/** The original index method. Leverages recursion.
 	 * Build the spatial data structure based on a provided array of cells.
 	 * @param {Cell[]} liveCells
 	 * @returns {QTNode} Returns the root of the tree.
 	 */
-	index(liveCells = null){
-		if(liveCells !== null){
+	recursive_index(liveCells = null) {
+		if (liveCells !== null) {
 			this.leaves = liveCells
 		}
-		this.boundary = (this.leaves.length > 0)? buildAxisAlignedBoundingBox(this.leaves) : emptyAABB()
-		this.root = new QTNode(generateId(),
+		this.boundary = (this.leaves.length > 0) ? buildAxisAlignedBoundingBox(this.leaves) : emptyAABB()
+		this.root = new QTNode(this.generateId(),
 			this.boundary.rowMin, this.boundary.colMin,
 			this.boundary.rowMax, this.boundary.colMax)
 
+		for (var index = 0; index < this.leaves.length; index++) {
+			this.addCell(this.minimumCellSize, this.root, this.leaves[index], index);
+		}
+
+		return this.root
+	}
+
+	/*
+	Debug: 
+	- In one toggle call index() was called 3 times. This is because when the next tree
+		is activated, the tree is cloned which reindexes it, then cleared and the empty tree 
+		is re-indexed. Ug...
+	- Clicking on an active cell makes the app hang.
+		- It looks like the search function is failing, then the same node get's added twice
+			which the index function doesn't handle so the tree grows unbounded.
+	*/
+	/** The second index method. Leverages an stack and looping.
+	 * Build the spatial data structure based on a provided array of cells.
+	 * @param {Cell[]} liveCells
+	 * @returns {QTNode} Returns the root of the tree.
+	 */
+	index(liveCells = null) {
+		let stack = [];
+		if (liveCells !== null) {
+			this.leaves = liveCells;
+		}
+		this.boundary = (this.leaves.length > 0) ? buildAxisAlignedBoundingBox(this.leaves) : emptyAABB();
+		this.root = new QTNode(this.generateId(),
+			this.boundary.rowMin, this.boundary.colMin,
+			this.boundary.rowMax, this.boundary.colMax);
+
+		//Populate the stack
 		this.leaves.forEach((cell, index) => {
-			addCell.bind(this)(this.minimumCellSize, this.root, cell, index)
-		})
+			// this.addCell(this.minimumCellSize, this.root, cell, index);
+			stack.push({ node: this.root, cell: cell, index: index });
+		});
+
+		let item;
+		while (stack.length) {
+			item = stack.pop();
+
+			if (!item.node.containsRect(item.cell)) {
+				continue;
+			}
+
+			if (item.node.subdivided) {
+				let quadrants = item.node.children();
+				for (var quadrant = 0; quadrant < quadrants.length; quadrant++) {
+					if (quadrants[quadrant].containsRect(item.cell)) {
+						stack.push({ node: quadrants[quadrant], cell: item.cell, index: item.index });
+					}
+				}
+				quadrants = null;
+			} else {
+				if (item.node.empty()) {
+					if(item.node.area === this.minimumCellSize){
+						item.node.setLeaf(item.index);
+					}else{
+						item.node.subdivide(this);
+						stack.push(item); //Place the item back on the stack. It's children will get processed on the next loop.
+					}
+				} else {
+					// If it's not empty, there's already a cell here. 
+					// We need to subdivide and reposition the existing cell.
+					item.node.subdivide(this);
+					let relocateCell = this.leaves[item.node.index];
+					let relocateCellIndex = item.node.index;
+					item.node.setLeaf(null);
+
+					let quadrants = item.node.children();
+					for (var quadrant = 0; quadrant < quadrants.length; quadrant++) {
+						//attempt to place the existing cell
+						if (quadrants[quadrant].containsRect(relocateCell)) {
+							stack.push({ node: quadrants[quadrant], cell: relocateCell, index: relocateCellIndex });
+						}
+
+						//attempt to place the current cell
+						if (quadrants[quadrant].containsRect(item.cell)) {
+							stack.push({ node: quadrants[quadrant], cell: item.cell, index: item.index });
+						}
+					}
+					relocateCell = null;
+					relocateCellIndex = null;
+					quadrants = null;
+				}
+			}
+		}
+		item = null;
+		stack = null;
 		return this.root
 	}
 
@@ -469,44 +550,40 @@ class QuadTree{
 	 *
 	 * @returns {QTNode} Returns the node that points to the alive cell if it exists. Otherwise returns null.
 	 */
-	search(cell, currentNode = this.root){
-		if (currentNode === null){
+	search(cell, currentNode = this.root) {
+		//console.log(`Search: ${currentNode.toString()}`);
+		if (currentNode === null) {
 			throw new Error('Cannot search a null tree.')
 		}
-		// End the search
-		if (currentNode.area == this.minimumCellSize){
-			if (currentNode.containsRect(cell) && currentNode.index !== null){
-				return currentNode
-			}else{
-				return null
-			}
-		}
 
-		//End Search
-		if (!currentNode.subdivided){
-			return null
-		}
+		//Going to have to enforce size here.
+		if (currentNode.containsRect(cell) && currentNode.index !== null) {
+			return currentNode // End the search
+		} 
 
-		//try searching on the left of the horizontal partition.
-		let cellRightBoundary = cell.location.row + cell.width
-		let cellLowerBoundary = cell.location.col + cell.height
-		let horizontalPartition = currentNode.upperLeft.rect.xx
-		let verticalPartition = currentNode.upperLeft.rect.yy
-		let nextNode = null
-		if (cellRightBoundary <= horizontalPartition){ // The right most boundary of the cell is to the left horizontal partition.
-			if(cellLowerBoundary <= verticalPartition){ //try upper left
-				nextNode = currentNode.upperLeft
-			}else{ //try lower left
-				nextNode = currentNode.lowerLeft
+		if(currentNode.subdivided){ //Traverse farther down the tree.
+			let cellRightBoundary = cell.location.row + cell.width
+			let cellLowerBoundary = cell.location.col + cell.height
+			let horizontalPartition = currentNode.upperLeft.rect.xx
+			let verticalPartition = currentNode.upperLeft.rect.yy
+			let nextNode = null
+			if (cellRightBoundary <= horizontalPartition) { // The right most boundary of the cell is to the left horizontal partition.
+				if (cellLowerBoundary <= verticalPartition) { //try upper left
+					nextNode = currentNode.upperLeft
+				} else { //try lower left
+					nextNode = currentNode.lowerLeft
+				}
+			} else { //try searching on the right of the horizontal partition.
+				if (cellLowerBoundary <= verticalPartition) { //try upper right
+					nextNode = currentNode.upperRight
+				} else { //try lower right
+					nextNode = currentNode.lowerRight
+				}
 			}
-		}else{ //try searching on the right of the horizontal partition.
-			if(cellLowerBoundary <= verticalPartition){ //try upper right
-				nextNode = currentNode.upperRight
-			}else{ //try lower right
-				nextNode = currentNode.lowerRight
-			}
+			return (nextNode === null) ? null : this.search(cell, nextNode)
+		}else{
+			return null; //End Search
 		}
-		return (nextNode === null)? null : this.search(cell, nextNode)
 	}
 
 	//Most time is spent here according to profiler.
@@ -516,12 +593,12 @@ class QuadTree{
 	 * @param {number} col
 	 * @returns {Cell} Returns the found cell or the DeadCell.
 	 */
-	findCellIfAlive(row, col){
+	findCellIfAlive(row, col) {
 		let foundLeafNode = this.search(new Cell(row, col))
-		if (foundLeafNode !== null && validIndex(this.leaves, foundLeafNode.index)){
+		if (foundLeafNode !== null && validIndex(this.leaves, foundLeafNode.index)) {
 			let indexedCell = this.leaves[foundLeafNode.index]
 			return indexedCell
-		}else{
+		} else {
 			return DeadCell
 		}
 	}
@@ -536,26 +613,26 @@ class QuadTree{
 	 * @param {QTNode} currentNode - The node to perform the range on. Defaults to the root of the tree.
 	 * @returns {Cell[]} The array of alive cells found. Returns an empty array if none are found.
 	 */
-	findAliveInArea(x,y,xx,yy, currentNode = this.root){
-		if (typeof currentNode === 'undefined' || currentNode === null){
+	findAliveInArea(x, y, xx, yy, currentNode = this.root) {
+		if (typeof currentNode === 'undefined' || currentNode === null) {
 			throw new Error('Cannot perform a range query on an empty node.')
 		}
 		let foundCells = []
-		if (!currentNode.intersectsAABB(x,y,xx,yy)){
+		if (!currentNode.intersectsAABB(x, y, xx, yy)) {
 			return foundCells
 		}
 
-		if (currentNode.subdivided){
-			let q1 = this.findAliveInArea(x,y,xx,yy,currentNode.upperLeft)
-			let q2 = this.findAliveInArea(x,y,xx,yy,currentNode.upperRight)
-			let q3 = this.findAliveInArea(x,y,xx,yy,currentNode.lowerLeft)
-			let q4 = this.findAliveInArea(x,y,xx,yy,currentNode.lowerRight)
+		if (currentNode.subdivided) {
+			let q1 = this.findAliveInArea(x, y, xx, yy, currentNode.upperLeft)
+			let q2 = this.findAliveInArea(x, y, xx, yy, currentNode.upperRight)
+			let q3 = this.findAliveInArea(x, y, xx, yy, currentNode.lowerLeft)
+			let q4 = this.findAliveInArea(x, y, xx, yy, currentNode.lowerRight)
 			//foundCells = foundCells.concat(q1,q2,q3,q4)
 			//683   10.7%  t v8::internal::(anonymous namespace)::Fast_ArrayConcat
 			foundCells = [...q1, ...q2, ...q3, ...q4]
-		}else{
+		} else {
 			let cell = this.leaves[currentNode.index]
-			if (cell && cell.isInsideRect(x,y,xx,yy)){
+			if (cell && cell.isInsideRect(x, y, xx, yy)) {
 				foundCells.push(cell)
 			}
 		}
@@ -569,7 +646,7 @@ class QuadTree{
  * @param {QTNode} node - The node in the tree to scale.
  * @param {number} factor - The scaling factor.
  */
-function uniformScale(node, factor){
+function uniformScale(node, factor) {
 	node.rect.x = node.rect.x * factor
 	node.rect.y = node.rect.y * factor
 	node.rect.xx = node.rect.xx * factor
@@ -583,7 +660,7 @@ function uniformScale(node, factor){
  * @param {number} scalingFactor
  * @returns {Cell[]} A new array of cells.
  */
-function scaleCells(cells, scalingFactor){
+function scaleCells(cells, scalingFactor) {
 	return cells.map((cell) => new Cell(cell.location.row * scalingFactor, cell.location.col * scalingFactor, cell.age))
 }
 
@@ -593,20 +670,20 @@ function scaleCells(cells, scalingFactor){
  * @param {number} col - The cell's coordinates on the y-axis.
  * @returns {number} The count of alive neighbors.
  */
-function findAliveNeighbors(tree, row, col){
+function findAliveNeighbors(tree, row, col) {
 	let range = {
-		x : row - 1,
-		y : col - 1,
-		xx : row + 1,
-		yy : col + 1
+		x: row - 1,
+		y: col - 1,
+		xx: row + 1,
+		yy: col + 1
 	}
 	let aliveCells = tree.findAliveInArea(range.x, range.y, range.xx, range.yy)
 	let aliveCount = aliveCells.reduce((count, cell) => {
-			if (!(cell.location.row == row && cell.location.col == col)){
-				count++
-			}
-			return count
-		}, 0)
+		if (!(cell.location.row == row && cell.location.col == col)) {
+			count++
+		}
+		return count
+	}, 0)
 	return aliveCount
 }
 
@@ -615,9 +692,9 @@ function findAliveNeighbors(tree, row, col){
  * @param {Cell[]} cells - The array of cells to copy.
  * @returns {Cell[]} The new array.
  */
-function cloneCells(cells){
+function cloneCells(cells) {
 	let clones = []
-	cells.forEach( cell => { clones.push(new Cell(cell.location.row, cell.location.col, 1))})
+	cells.forEach(cell => { clones.push(new Cell(cell.location.row, cell.location.col, 1)) })
 	return clones
 }
 

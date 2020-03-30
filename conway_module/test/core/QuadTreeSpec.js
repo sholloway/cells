@@ -3,7 +3,7 @@ const expect = chai.expect
 const {Cell, QTNode, QuadTree, uniformScale, scaleCells} = require('../../lib/core/Quadtree.js')
 const {buildDag, createDotFile, mkFile} = require('./GraphVizUtility.js')
 const { drawImageBoarder, drawTree, drawCells, mkImageFile } = require('./CanvasUtility.js')
-const {makeIdentity, makeFull10By10} = require('./QuadTreeTestHelper.js')
+const {makeIdentity, makeOppositeIdentity, makeFull10By10} = require('./QuadTreeTestHelper.js')
 
 describe('QuadTree', function(){
 	describe('Indexing', function(){
@@ -49,7 +49,7 @@ describe('QuadTree', function(){
 	})
 
 	describe('Range Queries', function(){
-		it ('should find if a given cell if it exists', function(){
+		it ('should find if a given cell if it exists. Identity Pattern', function(){
 			let cells = makeIdentity()
 			let tree = new QuadTree(cells)
 			tree.index()
@@ -77,6 +77,41 @@ describe('QuadTree', function(){
 				}
 			}
 		})
+
+		it('should find if a given cell exists. Opposite Identity Pattern', () => {
+			let cells = makeOppositeIdentity();
+			let tree = new QuadTree(cells);
+			let root = tree.index();
+
+			let treeNodes = new Map()
+			let relationships = new Map()
+			buildDag(root, treeNodes, relationships)
+			let dotFileStr = createDotFile(treeNodes, relationships)
+			mkFile('temp.dot', dotFileStr)
+			
+			//Test for all alive cells.
+			cells.forEach((cell,index) => {
+				let foundNode = tree.search(cell);
+				expect(foundNode).to.not.be.null;
+				expect(foundNode.index).to.be.equal(index);
+			});
+
+			//Test for all the empty cells
+			for (let x = 0; x < 10; x++){
+				for (let y = 0; y < 10; y++) {
+					if (9 == (x + y)){
+						continue; //Skip the alive ones
+					}else{
+						let foundInErrorNode = tree.search(new Cell(x,y));
+						if (foundInErrorNode != null){
+							expect.fail(`Found a node in error.\n${foundInErrorNode.toString()}`);
+						}else{
+							expect(foundInErrorNode).to.be.null;
+						}
+					}
+				}
+			}
+		});
 
 		it ('should find all alive (existing) neighboring cells', function(){
 			let cells = makeFull10By10()
