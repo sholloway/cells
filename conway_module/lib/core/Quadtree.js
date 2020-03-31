@@ -458,15 +458,6 @@ class QuadTree {
 		return this.root
 	}
 
-	/*
-	Debug: 
-	- In one toggle call index() was called 3 times. This is because when the next tree
-		is activated, the tree is cloned which reindexes it, then cleared and the empty tree 
-		is re-indexed. Ug...
-	- Clicking on an active cell makes the app hang.
-		- It looks like the search function is failing, then the same node get's added twice
-			which the index function doesn't handle so the tree grows unbounded.
-	*/
 	/** The second index method. Leverages an stack and looping.
 	 * Build the spatial data structure based on a provided array of cells.
 	 * @param {Cell[]} liveCells

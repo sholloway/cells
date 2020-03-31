@@ -82,12 +82,6 @@ describe('QuadTree', function(){
 			let cells = makeOppositeIdentity();
 			let tree = new QuadTree(cells);
 			let root = tree.index();
-
-			let treeNodes = new Map()
-			let relationships = new Map()
-			buildDag(root, treeNodes, relationships)
-			let dotFileStr = createDotFile(treeNodes, relationships)
-			mkFile('temp.dot', dotFileStr)
 			
 			//Test for all alive cells.
 			cells.forEach((cell,index) => {

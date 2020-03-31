@@ -91,11 +91,11 @@ class DrawingStateManager{
 	 * @param {object} config - The simulation configuration object.
 	 */
 	constructor(config){
-		this.config = config
-		this.cells = []
-		this.currentTree = QuadTree.empty()
-		this.nextTree = QuadTree.empty()
-		this.currentTree.index(this.cells)
+		this.config = config;
+		this.cells = [];
+		this.currentTree = QuadTree.empty();
+		this.nextTree = QuadTree.empty();
+		this.currentTree.index(this.cells);
 	}
 
 	setConfig(config){
@@ -139,9 +139,17 @@ class DrawingStateManager{
 			this.nextTree.clear();
 			this.nextTree.index(this.cells);
 		}
-		this.activateNext();
+		this.activateNext(); 
 		console.timeEnd(totalTime);
 	}
+
+	/*
+	Next Steps
+	* Refactor the quadtree's index() and search() functions to be maintainable.
+	* Populate the life simulation from the drawing system.
+	* Get test converage working through the IDE.
+	* setup prettifier. I want to add ; to every line.
+	*/
 
 	/**
 	 * Prepares the alive cells to be drawn.
@@ -159,8 +167,18 @@ class DrawingStateManager{
 	 * tree to be empty.
 	 */
 	activateNext(){
-		this.currentTree = QuadTree.clone(this.nextTree)
-		this.nextTree.clear().index()
+		// this.currentTree = QuadTree.clone(this.nextTree)
+		// this.nextTree.clear().index();
+
+		//Purge the current tree and then point the current state to the future state.
+		this.currentTree.clear();
+		this.currentTree = null; 
+		this.currentTree = this.nextTree;
+
+		//Free the nextTree pointer and then provision a new tree for the future state.
+		this.nextTree = null;
+		this.nextTree = QuadTree.empty();
+		this.nextTree.index();
 	}
 
 	/**
