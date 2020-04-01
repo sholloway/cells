@@ -68,10 +68,8 @@ describe('QuadTree', function(){
 						continue
 					}else{
 						let foundInErrorNode = tree.search(new Cell(x,y))
-						if (foundInErrorNode != null){
+						if (!foundInErrorNode.isNullNode){
 							expect.fail('Found a node in error.')
-						}else{
-							expect(foundInErrorNode).to.be.null
 						}
 					}
 				}
@@ -97,10 +95,8 @@ describe('QuadTree', function(){
 						continue; //Skip the alive ones
 					}else{
 						let foundInErrorNode = tree.search(new Cell(x,y));
-						if (foundInErrorNode != null){
+						if (!foundInErrorNode.isNullNode){
 							expect.fail(`Found a node in error.\n${foundInErrorNode.toString()}`);
-						}else{
-							expect(foundInErrorNode).to.be.null;
 						}
 					}
 				}

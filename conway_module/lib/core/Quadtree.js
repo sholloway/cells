@@ -58,6 +58,14 @@ class Cell extends Entity {
 		return new Cell(this.location.row, this.location.col, this.age, this.state)
 	}
 
+	rightBoundary() {
+		return this.location.row + this.width;
+	}
+
+	lowerBoundary() {
+		return this.location.col + this.height;
+	}
+
 	static buildInstance(params) {
 		return new Cell().copyParams(params);
 	}
@@ -90,13 +98,7 @@ class QTNode {
 			yy: yy
 		}
 		this.area = this.area()
-		this.subdivided = false //Flag indicating this node has been subdivided.
-
-		//The potential children of this node.
-		this.upperLeft = null
-		this.upperRight = null
-		this.lowerLeft = null
-		this.lowerRight = null
+		this.initializeEmptyPartitions();
 
 		//The index is a reference to the data in the array containing all the live cells.
 		//It should be the number index, not a pointer to the data itself.
@@ -104,7 +106,16 @@ class QTNode {
 		this.index = null
 	}
 
-	toString(){
+	initializeEmptyPartitions(){
+		this.subdivided = false //Flag indicating this node has been subdivided.
+		//The potential children of this node.
+		this.upperLeft = null;
+		this.upperRight = null;
+		this.lowerLeft = null;
+		this.lowerRight = null;
+	}
+
+	toString() {
 		return `ID: ${this.id}\nSpace: (${this.rect.x},${this.rect.y}),(${this.rect.xx},${this.rect.yy})\nArea: ${this.area}`;
 	}
 
@@ -256,6 +267,25 @@ class QTNode {
 		this.lowerLeft = new QTNode(tree.generateId(), this.rect.x, q, p, this.rect.yy) //Q3
 		this.lowerRight = new QTNode(tree.generateId(), p, q, this.rect.xx, this.rect.yy) //Q4
 		this.subdivided = true
+	}
+
+	horizontalPartition() {
+		return this.upperLeft.rect.xx;
+	}
+
+	verticalPartition() {
+		return this.upperLeft.rect.yy;
+	}
+
+	static createNullNode(){
+		return new NullNode();
+	}
+}
+
+class NullNode extends QTNode{
+	constructor(){
+		super(-1, -1, -1, -1, -1);
+		this.isNullNode = true;
 	}
 }
 
@@ -469,13 +499,9 @@ class QuadTree {
 			this.leaves = liveCells;
 		}
 		this.boundary = (this.leaves.length > 0) ? buildAxisAlignedBoundingBox(this.leaves) : emptyAABB();
-		this.root = new QTNode(this.generateId(),
-			this.boundary.rowMin, this.boundary.colMin,
-			this.boundary.rowMax, this.boundary.colMax);
+		this.root = new QTNode(this.generateId(), this.boundary.rowMin, this.boundary.colMin, this.boundary.rowMax, this.boundary.colMax);
 
-		//Populate the stack
 		this.leaves.forEach((cell, index) => {
-			// this.addCell(this.minimumCellSize, this.root, cell, index);
 			stack.push({ node: this.root, cell: cell, index: index });
 		});
 
@@ -497,9 +523,9 @@ class QuadTree {
 				quadrants = null;
 			} else {
 				if (item.node.empty()) {
-					if(item.node.area === this.minimumCellSize){
+					if (item.node.area === this.minimumCellSize) {
 						item.node.setLeaf(item.index);
-					}else{
+					} else {
 						item.node.subdivide(this);
 						stack.push(item); //Place the item back on the stack. It's children will get processed on the next loop.
 					}
@@ -542,42 +568,20 @@ class QuadTree {
 	 * @returns {QTNode} Returns the node that points to the alive cell if it exists. Otherwise returns null.
 	 */
 	search(cell, currentNode = this.root) {
-		//console.log(`Search: ${currentNode.toString()}`);
 		if (currentNode === null) {
 			throw new Error('Cannot search a null tree.')
 		}
 
-		//Going to have to enforce size here.
 		if (currentNode.containsRect(cell) && currentNode.index !== null) {
 			return currentNode // End the search
-		} 
-
-		if(currentNode.subdivided){ //Traverse farther down the tree.
-			let cellRightBoundary = cell.location.row + cell.width
-			let cellLowerBoundary = cell.location.col + cell.height
-			let horizontalPartition = currentNode.upperLeft.rect.xx
-			let verticalPartition = currentNode.upperLeft.rect.yy
-			let nextNode = null
-			if (cellRightBoundary <= horizontalPartition) { // The right most boundary of the cell is to the left horizontal partition.
-				if (cellLowerBoundary <= verticalPartition) { //try upper left
-					nextNode = currentNode.upperLeft
-				} else { //try lower left
-					nextNode = currentNode.lowerLeft
-				}
-			} else { //try searching on the right of the horizontal partition.
-				if (cellLowerBoundary <= verticalPartition) { //try upper right
-					nextNode = currentNode.upperRight
-				} else { //try lower right
-					nextNode = currentNode.lowerRight
-				}
-			}
-			return (nextNode === null) ? null : this.search(cell, nextNode)
-		}else{
-			return null; //End Search
+		} else if (currentNode.subdivided) { //Traverse farther down the tree.
+			let nextNode = selectPartition(cell, currentNode);
+			return (nextNode.isNullNode) ? nextNode : this.search(cell, nextNode);
+		} else {
+			return QTNode.createNullNode(); //End Search
 		}
 	}
 
-	//Most time is spent here according to profiler.
 	/**
 	 * Finds a cell if it is alive in landscape.
 	 * @param {number} row
@@ -594,7 +598,6 @@ class QuadTree {
 		}
 	}
 
-	//Most time is spent here according to profiler.
 	/**
 	 * Recursive Range query. Finds all alive cells in the rectangle defined by bounds of the points (x,y), (xx,yy).
 	 * @param {number} x
@@ -628,6 +631,31 @@ class QuadTree {
 			}
 		}
 		return foundCells
+	}
+}
+
+
+/**
+	 * Selects which child node the provided cell is in.
+	 * @param {Cell} cell 
+	 * @param {QTNode} currentNode 
+	 * @returns {QTNode} Returns the selected child partition.
+	 */
+function selectPartition(cell, currentNode) {
+	let isCellToTheLeft = cell.rightBoundary() <= currentNode.horizontalPartition();
+	let isCellToTheTop = cell.lowerBoundary() <= currentNode.verticalPartition();
+	if (isCellToTheLeft) {
+		if (isCellToTheTop) {
+			return currentNode.upperLeft;
+		} else {
+			return currentNode.lowerLeft;
+		}
+	} else { //try searching on the right of the horizontal partition.
+		if (isCellToTheTop) {
+			return currentNode.upperRight;
+		} else {
+			return currentNode.lowerRight;
+		}
 	}
 }
 

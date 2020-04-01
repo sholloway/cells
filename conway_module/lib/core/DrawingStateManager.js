@@ -129,7 +129,7 @@ class DrawingStateManager{
 		let totalTime='toggleCell total time';
 		console.time(totalTime);
 		let node = this.currentTree.search(new Cell(x,y));
-		if (node == null){ //Doesn't exist. Add it.
+		if (node.isNullNode){ //The node doesn't exist. Add it.
 			this.cells.push(new Cell(x,y,1));
 			this.nextTree.clear();
 			this.nextTree.index(this.cells);
