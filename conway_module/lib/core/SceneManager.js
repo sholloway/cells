@@ -45,7 +45,7 @@ class SceneManager{
 	/**
 	 * Removes all entities from the stack.
 	 */
-	purge(){
+	clear(){
 		this.stack = []
 	}
 

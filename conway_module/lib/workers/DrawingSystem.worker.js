@@ -68,7 +68,7 @@ class DrawingSystem {
 
   update() {
     this.state = States.UPDATING
-    this.scene.purge();
+    this.scene.clear();
     this.getStateManager().stageStorage(this.scene, this.displayStorageStructure);
     this.getStateManager().processCells(this.scene);
     this.state = States.IDLE;

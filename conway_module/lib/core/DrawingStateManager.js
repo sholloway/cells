@@ -143,8 +143,8 @@ class DrawingStateManager{
 
 	/*
 	Next Steps
-	* Refactor the quadtree's index() and search() functions to be maintainable.
 	* Populate the life simulation from the drawing system.
+	* Remove ConwayBroker class.
 	* Get test converage working through the IDE.
 	* setup prettifier. I want to add ; to every line.
 	*/

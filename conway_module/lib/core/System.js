@@ -242,7 +242,7 @@ class CanvasBasedSystem extends BrowserSystem{
 	 * Clears the simulation.
 	 */
 	reset(){
-		this.scene.purge()
+		this.scene.clear()
 		this.getStateManager().clear()
 		this.renderer.clear()
 	}
