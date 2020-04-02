@@ -98,21 +98,18 @@ class QTNode {
 			yy: yy
 		}
 		this.area = this.area()
-		this.initializeEmptyPartitions();
-
-		//The index is a reference to the data in the array containing all the live cells.
-		//It should be the number index, not a pointer to the data itself.
-		//If it is null, then this node is empty or not a leaf.
-		this.index = null
-	}
-
-	initializeEmptyPartitions(){
 		this.subdivided = false //Flag indicating this node has been subdivided.
+		this.children = [];
 		//The potential children of this node.
 		this.upperLeft = null;
 		this.upperRight = null;
 		this.lowerLeft = null;
 		this.lowerRight = null;
+
+		//The index is a reference to the data in the array containing all the live cells.
+		//It should be the number index, not a pointer to the data itself.
+		//If it is null, then this node is empty or not a leaf.
+		this.index = null
 	}
 
 	toString() {
@@ -139,20 +136,6 @@ class QTNode {
 		this.lowerLeft = null
 		this.lowerRight = null
 		this.index = null
-	}
-
-	/**
-	 * Returns the all the children as an array. Returns an empty array if the children have not been initialized yet.
-	 * @return {QTNode[]}
-	 */
-	children() {
-		let kids = null
-		if (this.subdivided) {
-			kids = [this.upperLeft, this.upperRight, this.lowerLeft, this.lowerRight]
-		} else {
-			kids = []
-		}
-		return kids
 	}
 
 	/**
@@ -262,10 +245,13 @@ class QTNode {
 		let q = this.rect.y + Math.ceil((Math.abs(this.rect.yy) - Math.abs(this.rect.y)) / 2)
 
 		//How to handle overlap?..
-		this.upperLeft = new QTNode(tree.generateId(), this.rect.x, this.rect.y, p, q) //Q1
-		this.upperRight = new QTNode(tree.generateId(), p, this.rect.y, this.rect.xx, q) //Q2
-		this.lowerLeft = new QTNode(tree.generateId(), this.rect.x, q, p, this.rect.yy) //Q3
+		this.upperLeft  = new QTNode(tree.generateId(), this.rect.x, this.rect.y, p, q)   //Q1
+		this.upperRight = new QTNode(tree.generateId(), p, this.rect.y, this.rect.xx, q)  //Q2
+		this.lowerLeft  = new QTNode(tree.generateId(), this.rect.x, q, p, this.rect.yy)  //Q3
 		this.lowerRight = new QTNode(tree.generateId(), p, q, this.rect.xx, this.rect.yy) //Q4
+
+		this.children.push(this.upperLeft, this.upperRight, this.lowerLeft, this.lowerRight);
+
 		this.subdivided = true
 	}
 
@@ -343,14 +329,13 @@ function validIndex(array, index) {
  * @param {QTNode} node - The node to start the top-down delete from.
  */
 function recursiveDelete(node) {
-	if (typeof node === 'undefined' || node === null) {
-		return
+	if (node) {		
+		recursiveDelete(node.upperLeft)
+		recursiveDelete(node.upperRight)
+		recursiveDelete(node.lowerLeft)
+		recursiveDelete(node.lowerRight)
+		node.destroy()
 	}
-	recursiveDelete(node.upperLeft)
-	recursiveDelete(node.upperRight)
-	recursiveDelete(node.lowerLeft)
-	recursiveDelete(node.lowerRight)
-	node.destroy()
 }
 
 /**
@@ -431,11 +416,9 @@ class QuadTree {
 		}
 
 		if (node.subdivided) {
-			let quadrants = node.children();
-
-			for (var quadrant = 0; quadrant < quadrants.length; quadrant++) {
-				if (quadrants[quadrant].containsRect(cell)) {
-					this.addCell(minimumCellSize, quadrants[quadrant], cell, index);
+			for (var quadrant = 0; quadrant < node.children.length; quadrant++) {
+				if (node.children[quadrant].containsRect(cell)) {
+					this.addCell(minimumCellSize, node.children[quadrant], cell, index);
 				}
 			}
 		} else {
@@ -450,17 +433,15 @@ class QuadTree {
 				let relocateCellIndex = node.index
 				node.setLeaf(null)
 
-				let quadrants = node.children();
-
-				for (var quadrant = 0; quadrant < quadrants.length; quadrant++) {
+				for (var quadrant = 0; quadrant < node.children.length; quadrant++) {
 					//attempt to place the existing cell
-					if (quadrants[quadrant].containsRect(relocateCell)) {
-						this.addCell(minimumCellSize, quadrants[quadrant], relocateCell, relocateCellIndex)
+					if (node.children[quadrant].containsRect(relocateCell)) {
+						this.addCell(minimumCellSize, node.children[quadrant], relocateCell, relocateCellIndex)
 					}
 
 					//attempt to place the current cell
-					if (quadrants[quadrant].containsRect(cell)) {
-						this.addCell(minimumCellSize, quadrants[quadrant], cell, index)
+					if (node.children[quadrant].containsRect(cell)) {
+						this.addCell(minimumCellSize, node.children[quadrant], cell, index)
 					}
 				}
 			}
@@ -514,13 +495,11 @@ class QuadTree {
 			}
 
 			if (item.node.subdivided) {
-				let quadrants = item.node.children();
-				for (var quadrant = 0; quadrant < quadrants.length; quadrant++) {
-					if (quadrants[quadrant].containsRect(item.cell)) {
-						stack.push({ node: quadrants[quadrant], cell: item.cell, index: item.index });
+				for (var quadrant = 0; quadrant < item.node.children.length; quadrant++) {
+					if (item.node.children[quadrant].containsRect(item.cell)) {
+						stack.push({ node: item.node.children[quadrant], cell: item.cell, index: item.index });
 					}
 				}
-				quadrants = null;
 			} else {
 				if (item.node.empty()) {
 					if (item.node.area === this.minimumCellSize) {
@@ -537,21 +516,19 @@ class QuadTree {
 					let relocateCellIndex = item.node.index;
 					item.node.setLeaf(null);
 
-					let quadrants = item.node.children();
-					for (var quadrant = 0; quadrant < quadrants.length; quadrant++) {
+					for (var quadrant = 0; quadrant < item.node.children.length; quadrant++) {
 						//attempt to place the existing cell
-						if (quadrants[quadrant].containsRect(relocateCell)) {
-							stack.push({ node: quadrants[quadrant], cell: relocateCell, index: relocateCellIndex });
+						if (item.node.children[quadrant].containsRect(relocateCell)) {
+							stack.push({ node: item.node.children[quadrant], cell: relocateCell, index: relocateCellIndex });
 						}
 
 						//attempt to place the current cell
-						if (quadrants[quadrant].containsRect(item.cell)) {
-							stack.push({ node: quadrants[quadrant], cell: item.cell, index: item.index });
+						if (item.node.children[quadrant].containsRect(item.cell)) {
+							stack.push({ node: item.node.children[quadrant], cell: item.cell, index: item.index });
 						}
 					}
 					relocateCell = null;
 					relocateCellIndex = null;
-					quadrants = null;
 				}
 			}
 		}
@@ -670,7 +647,7 @@ function uniformScale(node, factor) {
 	node.rect.y = node.rect.y * factor
 	node.rect.xx = node.rect.xx * factor
 	node.rect.yy = node.rect.yy * factor
-	node.children().forEach((child) => uniformScale(child, factor))
+	node.children.forEach((child) => uniformScale(child, factor))
 }
 
 /**

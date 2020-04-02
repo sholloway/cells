@@ -61,7 +61,7 @@ function collectBoxes(currentNode, boxes){
 	let containsAliveCell = currentNode.index != null
 	boxes.push(new Box(currentNode.rect.x, currentNode.rect.y, currentNode.rect.xx, currentNode.rect.yy, containsAliveCell))
 	if(currentNode.subdivided){
-		currentNode.children().forEach((child)=>{
+		currentNode.children.forEach((child)=>{
 			collectBoxes(child, boxes)
 		})
 	}
@@ -127,7 +127,6 @@ class DrawingStateManager{
 	 */
 	toggleCell(x,y){
 		let totalTime='toggleCell total time';
-		console.time(totalTime);
 		let node = this.currentTree.search(new Cell(x,y));
 		if (node.isNullNode){ //The node doesn't exist. Add it.
 			this.cells.push(new Cell(x,y,1));
@@ -140,7 +139,6 @@ class DrawingStateManager{
 			this.nextTree.index(this.cells);
 		}
 		this.activateNext(); 
-		console.timeEnd(totalTime);
 	}
 
 	/*

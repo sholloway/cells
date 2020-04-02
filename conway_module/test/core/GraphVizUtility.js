@@ -23,7 +23,7 @@ function buildDag(node, treeNodes, relationships){
 	}
 
 	if(node.subdivided){
-		node.children().forEach((child)=>{
+		node.children.forEach((child)=>{
 			relationships.get(node.id).push(child.id)
 			buildDag(child, treeNodes, relationships)
 		})
