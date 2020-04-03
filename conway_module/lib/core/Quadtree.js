@@ -28,6 +28,7 @@ class Cell extends Entity {
 		this.width = 1
 		this.height = 1
 		this.state = state
+		this.className = 'Cell';
 	}
 
 	/**

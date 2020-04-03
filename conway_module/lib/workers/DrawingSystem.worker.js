@@ -149,7 +149,8 @@ function processScene(msg){
   if (workerState === WorkerState.RUNNING && 
       drawingSystem.getState() === States.IDLE){
     drawingSystem.update();
-    postMessage(drawingSystem.getScene().serializeStack());
+  //  postMessage(drawingSystem.getScene().serializeStack());
+     postMessage(drawingSystem.getScene().getStack());
   }
 }
 

@@ -49,6 +49,10 @@ class SceneManager{
 		this.stack = []
 	}
 
+	getStack(){
+		return this.stack;
+	}
+
 	serializeStack(){
 		return JSON.stringify(this.stack);
 	}

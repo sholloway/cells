@@ -75,7 +75,8 @@ class Main {
 
   handleMessageFromDrawingWorker(message){
     if (message.data) { 
-      let stack = JSON.parse(message.data);
+      // let stack = JSON.parse(message.data);
+      let stack = message.data;
       this.drawingScene.clear();
       DrawingSceneBuilder.buildScene(this.drawingScene, this.config, stack);
       this.drawingSystemRender.render(this.drawingScene);
@@ -243,8 +244,24 @@ class Main {
     // How should I handle getting the drawing system cells
     // from the drawing worker to then pass into the seeder when the 
     // Life System needs to be bootstrapped?
-    // This needs to be synchronsous.
     //seeder.setCells(this.drawingSystem.getCells());
+
+    /**
+    one pattern is to track a map of promises on the client side. Have promises
+    Send messages to the work with an unique ID in the message. The response must
+    include the ID. The central message handler must then resolve the promise with 
+    the matching ID.
+    https://stackoverflow.com/questions/52438273/using-promise-to-work-with-web-worker-inside-a-javascript-closure 
+    https://codeburst.io/promises-for-the-web-worker-9311b7831733
+    https://github.com/nolanlawson/promise-worker
+
+    If I go with this approach, where else do I need this type of interaction in the UI? It could support 
+    adding spinners to the UI for example.
+
+    Ultimately I want to get the UI replaces with React Components. How that may fit nicely.
+    */
+
+    //this.drawingScene
     return seeder
   }
 

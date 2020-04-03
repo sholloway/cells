@@ -143,6 +143,7 @@ class DrawingStateManager{
 
 	/*
 	Next Steps
+	* Try removing the JSON Stringify call in the Drawing Worker. I think it may be serializing it twice.
 	* Populate the life simulation from the drawing system.
 	* Remove ConwayBroker class.
 	* Get test converage working through the IDE.
