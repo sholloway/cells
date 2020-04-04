@@ -1,6 +1,5 @@
 /*
 Next Steps
-* Remove ConwayBroker class.
 * Add web worker idomatic error handling to WorkerSystem, GridWorker, and DrawingSystemWorker. 
 * Move the new Drawing System class into it's own file.
 * Get test converage working through the IDE.
@@ -34,7 +33,6 @@ class Main {
 
     this.config = Conways.DefaultConfig;
 
-    this.conwayBroker = new Conways.ConwayBroker();
     this.gridWorker = new Conways.GridSystemWorker();
     this.drawingWorker = new Conways.DrawingSystemWorker();
 

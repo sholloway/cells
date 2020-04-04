@@ -13,6 +13,5 @@ module.exports.HTMLCanvasRenderer = require('./renderer/HTMLCanvasRenderer.js');
 module.exports.TraitBuilderFactory = require('./entity-system/TraitBuilderFactory.js');
 
 module.exports.WorkerCommands = require('./workers/WorkerCommands.js');
-module.exports.ConwayBroker = require('worker-loader!./workers/ConwayBroker.worker.js');
 module.exports.GridSystemWorker = require('worker-loader!./workers/GridSystem.worker.js');
 module.exports.DrawingSystemWorker = require('worker-loader!./workers/DrawingSystem.worker.js');
