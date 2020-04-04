@@ -1,6 +1,6 @@
 const {CanvasBasedSystem} = require('./System.js')
 const DefaultConfig = require('./DefaultConfig.js')
-const DrawingStateManager = require('./DrawingStateManager.js')
+const {DrawingStateManager} = require('./DrawingStateManager.js');
 
 /**
  * A system for drawing on a grid.
@@ -31,8 +31,11 @@ class DrawingSystem extends CanvasBasedSystem{
 	 * @private
 	 */
 	update(frame){
+		let updateTime = 'Drawing System Update Time';
+		console.time(updateTime);
 		this.getStateManager().stageStorage(this.scene, this.displayStorageStructure)
 		this.getStateManager().processCells(this.scene)
+		console.timeEnd(updateTime);
 	}
 
 	/**

@@ -12,6 +12,7 @@ class Entity{
 	 */
 	constructor(){
 		this.traits = []
+		this.className = 'Entity';
 	}
 
 	/**
@@ -110,6 +111,7 @@ class Box extends Entity{
 		this.xx = xx
 		this.yy = yy
 		this.alive = alive
+		this.className = 'Box';
 	}
 
 	static buildInstance(params, traitBuilderMap){

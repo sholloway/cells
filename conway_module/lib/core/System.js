@@ -56,11 +56,12 @@ class BrowserSystem{
 	 * Creates a playable system in the context of a browser.
 	 * @param {Window} window - The DOM's window object.
 	 */
-	constructor(window){
+	constructor(window, config){
 		this.window = window
 		this.state = SystemState.STOPPED
 		this.simIterationCounter = 0
 		this.observers = new Map()
+		this.config = config;
 	}
 
 	/**
@@ -192,8 +193,7 @@ class CanvasBasedSystem extends BrowserSystem{
 	 * @param {object} config - A configuration object.
 	 */
 	constructor(window, htmlCanvasContext, config){
-		super(window)
-		this.config = config
+		super(window, config)
 		this.htmlCanvasContext = htmlCanvasContext
 		this.scene = new SceneManager()
 		this.renderer = new HTMLCanvasRenderer(this.htmlCanvasContext, this.config)
@@ -223,7 +223,7 @@ class CanvasBasedSystem extends BrowserSystem{
 	}
 
 	/**
-	 * Set's the cell size to use.
+	 * Sets the cell size to use.
 	 * @param {number} size
 	 */
 	setCellSize(size){
@@ -242,7 +242,7 @@ class CanvasBasedSystem extends BrowserSystem{
 	 * Clears the simulation.
 	 */
 	reset(){
-		this.scene.purge()
+		this.scene.clear()
 		this.getStateManager().clear()
 		this.renderer.clear()
 	}

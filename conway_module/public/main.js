@@ -6,14 +6,22 @@ Figure out how to get window and document available in a clean way.
 */
 
 const LifeSystem = Conways.LifeSystem;
-// const GridSystem = Conways.GridSystem;
-const DrawingSystem = Conways.DrawingSystem;
 const SeederFactoryModule = Conways.SeederFactoryModule;
 const SeederFactory = SeederFactoryModule.SeederFactory;
 const SeederModels = SeederFactoryModule.SeederModels;
 const HTMLCanvasRenderer = Conways.HTMLCanvasRenderer;
 const TraitBuilderFactory = Conways.TraitBuilderFactory;
 const SceneManager = Conways.SceneManager;
+const WorkerSystem = Conways.WorkerSystem;
+const WorkerCommands = Conways.WorkerCommands;
+const DrawingSceneBuilder = Conways.DrawingSceneBuilder;
+const Cell = Conways.Cell;
+
+const processDrawingWorker='Render Drawing Scene';
+
+const Workers = {
+  DRAWING_SYSTEM: 'DRAWING_SYSTEM_WORKER'
+};
 
 class Main {
   constructor(gridCanvas, simCanvas, drawCanvas) {
@@ -25,20 +33,43 @@ class Main {
 
     this.conwayBroker = new Conways.ConwayBroker();
     this.gridWorker = new Conways.GridSystemWorker();
+    this.drawingWorker = new Conways.DrawingSystemWorker();
 
     this.gridRender = new HTMLCanvasRenderer(this.gridCanvas.getContext('2d'), this.config);
-    this.life = new LifeSystem(window, this.simCanvas.getContext('2d'), this.config)
-    this.drawingSystem = new DrawingSystem(window, this.drawCanvas.getContext('2d'), this.config)
-    this.drawingAllowed = true
+    this.drawingSystemRender = new HTMLCanvasRenderer(this.drawCanvas.getContext('2d'), this.config);
+    this.drawingScene = new SceneManager();
+    
+    this.workerSystem = new WorkerSystem(window, this.config);
+    this.life = new LifeSystem(window, this.simCanvas.getContext('2d'), this.config);    
+    this.drawingAllowed = true;
 
-    /**
-    * Render the grid canvas when a message is received from the GridSystemWorker.
+    this.gridWorker.onmessage = this.handleMessageFromGridWorker.bind(this);
+    this.drawingWorker.onmessage = this.handleMessageFromDrawingWorker.bind(this);
+
+    this.workerSystem.registerWorker(Workers.DRAWING_SYSTEM, this.drawingWorker);
+  }
+
+  initialize() {
+    let simTicked = function (lifeSystem) {
+      document.getElementById('alive_cells_count').value = lifeSystem.aliveCellsCount();
+      document.getElementById('sim_generation_count').value = lifeSystem.numberOfSimulationIterations();
+    }
+    this.life.subscribe('ticked', simTicked);
+
+    /*
+    This kicks off the main loop for all workers.
+    Need to consider the difference between running simulations and the 
+    request to get the scene data.
     */
-    this.gridWorker.onmessage = (event) => {
-      if (!event.data) { //TODO: Need better error handling. Enforce that event.data is a SceneManager.
-        return;
-      }
-      let sceneObj = JSON.parse(event.data);
+    this.workerSystem.start(); 
+  }
+
+  /**
+  * Render the grid canvas when a message is received from the GridSystemWorker.
+  */
+  handleMessageFromGridWorker(message){
+    if (message.data) { 
+      let sceneObj = JSON.parse(message.data);
       let scene = SceneManager.fromObject(sceneObj, TraitBuilderFactory.select);
       let htmlCanvasContext = this.gridCanvas.getContext('2d');
       htmlCanvasContext.strokeStyle = '#757575';
@@ -47,18 +78,33 @@ class Main {
     }
   }
 
-  initialize() {
-    let simTicked = function (lifeSystem) {
-      document.getElementById('alive_cells_count').value = lifeSystem.aliveCellsCount()
-      document.getElementById('sim_generation_count').value = lifeSystem.numberOfSimulationIterations()
+  handleMessageFromDrawingWorker(envelope){
+    if (envelope.data) { 
+      if(envelope.data.promisedResponse){
+        this.workerSystem.attemptToProcessPendingWork(envelope.data);
+      }else{
+        this.processMessageFromDrawingWorker(envelope.data);
+      }
     }
-    this.life.subscribe('ticked', simTicked);
+  }
+
+  processMessageFromDrawingWorker(message){
+    switch (message.command) {
+      case WorkerCommands.LifeCycle.PROCESS_CYCLE:
+        this.drawingScene.clear();
+        DrawingSceneBuilder.buildScene(this.drawingScene, this.config, message.stack);
+        this.drawingSystemRender.render(this.drawingScene);
+        break;
+      default:
+        console.error(`An unexpected message was sent from the Drawing Worker. ${message}`);
+    }
   }
 
   handlePageLoad(event) {
     sizeCanvas(this.config);
-    this.life.main(window.performance.now());
-    this.drawingSystem.main(window.performance.now());
+    let now = window.performance.now();
+    this.life.main(now);
+    this.workerSystem.main(now);
     this.allowDrawing();
   }
 
@@ -77,19 +123,27 @@ class Main {
       //Project to a Cell
       let cx = Math.floor(px / this.config.zoom);
       let cy = Math.floor(py / this.config.zoom);
-  
-      this.drawingSystem.toggleCell(cx, cy);
+
+      this.drawingWorker.postMessage({
+        command: WorkerCommands.DrawingSystemCommands.TOGGLE_CELL,
+        cx: cx,
+        cy: cy
+      });
     }
   }
 
   allowDrawing() {
     this.drawingAllowed = true;
-    this.drawingSystem.start();
+    this.drawingWorker.postMessage({
+      command: WorkerCommands.LifeCycle.START
+    });
   }
 
   preventDrawing() {
     this.drawingAllowed = false;
-    this.drawingSystem.stop()
+    this.drawingWorker.postMessage({
+      command: WorkerCommands.LifeCycle.STOP
+    });
   }
 
   setSeedingOption() {
@@ -120,7 +174,10 @@ class Main {
         if (document.getElementById('seed').value === "draw") {
           //copy the active cells to the drawing system.
           let activeCells = this.life.getCells();
-          this.drawingSystem.setCells(activeCells);
+          this.drawingWorker.postMessage({
+            command: WorkerCommands.DrawingSystemCommands.SET_CELLS,
+            cells: activeCells
+          });
           this.life.reset();
           this.allowDrawing();
         }
@@ -147,7 +204,15 @@ class Main {
     document.getElementById('alive_cells_count').value = 0;
     document.getElementById('sim_generation_count').value = 0;
     this.life.reset();
-    this.drawingSystem.reset();
+
+    //Reset the Drawing System
+    this.workerSystem.promiseResponse(
+      Workers.DRAWING_SYSTEM,
+      WorkerCommands.DrawingSystemCommands.RESET, 
+      { config: this.config})
+      .then(() => {
+        this.drawingSystemRender.clear();
+      });
   }
 
   handleGridBackground() {
@@ -180,21 +245,77 @@ class Main {
   }
 
   startSimulation() {
-    this.config.zoom = getCellSize();
-    this.config.landscape.width = this.config.canvas.width / this.config.zoom;
-    this.config.landscape.height = this.config.canvas.height / this.config.zoom;
-    let seeder = this.buildSeeder();
-    this.drawingSystem.reset();
-    this.life.setSeeder(seeder);
-    this.life.start();
+    /**
+     * First we are fetching the cells, then asynchronously telling the 
+     * drawing system to reset. Finally we're building up the seeder 
+     * and starting the simulation.
+     */
+    this.workerSystem.promiseResponse(
+      Workers.DRAWING_SYSTEM,
+      WorkerCommands.DrawingSystemCommands.SEND_CELLS
+    )
+    .then((response) =>{
+      //TODO: Add error handling to check for the presense of the cells.
+      return new Promise((resolve) =>{
+        this.drawingWorker.postMessage({
+          command: WorkerCommands.DrawingSystemCommands.RESET,
+          config: this.config
+        });
+        this.drawingSystemRender.clear();
+        resolve(response.cells);
+      });
+    })
+    .then((drawingCells) => {
+      this.config.zoom = getCellSize();
+      this.config.landscape.width = this.config.canvas.width / this.config.zoom;
+      this.config.landscape.height = this.config.canvas.height / this.config.zoom;
+      let seedPicker = document.getElementById('seed')
+      let seedSetting = seedPicker.value
+      let seeder = SeederFactory.build(seedSetting);
+      seeder.setCells(drawingCells.map(c => Cell.buildInstance(c)));
+      this.life.setSeeder(seeder);
+      this.life.start();
+    })
+    .catch((reason) => {
+      console.error(`There was an error trying to build the seeder.\n${reason}`);
+    });
   }
 
-  buildSeeder() {
-    let seedPicker = document.getElementById('seed')
-    let seedSetting = seedPicker.value
-    let seeder = SeederFactory.build(seedSetting)
-    seeder.setCells(this.drawingSystem.getCells())
-    return seeder
+  /*
+	Next Steps
+  * Populate the life simulation from the drawing system.
+    - the handle message is going to need to handle multiple scenarios.
+    - Introduce COMMANDS in the response. 
+    - Can use a field to signify if it is a promised response.  
+	* Remove ConwayBroker class.
+	* Get test converage working through the IDE.
+	* setup prettifier. I want to add ; to every line.
+  */
+  
+  buildSeeder(){
+    // IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // How should I handle getting the drawing system cells
+    // from the drawing worker to then pass into the seeder when the 
+    // Life System needs to be bootstrapped?
+    //seeder.setCells(this.drawingSystem.getCells());
+
+    /**
+    one pattern is to track a map of promises on the client side. Have promises
+    Send messages to the work with an unique ID in the message. The response must
+    include the ID. The central message handler must then resolve the promise with 
+    the matching ID.
+    https://stackoverflow.com/questions/52438273/using-promise-to-work-with-web-worker-inside-a-javascript-closure 
+    https://codeburst.io/promises-for-the-web-worker-9311b7831733
+    https://github.com/nolanlawson/promise-worker
+
+    If I go with this approach, where else do I need this type of interaction in the UI? It could support 
+    adding spinners to the UI for example.
+
+    Ultimately I want to get the UI replaces with React Components. How that may fit nicely.
+
+    The way this is going to work is, this function will make a promise call, but the handler function
+    will invoke resolve/reject in an abstract way.
+    */
   }
 
   stopSimulation() {
@@ -208,12 +329,20 @@ class Main {
   toggleDisplayStorageStructure() {
     let displayStorageCheckbox = document.getElementById('display_storage');
     this.life.displayStorage(displayStorageCheckbox.checked);
-    this.drawingSystem.displayStorage(displayStorageCheckbox.checked);
+
+    this.drawingWorker.postMessage({
+      command: WorkerCommands.DrawingSystemCommands.DISPLAY_STORAGE,
+      displayStorage: displayStorageCheckbox.checked
+    });
   }
 
   changedCellSize() {
     let cellSize = getCellSize()
     this.life.setCellSize(cellSize);
+    this.drawingWorker.postMessage({
+      command: WorkerCommands.DrawingSystemCommands.SET_CELL_SIZE,
+      cellSize: cellSize
+    });
     this.handleGridBackground()
   }
 }
@@ -257,18 +386,3 @@ function getCellSize() {
   let cellSizeControl = document.getElementById('cell_size')
   return Number.parseInt(cellSizeControl.value)
 }
-
-/// Crap below this line
-/////////////////////////////////////////////////////////////////////////
-//Example Web Worker Integration. TODO: Delete
-/*
-conwayBroker.onmessage = function (event) {
-  console.log('The main thread received a msg from the Conway Broker. It was:')
-  console.log(event.data);
-}
-
-function sendBrokerMsg() {
-  console.log('The button was clicked');
-  conwayBroker.postMessage('Hello from the main thread.');
-}
-*/

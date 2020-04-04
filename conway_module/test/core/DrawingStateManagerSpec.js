@@ -2,9 +2,10 @@ const chai = require('chai')
 const expect = chai.expect
 const sinon = require('sinon');
 
-const DrawingStateManager = require('./../../lib/core/DrawingStateManager.js')
+const DrawingStateManager = require('./../../lib/core/DrawingStateManager.js').DrawingStateManager;
 const {Cell} = require('./../../lib/core/Quadtree.js')
 const SceneManager = require('./../../lib/core/SceneManager.js')
+const {makeIdentity} = require('./QuadTreeTestHelper.js')
 
 describe('DrawingStateManager', function(){
 	it ('should initialize with empty quad trees', function(){
@@ -52,21 +53,18 @@ describe('DrawingStateManager', function(){
 	})
 
 	it ('should prepare all alive cells for rendering', function(){
-		let dsm = new DrawingStateManager({})
-		dsm.toggleCell(0,0)
-		dsm.toggleCell(1,0)
-		dsm.toggleCell(2,0)
+		let dsm = new DrawingStateManager({});
+		dsm.toggleCell(0,0);
+		dsm.toggleCell(1,0);
+		dsm.toggleCell(2,0);
 
-		let scene = new SceneManager()
-		expect(scene.fullyRendered()).to.be.true
-		dsm.processCells(scene)
+		let scene = new SceneManager();
+		expect(scene.fullyRendered()).to.be.true;
+		expect(scene.stack.length).to.equal(0);
+		dsm.processCells(scene);
 
-		expect(scene.fullyRendered()).to.be.false
-		expect(scene.stack.length).to.equal(3)
-
-		scene.stack.forEach(entity => {
-			expect(entity.traits.length).to.equal(6)
-		})
+		expect(scene.fullyRendered()).to.be.false;
+		expect(scene.stack.length).to.equal(3);
 	})
 
 	it ('should clear the system', function(){
@@ -94,4 +92,25 @@ describe('DrawingStateManager', function(){
 		dsm.stageStorage(scene, true)
 		expect(scene.fullyRendered()).to.be.false
 	})
+
+	describe('activate next tree', () => {
+		it ('should flip the active tree in place', () => {
+			let dsm = new DrawingStateManager({});
+			let cells = makeIdentity();
+			dsm.setCells(cells); //sets the current tree.
+			expect(dsm.currentTree.aliveCellsCount()).to.equal(10);
+			expect(dsm.nextTree.aliveCellsCount()).to.equal(0);
+			
+			//assign values that are not part of the clone process.
+			let originalCurrentTreeIdentifier = 'original current tree';
+			let originalNextTreeIdentifier = 'original next tree';
+			dsm.currentTree.id = originalCurrentTreeIdentifier;
+			dsm.nextTree.id = originalNextTreeIdentifier;
+
+			dsm.activateNext();
+
+			expect(dsm.currentTree.id).to.equal(originalNextTreeIdentifier);
+		});
+
+	});
 })

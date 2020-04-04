@@ -8,7 +8,7 @@ function drawTree(node, ctx, depth){
 	// console.log(`${'|\t'.repeat(depth)}| Area: ${node.area} Index: ${node.index}`)
 	if (node.index != null){
 		indexedNodes++
-		if (node.children().length != 0){
+		if (node.children.length != 0){
 			console.log(`Node ${node.id} incorrectly has children.`)
 		}
 		ctx.strokeStyle = 'green'

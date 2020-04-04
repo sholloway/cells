@@ -51,7 +51,7 @@ function collectBoxes(currentNode, boxes){
 	let containsAliveCell = currentNode.index != null
 	boxes.push(new Box(currentNode.rect.x, currentNode.rect.y, currentNode.rect.xx, currentNode.rect.yy, containsAliveCell))
 	if(currentNode.subdivided){
-		currentNode.children().forEach((child)=>{
+		currentNode.children.forEach((child)=>{
 			collectBoxes(child, boxes)
 		})
 	}

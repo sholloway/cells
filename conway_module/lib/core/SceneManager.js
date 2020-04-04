@@ -45,8 +45,16 @@ class SceneManager{
 	/**
 	 * Removes all entities from the stack.
 	 */
-	purge(){
+	clear(){
 		this.stack = []
+	}
+
+	getStack(){
+		return this.stack;
+	}
+
+	serializeStack(){
+		return JSON.stringify(this.stack);
 	}
 
 	/**

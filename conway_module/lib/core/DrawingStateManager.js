@@ -2,9 +2,37 @@ const {Cell, QuadTree, cloneCells} = require('./Quadtree.js')
 
 const { Box } = require('../entity-system/entities')
 
-	const { ColorByContents, FilledRectTrait,
-		FillStyle, GridCellToRenderingEntity, ProcessBoxAsRect,
-		RectOutlineTrait,ScaleTransformer, StrokeStyle } = require('../entity-system/traits')
+const { ColorByContents, FilledRectTrait,
+	FillStyle, GridCellToRenderingEntity, ProcessBoxAsRect,
+	RectOutlineTrait,ScaleTransformer, StrokeStyle } = require('../entity-system/traits')
+
+
+class DrawingSceneBuilder{
+	static buildScene(scene, config, objs){
+		let entities = objs.map((obj) => {
+			let entity;
+			if(obj.className === 'Box'){
+				entity = Box.buildInstance(obj);
+				entity.register(new ProcessBoxAsRect())
+					.register(new ScaleTransformer(config.zoom))
+					.register(new ColorByContents())
+					.register(new RectOutlineTrait());
+			}else if(obj.className === 'Cell'){
+				entity = Cell.buildInstance(obj);
+				entity.register(new GridCellToRenderingEntity())
+					.register(new ScaleTransformer(config.zoom))
+					.register(new StrokeStyle('#ffeb3b'))
+					.register(new FillStyle('#263238'))
+					.register(new FilledRectTrait())
+					.register(new RectOutlineTrait());
+			}else{
+				entity = new Entity();
+			}
+			return entity;
+		});
+		scene.push(entities);
+	}
+}
 
 /**
  * Specify what traits to render the cells with.
@@ -33,7 +61,7 @@ function collectBoxes(currentNode, boxes){
 	let containsAliveCell = currentNode.index != null
 	boxes.push(new Box(currentNode.rect.x, currentNode.rect.y, currentNode.rect.xx, currentNode.rect.yy, containsAliveCell))
 	if(currentNode.subdivided){
-		currentNode.children().forEach((child)=>{
+		currentNode.children.forEach((child)=>{
 			collectBoxes(child, boxes)
 		})
 	}
@@ -63,13 +91,17 @@ class DrawingStateManager{
 	 * @param {object} config - The simulation configuration object.
 	 */
 	constructor(config){
-		this.config = config
-		this.cells = []
-		this.currentTree = QuadTree.empty()
-		this.nextTree = QuadTree.empty()
-		this.currentTree.index(this.cells)
+		this.config = config;
+		this.cells = [];
+		this.currentTree = QuadTree.empty();
+		this.nextTree = QuadTree.empty();
+		this.currentTree.index(this.cells);
 	}
 
+	setConfig(config){
+    this.config = config;
+	}
+	
 	/**
 	 * Set's what cells should be in the initial drawing.
 	 * @param {Cell[]} cells - An array of alive cells.
@@ -94,18 +126,19 @@ class DrawingStateManager{
 	 * @param {number} y - The Y coordinate on the simulation's grid.
 	 */
 	toggleCell(x,y){
-		let node = this.currentTree.search(new Cell(x,y))
-		if (node == null){ //Doesn't exist. Add it.
-			this.cells.push(new Cell(x,y,1))
-			this.nextTree.clear()
-			this.nextTree.index(this.cells)
+		let totalTime='toggleCell total time';
+		let node = this.currentTree.search(new Cell(x,y));
+		if (node.isNullNode){ //The node doesn't exist. Add it.
+			this.cells.push(new Cell(x,y,1));
+			this.nextTree.clear();
+			this.nextTree.index(this.cells);
 		}else{
 			//remove it.
-			this.cells.splice(node.index, 1)
-			this.nextTree.clear()
-			this.nextTree.index(this.cells)
+			this.cells.splice(node.index, 1);
+			this.nextTree.clear();
+			this.nextTree.index(this.cells);
 		}
-		this.activateNext()
+		this.activateNext(); 
 	}
 
 	/**
@@ -113,9 +146,10 @@ class DrawingStateManager{
 	 * @param {SceneManager} scene - The scene to add the cells to.
 	 */
 	processCells(scene){
-		let clones = cloneCells(this.cells)
-		registerCellTraits(this.config, clones)
-		scene.push(clones)
+	//	let clones = cloneCells(this.cells)
+	//	registerCellTraits(this.config, clones)
+		// scene.push(clones)
+		scene.push(this.cells);
 	}
 
 	/**
@@ -123,8 +157,18 @@ class DrawingStateManager{
 	 * tree to be empty.
 	 */
 	activateNext(){
-		this.currentTree = QuadTree.clone(this.nextTree)
-		this.nextTree.clear().index()
+		// this.currentTree = QuadTree.clone(this.nextTree)
+		// this.nextTree.clear().index();
+
+		//Purge the current tree and then point the current state to the future state.
+		this.currentTree.clear();
+		this.currentTree = null; 
+		this.currentTree = this.nextTree;
+
+		//Free the nextTree pointer and then provision a new tree for the future state.
+		this.nextTree = null;
+		this.nextTree = QuadTree.empty();
+		this.nextTree.index();
 	}
 
 	/**
@@ -141,14 +185,16 @@ class DrawingStateManager{
 	 * @param {SceneManager} scene - The active list of things that need to be rendered.
 	 */
 	stageStorage(scene, display){
-		if (!display){
-			return
+		if (display){	
+			let boxes = []
+			collectBoxes(this.currentTree.root,boxes)
+	//		registerBoxTraits(this.config, boxes)
+			scene.push(boxes)
 		}
-		let boxes = []
-		collectBoxes(this.currentTree.root,boxes)
-		registerBoxTraits(this.config, boxes)
-		scene.push(boxes)
 	}
 }
 
-module.exports = DrawingStateManager
+module.exports = {
+	DrawingStateManager,
+	DrawingSceneBuilder
+}

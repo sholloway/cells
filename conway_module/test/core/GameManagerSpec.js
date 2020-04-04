@@ -290,7 +290,7 @@ describe('Game Manager', function(){
 			for(let cycle = 0; cycle < 100; cycle++){
 				mngr.evaluateCells(scene)
 				mngr.activateNext()
-				scene.purge()
+				scene.clear()
 			}
 
 			//The block should still be there.
@@ -322,7 +322,7 @@ describe('Game Manager', function(){
 			for(i = 0; i < 100; i++){
 				mngr.evaluateCells(scene)
 				mngr.activateNext()
-				scene.purge()
+				scene.clear()
 				currentGrid = treeToGrid(mngr.currentTree, config.landscape.width, config.landscape.height)
 				if(i % 2){ //Odd: i % 2 == 1
 					ArrayAssertions.assertEqual2DArrays(initBlinker, currentGrid)
@@ -353,7 +353,7 @@ describe('Game Manager', function(){
 			for(let cycle = 0; cycle < 100; cycle++){
 				mngr.evaluateCellsFaster(scene)
 				mngr.activateNext()
-				scene.purge()
+				scene.clear()
 			}
 
 			//The block should still be there.
@@ -385,7 +385,7 @@ describe('Game Manager', function(){
 			for(i = 0; i < 100; i++){
 				mngr.evaluateCellsFaster(scene)
 				mngr.activateNext()
-				scene.purge()
+				scene.clear()
 				currentGrid = treeToGrid(mngr.currentTree, config.landscape.width, config.landscape.height)
 				if(i % 2){ //Odd: i % 2 == 1
 					ArrayAssertions.assertEqual2DArrays(initBlinker, currentGrid)

@@ -10,10 +10,10 @@ function buildDag(node, treeNodes, relationships){
 		let dagNode = {}
 		if (node.index != null){
 			dagNode.color = 'green'
-			dagNode.label = node.index
+			dagNode.label = `${node.toString()}\nCell: ${node.index}`
 		}else{
 			dagNode.color = 'blue'
-			dagNode.label = node.id
+			dagNode.label = `${node.toString()}`
 		}
 		treeNodes.set(node.id, dagNode) //of the form: 241 [label="Delete" color=blue]
 	}
@@ -23,7 +23,7 @@ function buildDag(node, treeNodes, relationships){
 	}
 
 	if(node.subdivided){
-		node.children().forEach((child)=>{
+		node.children.forEach((child)=>{
 			relationships.get(node.id).push(child.id)
 			buildDag(child, treeNodes, relationships)
 		})
