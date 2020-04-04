@@ -1,8 +1,11 @@
 /*
-Having Conways module passed in as a constructor parameter and then made a class instance is bad.
-Need to change that to be available to the entire document.
-
-Figure out how to get window and document available in a clean way.
+Next Steps
+* Remove ConwayBroker class.
+* Add web worker idomatic error handling to WorkerSystem, GridWorker, and DrawingSystemWorker. 
+* Move the new Drawing System class into it's own file.
+* Get test converage working through the IDE.
+* setup prettifier. I want to add ; to every line.
+* Shift AltSystem to a worker.
 */
 
 const LifeSystem = Conways.LifeSystem;
@@ -236,11 +239,6 @@ class Main {
   }
 
   requestToClearGrid() {
-    // gridWorker.postMessage({
-    //   command: 'CLEAR_GRID', //TODO: Make a constant
-    //   parameters: {
-    //     gridWidth: config.canvas.width, gridHeight: config.canvas.height}
-    // });
     this.gridRender.clear();
   }
 
@@ -255,14 +253,17 @@ class Main {
       WorkerCommands.DrawingSystemCommands.SEND_CELLS
     )
     .then((response) =>{
-      //TODO: Add error handling to check for the presense of the cells.
-      return new Promise((resolve) =>{
+      return new Promise((resolve, reject) =>{
         this.drawingWorker.postMessage({
           command: WorkerCommands.DrawingSystemCommands.RESET,
           config: this.config
         });
         this.drawingSystemRender.clear();
-        resolve(response.cells);
+        if(response.cells){
+          resolve(response.cells);
+        }else{
+          reject('Cells were not provided.');
+        }
       });
     })
     .then((drawingCells) => {
@@ -279,43 +280,6 @@ class Main {
     .catch((reason) => {
       console.error(`There was an error trying to build the seeder.\n${reason}`);
     });
-  }
-
-  /*
-	Next Steps
-  * Populate the life simulation from the drawing system.
-    - the handle message is going to need to handle multiple scenarios.
-    - Introduce COMMANDS in the response. 
-    - Can use a field to signify if it is a promised response.  
-	* Remove ConwayBroker class.
-	* Get test converage working through the IDE.
-	* setup prettifier. I want to add ; to every line.
-  */
-  
-  buildSeeder(){
-    // IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    // How should I handle getting the drawing system cells
-    // from the drawing worker to then pass into the seeder when the 
-    // Life System needs to be bootstrapped?
-    //seeder.setCells(this.drawingSystem.getCells());
-
-    /**
-    one pattern is to track a map of promises on the client side. Have promises
-    Send messages to the work with an unique ID in the message. The response must
-    include the ID. The central message handler must then resolve the promise with 
-    the matching ID.
-    https://stackoverflow.com/questions/52438273/using-promise-to-work-with-web-worker-inside-a-javascript-closure 
-    https://codeburst.io/promises-for-the-web-worker-9311b7831733
-    https://github.com/nolanlawson/promise-worker
-
-    If I go with this approach, where else do I need this type of interaction in the UI? It could support 
-    adding spinners to the UI for example.
-
-    Ultimately I want to get the UI replaces with React Components. How that may fit nicely.
-
-    The way this is going to work is, this function will make a promise call, but the handler function
-    will invoke resolve/reject in an abstract way.
-    */
   }
 
   stopSimulation() {

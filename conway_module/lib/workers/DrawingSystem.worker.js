@@ -149,9 +149,6 @@ function processCmd(msg, commandName, commandCriteria, cmdProcessor, errMsg) {
   }
 }
 
-// Next Steps
-// - [ ] Make process scene invoke only if it's not already running.
-// - [ ] Make drawingSystem.update return a promise so it's not blocking.
 function processScene(msg) {
   if (workerState === WorkerState.RUNNING &&
     drawingSystem.getState() === States.IDLE) {
