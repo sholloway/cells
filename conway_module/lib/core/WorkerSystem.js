@@ -37,7 +37,15 @@ class WorkerSystem extends BrowserSystem {
 	 */
   registerWorker(name, worker) {
     this.workers.set(name, worker);
+    worker.onerror = this.workerErrorHandler
   }
+
+  workerErrorHandler(error){
+    console.group('A web worker had an issue.');
+    console.error(`Worker: ${error.filename} Line: ${error.lineno}`);
+    console.error(error.message);
+    console.groupEnd();
+  };
 
   /**
 	 * Override parent

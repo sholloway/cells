@@ -1,6 +1,6 @@
 /*
 Next Steps
-* Add web worker idomatic error handling to WorkerSystem, GridWorker, and DrawingSystemWorker. 
+* Register the GridWorker with the WorkerSystem.
 * Move the new Drawing System class into it's own file.
 * Get test converage working through the IDE.
 * setup prettifier. I want to add ; to every line.
@@ -45,6 +45,8 @@ class Main {
     this.drawingAllowed = true;
 
     this.gridWorker.onmessage = this.handleMessageFromGridWorker.bind(this);
+    this.gridWorker.onerror = this.workerSystem.workerErrorHandler; //We don't want to fully register the gridWorker because it is only rendered on demand.
+    
     this.drawingWorker.onmessage = this.handleMessageFromDrawingWorker.bind(this);
 
     this.workerSystem.registerWorker(Workers.DRAWING_SYSTEM, this.drawingWorker);
