@@ -29,8 +29,8 @@ const DrawingStateManager = require('./../core/DrawingStateManager').DrawingStat
 
 //TODO: Move into DrawingSystem file.
 const States = {
-  IDLE:'idle',
-  UPDATING:'updating'
+  IDLE: 'idle',
+  UPDATING: 'updating'
 };
 
 /**
@@ -38,7 +38,6 @@ const States = {
  * Will eventually be in that file.
  */
 class DrawingSystem {
-  
   constructor() {
     this.config = {
       zoom: 1
@@ -49,7 +48,7 @@ class DrawingSystem {
     this.state = States.IDLE
   }
 
-  getState(){
+  getState() {
     return this.state;
   }
 
@@ -104,7 +103,7 @@ class DrawingSystem {
 	 * @param {number} y - The Y coordinate of the cell.
 	 */
   toggleCell(x, y) {
-    if(this.state === States.IDLE){
+    if (this.state === States.IDLE) {
       this.state = States.UPDATING
       this.getStateManager().toggleCell(x, y);
       this.state = States.IDLE;
@@ -118,6 +117,14 @@ class DrawingSystem {
   displayStorage(display) {
     this.displayStorageStructure = display
   }
+
+  /**
+	 * Clears the simulation.
+	 */
+	reset(){
+		this.scene.clear()
+		this.getStateManager().clear()
+	}
 }
 
 /**
@@ -125,9 +132,9 @@ class DrawingSystem {
  * @private
  */
 const WorkerState = {
-	STOPPED: 1,
-	PAUSED: 2,
-	RUNNING: 3
+  STOPPED: 1,
+  PAUSED: 2,
+  RUNNING: 3
 };
 
 let drawingSystem = new DrawingSystem();
@@ -145,16 +152,21 @@ function processCmd(msg, commandName, commandCriteria, cmdProcessor, errMsg) {
 // Next Steps
 // - [ ] Make process scene invoke only if it's not already running.
 // - [ ] Make drawingSystem.update return a promise so it's not blocking.
-function processScene(msg){
-  if (workerState === WorkerState.RUNNING && 
-      drawingSystem.getState() === States.IDLE){
+function processScene(msg) {
+  if (workerState === WorkerState.RUNNING &&
+    drawingSystem.getState() === States.IDLE) {
     drawingSystem.update();
-  //  postMessage(drawingSystem.getScene().serializeStack());
-     postMessage(drawingSystem.getScene().getStack());
+    //  postMessage(drawingSystem.getScene().serializeStack());
+    postMessage({
+      id: msg.id,
+      promisedResponse: msg.promisedResponse,
+      command: msg.command,
+      stack: drawingSystem.getScene().getStack()
+    });
   }
 }
 
-function routeCommandToProcessor(msg){
+function routeCommandToProcessor(msg) {
   if (!msg.command) {
     console.error('Unexpected messaged received in DrawingSystem Worker.');
     console.error(msg);
@@ -170,38 +182,61 @@ function routeCommandToProcessor(msg){
       break;
     case LifeCycle.STOP:
       workerState = WorkerState.STOPPED;
-      break;  
+      break;
     case LifeCycle.PAUSE:
-      break;  
+      break;
     case DrawingSystemCommands.SET_CELLS:
-      processCmd(msg, WorkerCommands.SET_CELLS,
+      processCmd(msg, DrawingSystemCommands.SET_CELLS,
         (msg) => msg.cells,
         (msg) => drawingSystem.setCells(msg.cells),
         'The cells were not provided.');
       break;
     case DrawingSystemCommands.SET_CELL_SIZE:
-      processCmd(msg, WorkerCommands.SET_CELL_SIZE,
+      processCmd(msg, DrawingSystemCommands.SET_CELL_SIZE,
         (msg) => msg.cellSize,
         (msg) => drawingSystem.setCellSize(msg.cellSize),
         'The cell size was not provided.');
       break;
     case DrawingSystemCommands.RESET:
-      processCmd(msg, WorkerCommands.RESET,
-        (msg) => msg.config,
-        (msg) => drawingSystem.setConfig(msg.config),
+      processCmd(msg, DrawingSystemCommands.RESET,
+        (msg) => (msg.promisedResponse)? msg.params.config : msg.config,
+        (msg) => {
+          drawingSystem.setConfig(msg.config)
+          drawingSystem.reset();
+          if(msg.promisedResponse){
+            postMessage({
+              id: msg.id,
+              promisedResponse: msg.promisedResponse,
+              command: msg.command
+            });
+          }
+        },
         'The configuration was not provided.');
       break;
     case DrawingSystemCommands.TOGGLE_CELL:
-      processCmd(msg, WorkerCommands.TOGGLE_CELL,
+      processCmd(msg, DrawingSystemCommands.TOGGLE_CELL,
         (msg) => msg.cx !== undefined && msg.cy !== undefined,
         (msg) => drawingSystem.toggleCell(msg.cx, msg.cy),
         'The cx and cy were both not provided.');
       break;
     case DrawingSystemCommands.DISPLAY_STORAGE:
-      processCmd(msg, WorkerCommands.DISPLAY_STORAGE,
+      processCmd(msg, DrawingSystemCommands.DISPLAY_STORAGE,
         (msg) => msg.displayStorage !== undefined,
         (msg) => drawingSystem.displayStorage(msg.displayStorage),
         'The displayStorage field was not provided.');
+      break;
+    case DrawingSystemCommands.SEND_CELLS:
+      processCmd(msg, DrawingSystemCommands.SEND_CELLS,
+        () => true,
+        (msg) => {
+          postMessage({
+            id: msg.id,
+            promisedResponse: msg.promisedResponse,
+            command: msg.command,
+            cells: drawingSystem.getCells()
+          });
+        },
+        'Could not send the drawing system cells.');
       break;
     default:
       console.error(`Unsupported command ${msg.command} was received in DrawingSystem Worker.`);

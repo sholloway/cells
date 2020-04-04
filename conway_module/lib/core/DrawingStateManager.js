@@ -141,15 +141,6 @@ class DrawingStateManager{
 		this.activateNext(); 
 	}
 
-	/*
-	Next Steps
-	* Try removing the JSON Stringify call in the Drawing Worker. I think it may be serializing it twice.
-	* Populate the life simulation from the drawing system.
-	* Remove ConwayBroker class.
-	* Get test converage working through the IDE.
-	* setup prettifier. I want to add ; to every line.
-	*/
-
 	/**
 	 * Prepares the alive cells to be drawn.
 	 * @param {SceneManager} scene - The scene to add the cells to.

@@ -14,6 +14,7 @@ module.exports = new Proxy({
   DrawingSystemCommands: new Proxy({
     SET_CELLS: 'SET_CELLS',
     SET_CELL_SIZE:'SET_CELL_SIZE',
+    SEND_CELLS: 'SEND_CELLS',
     RESET: 'RESET',
     TOGGLE_CELL: 'TOGGLE_CELL',
     DISPLAY_STORAGE: 'DISPLAY_STORAGE'

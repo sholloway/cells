@@ -15,8 +15,13 @@ const SceneManager = Conways.SceneManager;
 const WorkerSystem = Conways.WorkerSystem;
 const WorkerCommands = Conways.WorkerCommands;
 const DrawingSceneBuilder = Conways.DrawingSceneBuilder;
+const Cell = Conways.Cell;
 
 const processDrawingWorker='Render Drawing Scene';
+
+const Workers = {
+  DRAWING_SYSTEM: 'DRAWING_SYSTEM_WORKER'
+};
 
 class Main {
   constructor(gridCanvas, simCanvas, drawCanvas) {
@@ -41,7 +46,7 @@ class Main {
     this.gridWorker.onmessage = this.handleMessageFromGridWorker.bind(this);
     this.drawingWorker.onmessage = this.handleMessageFromDrawingWorker.bind(this);
 
-    this.workerSystem.registerWorker('DRAWING_SYSTEM', this.drawingWorker);
+    this.workerSystem.registerWorker(Workers.DRAWING_SYSTEM, this.drawingWorker);
   }
 
   initialize() {
@@ -73,14 +78,25 @@ class Main {
     }
   }
 
-  handleMessageFromDrawingWorker(message){
-    if (message.data) { 
-      // let stack = JSON.parse(message.data);
-      let stack = message.data;
-      this.drawingScene.clear();
-      DrawingSceneBuilder.buildScene(this.drawingScene, this.config, stack);
-      this.drawingSystemRender.render(this.drawingScene);
-      stack = null;
+  handleMessageFromDrawingWorker(envelope){
+    if (envelope.data) { 
+      if(envelope.data.promisedResponse){
+        this.workerSystem.attemptToProcessPendingWork(envelope.data);
+      }else{
+        this.processMessageFromDrawingWorker(envelope.data);
+      }
+    }
+  }
+
+  processMessageFromDrawingWorker(message){
+    switch (message.command) {
+      case WorkerCommands.LifeCycle.PROCESS_CYCLE:
+        this.drawingScene.clear();
+        DrawingSceneBuilder.buildScene(this.drawingScene, this.config, message.stack);
+        this.drawingSystemRender.render(this.drawingScene);
+        break;
+      default:
+        console.error(`An unexpected message was sent from the Drawing Worker. ${message}`);
     }
   }
 
@@ -188,9 +204,15 @@ class Main {
     document.getElementById('alive_cells_count').value = 0;
     document.getElementById('sim_generation_count').value = 0;
     this.life.reset();
-    this.drawingWorker.postMessage({
-      command: WorkerCommands.DrawingSystemCommands.RESET
-    });
+
+    //Reset the Drawing System
+    this.workerSystem.promiseResponse(
+      Workers.DRAWING_SYSTEM,
+      WorkerCommands.DrawingSystemCommands.RESET, 
+      { config: this.config})
+      .then(() => {
+        this.drawingSystemRender.clear();
+      });
   }
 
   handleGridBackground() {
@@ -223,23 +245,54 @@ class Main {
   }
 
   startSimulation() {
-    this.config.zoom = getCellSize();
-    this.config.landscape.width = this.config.canvas.width / this.config.zoom;
-    this.config.landscape.height = this.config.canvas.height / this.config.zoom;
-    let seeder = this.buildSeeder();
-    this.drawingWorker.postMessage({
-      command: WorkerCommands.DrawingSystemCommands.RESET,
-      config: this.config
+    /**
+     * First we are fetching the cells, then asynchronously telling the 
+     * drawing system to reset. Finally we're building up the seeder 
+     * and starting the simulation.
+     */
+    this.workerSystem.promiseResponse(
+      Workers.DRAWING_SYSTEM,
+      WorkerCommands.DrawingSystemCommands.SEND_CELLS
+    )
+    .then((response) =>{
+      //TODO: Add error handling to check for the presense of the cells.
+      return new Promise((resolve) =>{
+        this.drawingWorker.postMessage({
+          command: WorkerCommands.DrawingSystemCommands.RESET,
+          config: this.config
+        });
+        this.drawingSystemRender.clear();
+        resolve(response.cells);
+      });
+    })
+    .then((drawingCells) => {
+      this.config.zoom = getCellSize();
+      this.config.landscape.width = this.config.canvas.width / this.config.zoom;
+      this.config.landscape.height = this.config.canvas.height / this.config.zoom;
+      let seedPicker = document.getElementById('seed')
+      let seedSetting = seedPicker.value
+      let seeder = SeederFactory.build(seedSetting);
+      seeder.setCells(drawingCells.map(c => Cell.buildInstance(c)));
+      this.life.setSeeder(seeder);
+      this.life.start();
+    })
+    .catch((reason) => {
+      console.error(`There was an error trying to build the seeder.\n${reason}`);
     });
-    this.life.setSeeder(seeder);
-    this.life.start();
   }
 
-  buildSeeder() {
-    let seedPicker = document.getElementById('seed')
-    let seedSetting = seedPicker.value
-    let seeder = SeederFactory.build(seedSetting);
-
+  /*
+	Next Steps
+  * Populate the life simulation from the drawing system.
+    - the handle message is going to need to handle multiple scenarios.
+    - Introduce COMMANDS in the response. 
+    - Can use a field to signify if it is a promised response.  
+	* Remove ConwayBroker class.
+	* Get test converage working through the IDE.
+	* setup prettifier. I want to add ; to every line.
+  */
+  
+  buildSeeder(){
     // IMPORTANT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // How should I handle getting the drawing system cells
     // from the drawing worker to then pass into the seeder when the 
@@ -259,10 +312,10 @@ class Main {
     adding spinners to the UI for example.
 
     Ultimately I want to get the UI replaces with React Components. How that may fit nicely.
-    */
 
-    //this.drawingScene
-    return seeder
+    The way this is going to work is, this function will make a promise call, but the handler function
+    will invoke resolve/reject in an abstract way.
+    */
   }
 
   stopSimulation() {

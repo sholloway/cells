@@ -6,6 +6,7 @@ module.exports.LifeSystem = require('./core/AlternativeLifeSystem.js');
 module.exports.SceneManager = require('./core/SceneManager');
 module.exports.SeederFactoryModule = require('./core/SeederFactory.js');
 module.exports.WorkerSystem = require('./core/WorkerSystem.js');
+module.exports.Cell = require('./core/Quadtree').Cell;
 
 module.exports.HTMLCanvasRenderer = require('./renderer/HTMLCanvasRenderer.js');
 

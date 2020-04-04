@@ -23,12 +23,12 @@ class Cell extends Entity {
 	 */
 	constructor(row, col, age = 0, state = CellStates.ALIVE) {
 		super()
+		this.className = 'Cell';
 		this.location = { row: row, col: col }
 		this.age = age
 		this.width = 1
 		this.height = 1
 		this.state = state
-		this.className = 'Cell';
 	}
 
 	/**
@@ -599,8 +599,6 @@ class QuadTree {
 			let q2 = this.findAliveInArea(x, y, xx, yy, currentNode.upperRight)
 			let q3 = this.findAliveInArea(x, y, xx, yy, currentNode.lowerLeft)
 			let q4 = this.findAliveInArea(x, y, xx, yy, currentNode.lowerRight)
-			//foundCells = foundCells.concat(q1,q2,q3,q4)
-			//683   10.7%  t v8::internal::(anonymous namespace)::Fast_ArrayConcat
 			foundCells = [...q1, ...q2, ...q3, ...q4]
 		} else {
 			let cell = this.leaves[currentNode.index]

@@ -9,6 +9,8 @@ const { BrowserSystem } = require('./System.js');
 
 const WorkerCommands = require('./../workers/WorkerCommands.js').LifeCycle;
 
+const { nanoid } = require('nanoid');
+
 /**
  * Challenges
  * Need to associate multiple web workers that have already been intialized.
@@ -25,6 +27,7 @@ class WorkerSystem extends BrowserSystem {
   constructor(window, config) {
     super(window, config);
     this.workers = new Map(); //Pattern: name|worker instance
+    this.promisedMessages = new Map();
   }
 
   /**
@@ -47,6 +50,41 @@ class WorkerSystem extends BrowserSystem {
         command: WorkerCommands.PROCESS_CYCLE
       });
     });
+  }
+
+  /*
+  I'm not sure how I'm going to have a generic way of handling worker.onmessage. 
+  I'd like to support both ways of communication (RPC and promise driven). 
+  Perhaps read through Nolan's library to see if he handles that.
+  */
+  promiseResponse(workerName, command, params){
+    if(!this.workers.has(workerName)){
+      throw new Error(`Attempted to send a message to an unregisterd web worker. ${workerName}`);
+    }
+    let message = {
+      id: nanoid(),
+      promisedResponse: true,
+      command: command,
+      params: params
+    };
+    return new Promise((resolve, reject) => {
+      this.promisedMessages.set(message.id, {resolve: resolve, reject: reject});
+      this.workers.get(workerName).postMessage(message);
+    });
+  }
+
+  attemptToProcessPendingWork(message){
+    if (this.promisedMessages.has(message.id)){
+      let work = this.promisedMessages.get(message.id);
+      if(work.error){
+        work.reject(work.error);
+      }else{
+        work.resolve(message);
+      }
+      this.promisedMessages.delete(message.id);
+    }else{
+      throw new Error(`Could not find the promised message ${message}`);
+    }
   }
 
   /**
