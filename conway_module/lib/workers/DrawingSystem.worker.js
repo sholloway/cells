@@ -144,8 +144,7 @@ function processCmd(msg, commandName, commandCriteria, cmdProcessor, errMsg) {
   if (commandCriteria(msg)) {
     cmdProcessor(msg)
   } else {
-    //TODO: Look at the Worker onerror function for an idomatic way of doing this.
-    console.error(`DrawingSystem Worker.${commandName}: ${errMsg}`);
+    throw new Error(`Cannot process command DrawingSystem Worker.${commandName}: ${errMsg}`);
   }
 }
 
@@ -165,9 +164,7 @@ function processScene(msg) {
 
 function routeCommandToProcessor(msg) {
   if (!msg.command) {
-    console.error('Unexpected messaged received in DrawingSystem Worker.');
-    console.error(msg);
-    return;
+    throw new Error('DrawingSystem.worker: Command not provided in message.');
   }
 
   switch (msg.command) {
@@ -236,8 +233,7 @@ function routeCommandToProcessor(msg) {
         'Could not send the drawing system cells.');
       break;
     default:
-      console.error(`Unsupported command ${msg.command} was received in DrawingSystem Worker.`);
-      break;
+      throw new Error(`Unsupported command ${msg.command} was received in DrawingSystem Worker.`);
   }
 }
 

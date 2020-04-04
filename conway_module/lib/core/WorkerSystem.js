@@ -37,10 +37,12 @@ class WorkerSystem extends BrowserSystem {
 	 */
   registerWorker(name, worker) {
     this.workers.set(name, worker);
-    worker.onerror = this.workerErrorHandler
+    worker.onerror = this.workerErrorHandler.bind(this);
   }
 
   workerErrorHandler(error){
+    this.stop(); //Stop the simulation.
+    console.error('The simulation has been stopped.');
     console.group('A web worker had an issue.');
     console.error(`Worker: ${error.filename} Line: ${error.lineno}`);
     console.error(error.message);
