@@ -1,131 +1,11 @@
 /**
- * A web worker designed that is responsible for the drawing system.
- * 
- * TODO:
- * - Need to have the BrowserSystem.main() function which depends on window.requestAnimationFrame to be centralized 
- *   and in the main thread. That should send messages to the workers. Or find an alternative to window.requestAnimationFrame
- * - ConwayTimer -> Update Function -> Pings all active workers.
- *    Use Obersver Pattern.
+ * A web worker that is responsible for the drawing system.
  */
 
+const DrawingSystem = require('./../core/DrawingSystem.js');
 const WorkerCommands = require('./WorkerCommands.js');
 const LifeCycle = WorkerCommands.LifeCycle;
 const DrawingSystemCommands = WorkerCommands.DrawingSystemCommands;
-
-/**
- * Processes a message sent by the main thread.
- *
- * Message Types
- * {command: 'SEND_SCENE'}
- * {command: 'SET_CELLS', parameters: {cells: [] }} - setCells(activeCells)
- * {command: 'RESET', parameters: {}} - reset()
- * {command: 'TOGGLE_CELL', parameters: {CX, CY}}  - toggleCell(cx, cy)
- * {command: 'START', parameters: {}}  - start()
- * {command: 'STOP', parameters: {}}  - stop()
- */
-
-const SceneManager = require('../core/SceneManager.js');
-const DrawingStateManager = require('./../core/DrawingStateManager').DrawingStateManager;
-
-//TODO: Move into DrawingSystem file.
-const States = {
-  IDLE: 'idle',
-  UPDATING: 'updating'
-};
-
-/**
- * Replaces ./core/DrawingSystem.js
- * Will eventually be in that file.
- */
-class DrawingSystem {
-  constructor() {
-    this.config = {
-      zoom: 1
-    };
-    this.stateManager = new DrawingStateManager(this.config);
-    this.scene = new SceneManager();
-    this.displayStorageStructure = false;
-    this.state = States.IDLE
-  }
-
-  getState() {
-    return this.state;
-  }
-
-  setConfig(config) {
-    this.config = config;
-    this.stateManager.setConfig(this.config);
-  }
-
-  getScene() {
-    return this.scene;
-  }
-
-  getStateManager() {
-    return this.stateManager
-  }
-
-  update() {
-    this.state = States.UPDATING
-    this.scene.clear();
-    this.getStateManager().stageStorage(this.scene, this.displayStorageStructure);
-    this.getStateManager().processCells(this.scene);
-    this.state = States.IDLE;
-  }
-
-	/**
-	 * Used to preload the drawing system with alive cells.
-	 * @param {Cell[]} cells - An array of alive cells.
-	 */
-  setCells(cells) {
-    this.getStateManager().setCells(cells)
-  }
-
-  /**
-	 * Provides a deep copy of the currently alive cells.
-	 * @returns {Cell[]}
-	 */
-  getCells() {
-    return this.getStateManager().getCells()
-  }
-
-  /**
-	 * Sets the cell size to use.
-	 * @param {number} size
-	 */
-  setCellSize(size) {
-    this.config.zoom = size
-  }
-
-	/**
-	 * Flips a grid cell to alive or dead.
-	 * @param {number} x - The X coordinate of the cell.
-	 * @param {number} y - The Y coordinate of the cell.
-	 */
-  toggleCell(x, y) {
-    if (this.state === States.IDLE) {
-      this.state = States.UPDATING
-      this.getStateManager().toggleCell(x, y);
-      this.state = States.IDLE;
-    }
-  }
-
-  /**
-	 * Sets whether to draw the quad tree.
-	 * @param {boolean} display
-	 */
-  displayStorage(display) {
-    this.displayStorageStructure = display
-  }
-
-  /**
-	 * Clears the simulation.
-	 */
-	reset(){
-		this.scene.clear()
-		this.getStateManager().clear()
-	}
-}
 
 /**
  * The possible states the worker can be in.
@@ -148,11 +28,13 @@ function processCmd(msg, commandName, commandCriteria, cmdProcessor, errMsg) {
   }
 }
 
+function systemRunning(){
+  return workerState === WorkerState.RUNNING;
+}
+
 function processScene(msg) {
-  if (workerState === WorkerState.RUNNING &&
-    drawingSystem.getState() === States.IDLE) {
+  if (systemRunning() && drawingSystem.canUpdate()) {
     drawingSystem.update();
-    //  postMessage(drawingSystem.getScene().serializeStack());
     postMessage({
       id: msg.id,
       promisedResponse: msg.promisedResponse,

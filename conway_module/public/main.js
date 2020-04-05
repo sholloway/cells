@@ -1,7 +1,8 @@
 /*
 Next Steps
-* Make the worker cycle stop when an error is thrown.
 * Move the new Drawing System class into it's own file.
+* Get tests around DrawingSystem.worker
+* JSDocs for DrawingSystem.worker
 * Get test converage working through the IDE.
 * setup prettifier. I want to add ; to every line.
 * Shift AltSystem to a worker.

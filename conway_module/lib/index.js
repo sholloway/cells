@@ -1,5 +1,4 @@
 module.exports.DefaultConfig = require('./core/DefaultConfig.js');
-// module.exports.DrawingSystem = require('./core/DrawingSystem.js');
 module.exports.DrawingSceneBuilder = require('./core/DrawingStateManager.js').DrawingSceneBuilder;
 module.exports.GridSystem = require('./core/GridSystem.js');
 module.exports.LifeSystem = require('./core/AlternativeLifeSystem.js');
