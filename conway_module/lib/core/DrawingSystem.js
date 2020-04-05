@@ -8,8 +8,8 @@ const SceneManager = require('./SceneManager.js');
  * @private
  */
 const States = {
-  IDLE: 'idle',
-  UPDATING: 'updating'
+  IDLE: 'IDLE',
+  UPDATING: 'UPDATING'
 };
 
 /**
@@ -92,8 +92,8 @@ class DrawingSystem {
 	 * @param {number} size
 	 */
   setCellSize(size) {
-    this.config.zoom = size
-  }
+    this.config.zoom = size;
+  } 
 
 	/**
 	 * Flips a grid cell to alive or dead.
@@ -113,15 +113,15 @@ class DrawingSystem {
 	 * @param {boolean} display
 	 */
   displayStorage(display) {
-    this.displayStorageStructure = display
+    this.displayStorageStructure = display;
   }
 
   /**
 	 * Clears the simulation.
 	 */
-	reset(){
-		this.scene.clear()
-		this.getStateManager().clear()
+	reset(){ 
+		this.scene.clear();
+		this.getStateManager().clear();
 	}
 }
 

@@ -1,6 +1,5 @@
 /*
 Next Steps
-* Move the new Drawing System class into it's own file.
 * Get tests around DrawingSystem.worker
 * JSDocs for DrawingSystem.worker
 * Get test converage working through the IDE.
