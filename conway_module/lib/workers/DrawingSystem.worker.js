@@ -4,20 +4,23 @@
 
 const {DrawingSystemWorkerController} = require('./DrawingSystemWorkerController.js');
 
-let that;
-if ('undefined' !== typeof WorkerGlobalScope){
-  that = self;
-}else{
-  that = this;
+function establishWorkerContext(){
+  return ('undefined' !== typeof WorkerGlobalScope)? self : this;
 }
 
-let controller = new DrawingSystemWorkerController(that);
+let controller = new DrawingSystemWorkerController(establishWorkerContext());
+
+function getController(){
+  return controller;
+}
 
 onmessage = function (event) {
   controller.process(event.data);
 }
 
-// This is to enable unit tests. Do not invoke directly.
+// These are to enable unit tests. Do not invoke directly.
 module.exports = {
-  onmessage
+  onmessage,
+  establishWorkerContext,
+  getController
 }
