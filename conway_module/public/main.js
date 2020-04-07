@@ -1,6 +1,5 @@
 /*
 Next Steps
-* Get tests around DrawingSystem.worker
 * JSDocs for DrawingSystem.worker
 * Get test converage working through the IDE.
 * setup prettifier. I want to add ; to every line.
