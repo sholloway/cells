@@ -69,7 +69,7 @@ class DrawingSystemWorkerController{
         this.processCmd(msg, DrawingSystemCommands.TOGGLE_CELL,
           (msg) => msg.cx !== undefined && msg.cy !== undefined,
           (msg) => this.drawingSystem.toggleCell(msg.cx, msg.cy),
-          'The cx and cy were both not provided.');
+          'Either cx or cy was not provided.');
         break;
       case DrawingSystemCommands.DISPLAY_STORAGE:
         this.processCmd(msg, DrawingSystemCommands.DISPLAY_STORAGE,
