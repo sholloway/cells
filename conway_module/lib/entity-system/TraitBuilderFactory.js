@@ -1,4 +1,3 @@
-
 const {
 	CircleTrait,
 	ClearArea,
@@ -13,22 +12,28 @@ const {
 	RectOutlineTrait,
 	ScaleTransformer,
 	StrokeStyle,
-	Trait
+	Trait,
 } = require('./traits.js');
 
-class TraitBuilderFactory{
-	static select(traitName){
+class TraitBuilderFactory {
+	static select(traitName) {
 		let builder;
-		switch (traitName){
+		switch (traitName) {
 			case 'GridPattern':
-				builder = (params) => { return new GridPattern(); };
+				builder = (params) => {
+					return new GridPattern();
+				};
 				break;
 			case 'ProcessBoxAsRect':
-				builder = (params) => { return new ProcessBoxAsRect(); };
+				builder = (params) => {
+					return new ProcessBoxAsRect();
+				};
 				break;
 			case 'Trait':
 			default:
-				builder = (params) => { return new Trait(); };
+				builder = (params) => {
+					return new Trait();
+				};
 				break;
 		}
 		return builder;

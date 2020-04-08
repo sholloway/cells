@@ -3,15 +3,15 @@
  * @module entity_system
  */
 
- /**
+/**
  * A render-able entity. The entity is defined by registering traits.
  */
-class Entity{
+class Entity {
 	/**
 	 * Create a new Entity.
 	 */
-	constructor(){
-		this.traits = []
+	constructor() {
+		this.traits = [];
 		this.className = 'Entity';
 	}
 
@@ -19,23 +19,23 @@ class Entity{
 	 * Process all register traits.
 	 * @param {HTMLCanvasContext} rendererContext
 	 */
-	render(rendererContext){
+	render(rendererContext) {
 		let context = {
 			rendererContext: rendererContext,
-			entity: this
-		}
-		this.traits.forEach((trait) =>{
-			trait.process(context)
-		})
+			entity: this,
+		};
+		this.traits.forEach((trait) => {
+			trait.process(context);
+		});
 	}
 
 	/**
 	 * Expands the definition of the entity by registering traits.
 	 * @param {Trait} trait - An implementation of the Trait abstract class.
 	 */
-	register(trait){
-		this.traits.push(trait)
-		return this
+	register(trait) {
+		this.traits.push(trait);
+		return this;
 	}
 
 	/**
@@ -44,24 +44,24 @@ class Entity{
 	 * which an be used to rebuild a Scene after communicated from a thread.
 	 * @returns Entity
 	 */
-	toJSON(){
+	toJSON() {
 		this.className = this.constructor.name;
 		return this;
 	}
 
-	copyParams(original){
-		for (var key in original){
-			if (key != 'className' && key != 'traits'){
+	copyParams(original) {
+		for (var key in original) {
+			if (key != 'className' && key != 'traits') {
 				this[key] = original[key];
 			}
 		}
 		return this;
 	}
 
-	initTraits(original, traitBuilderFactory){
-		this.traits = original.traits.map(traitLit => {
+	initTraits(original, traitBuilderFactory) {
+		this.traits = original.traits.map((traitLit) => {
 			var traitBuilder = traitBuilderFactory(traitLit.className);
-			return (traitBuilder)? traitBuilder(traitLit) : new Trait();
+			return traitBuilder ? traitBuilder(traitLit) : new Trait();
 		});
 		return this;
 	}
@@ -70,7 +70,7 @@ class Entity{
 /**
  * A grid.
  */
-class GridEntity extends Entity{
+class GridEntity extends Entity {
 	/**
 	 * Creates a new grid entity
 	 * @param {number} width - The total width of the grid.
@@ -78,14 +78,14 @@ class GridEntity extends Entity{
 	 * @param {number} cWidth - The width of a grid cell.
 	 * @param {number} cHeight - The height of a grid cell.
 	 */
-	constructor(width = null, height = null, cWidth = null, cHeight = null){
-		super()
-		this.width = width
-		this.height = height
-		this.cell = { width: cWidth, height: cHeight}
+	constructor(width = null, height = null, cWidth = null, cHeight = null) {
+		super();
+		this.width = width;
+		this.height = height;
+		this.cell = { width: cWidth, height: cHeight };
 	}
 
-	static buildInstance(params, traitBuilderMap){
+	static buildInstance(params, traitBuilderMap) {
 		return new GridEntity()
 			.copyParams(params)
 			.initTraits(params, traitBuilderMap);
@@ -95,7 +95,7 @@ class GridEntity extends Entity{
 /**
  * Represents a box that can be processed via Traits.
  */
-class Box extends Entity{
+class Box extends Entity {
 	/**
 	 * Creates a new Box.
 	 * @param {number} x - Left most X coordinate.
@@ -104,25 +104,23 @@ class Box extends Entity{
 	 * @param {number} yy - Lower most Y coordinate.
 	 * @param {boolean} alive - If the cell is alive or not.
 	 */
-	constructor(x = null,y = null, xx = null, yy = null, alive = null){
-		super()
-		this.x = x
-		this.y = y
-		this.xx = xx
-		this.yy = yy
-		this.alive = alive
+	constructor(x = null, y = null, xx = null, yy = null, alive = null) {
+		super();
+		this.x = x;
+		this.y = y;
+		this.xx = xx;
+		this.yy = yy;
+		this.alive = alive;
 		this.className = 'Box';
 	}
 
-	static buildInstance(params, traitBuilderMap){
-		return new Box()
-			.copyParams(params)
-			.initTraits(params, traitBuilderMap);
+	static buildInstance(params, traitBuilderMap) {
+		return new Box().copyParams(params).initTraits(params, traitBuilderMap);
 	}
 }
 
 module.exports = {
 	Box,
 	Entity,
-	GridEntity
-}
+	GridEntity,
+};
