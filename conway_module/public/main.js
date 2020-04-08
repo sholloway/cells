@@ -1,8 +1,7 @@
 /*
 Next Steps
-* JSDocs for DrawingSystem.worker
-* Get test converage working through the IDE.
-* setup prettifier. I want to add ; to every line.
+* Transition JSDocs to be ran with npx rather than a dev dependency.
+* Setup prettifier. I want to add ; to every line.
 * Shift AltSystem to a worker.
 */
 
