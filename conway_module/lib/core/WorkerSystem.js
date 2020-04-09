@@ -38,6 +38,7 @@ class WorkerSystem extends BrowserSystem {
 	registerWorker(name, worker) {
 		this.workers.set(name, worker);
 		worker.onerror = this.workerErrorHandler.bind(this);
+		return this;
 	}
 
 	workerErrorHandler(error) {

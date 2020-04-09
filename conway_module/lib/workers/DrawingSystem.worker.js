@@ -6,9 +6,7 @@ const {
 	DrawingSystemWorkerController,
 } = require('./DrawingSystemWorkerController.js');
 
-function establishWorkerContext() {
-	return 'undefined' !== typeof WorkerGlobalScope ? self : this;
-}
+const { establishWorkerContext } = require('./WorkerUtils.js');
 
 let controller = new DrawingSystemWorkerController(establishWorkerContext());
 

@@ -1,7 +1,7 @@
 /*
 Next Steps
-* Setup prettifier. I want to add ; to every line.
 * Shift AltSystem to a worker.
+* Optimize Worker messaging
 */
 
 const LifeSystem = Conways.LifeSystem;
@@ -20,6 +20,7 @@ const processDrawingWorker = 'Render Drawing Scene';
 
 const Workers = {
 	DRAWING_SYSTEM: 'DRAWING_SYSTEM_WORKER',
+	LIFE_SYSTEM: 'LIFE_SYSTEM',
 };
 
 class Main {
@@ -32,6 +33,7 @@ class Main {
 
 		this.gridWorker = new Conways.GridSystemWorker();
 		this.drawingWorker = new Conways.DrawingSystemWorker();
+		this.lifeWorker = new Conways.LifeSystemWorker();
 
 		this.gridRender = new HTMLCanvasRenderer(
 			this.gridCanvas.getContext('2d'),
@@ -52,18 +54,17 @@ class Main {
 		this.drawingAllowed = true;
 
 		this.gridWorker.onmessage = this.handleMessageFromGridWorker.bind(this);
+		this.drawingWorker.onmessage = this.handleMsgFromDrawingWorker.bind(this);
+		this.lifeWorker.onmessage = this.handleMessageFromLifeWorker.bind(this);
+
+		//We don't want to fully register the gridWorker because it is only rendered on demand.
 		this.gridWorker.onerror = this.workerSystem.workerErrorHandler.bind(
 			this.workerSystem
-		); //We don't want to fully register the gridWorker because it is only rendered on demand.
-
-		this.drawingWorker.onmessage = this.handleMessageFromDrawingWorker.bind(
-			this
 		);
 
-		this.workerSystem.registerWorker(
-			Workers.DRAWING_SYSTEM,
-			this.drawingWorker
-		);
+		this.workerSystem
+			.registerWorker(Workers.DRAWING_SYSTEM, this.drawingWorker)
+			.registerWorker(Workers.LIFE_SYSTEM, this.lifeWorker);
 	}
 
 	initialize() {
@@ -88,9 +89,9 @@ class Main {
 	/**
 	 * Render the grid canvas when a message is received from the GridSystemWorker.
 	 */
-	handleMessageFromGridWorker(message) {
-		if (message.data) {
-			let sceneObj = JSON.parse(message.data);
+	handleMessageFromGridWorker(envelope) {
+		if (envelope.data) {
+			let sceneObj = JSON.parse(envelope.data);
 			let scene = SceneManager.fromObject(sceneObj, TraitBuilderFactory.select);
 			let htmlCanvasContext = this.gridCanvas.getContext('2d');
 			htmlCanvasContext.strokeStyle = '#757575';
@@ -99,7 +100,7 @@ class Main {
 		}
 	}
 
-	handleMessageFromDrawingWorker(envelope) {
+	handleMsgFromDrawingWorker(envelope) {
 		if (envelope.data) {
 			if (envelope.data.promisedResponse) {
 				this.workerSystem.attemptToProcessPendingWork(envelope.data);
@@ -108,6 +109,8 @@ class Main {
 			}
 		}
 	}
+
+	handleMessageFromLifeWorker(evelope) {}
 
 	processMessageFromDrawingWorker(message) {
 		switch (message.command) {

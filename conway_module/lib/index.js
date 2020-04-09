@@ -14,3 +14,4 @@ module.exports.TraitBuilderFactory = require('./entity-system/TraitBuilderFactor
 module.exports.WorkerCommands = require('./workers/WorkerCommands.js');
 module.exports.GridSystemWorker = require('worker-loader!./workers/GridSystem.worker.js');
 module.exports.DrawingSystemWorker = require('worker-loader!./workers/DrawingSystem.worker.js');
+module.exports.LifeSystemWorker = require('worker-loader!./workers/LifeSystem.worker.js');

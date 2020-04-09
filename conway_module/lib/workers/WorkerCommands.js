@@ -26,6 +26,19 @@ module.exports = new Proxy(
 			},
 			handler
 		),
+		LifeSystemCommands: new Proxy(
+			{
+				RESET: 'RESET',
+				RESUME: 'RESUME',
+				SEND_ALIVE_CELLS_COUNT: 'SEND_ALIVE_CELLS_COUNT',
+				SEND_CELLS: 'SEND_CELLS',
+				SEND_SIMULATION_ITERATIONS_COUNT: 'SEND_SIMULATION_ITERATIONS_COUNT',
+				SET_CELL_SIZE: 'SET_CELL_SIZE',
+				SET_SEEDER: 'SET_SEEDER',
+				DISPLAY_STORAGE: 'DISPLAY_STORAGE',
+			},
+			handler
+		),
 	},
 	handler
 );
