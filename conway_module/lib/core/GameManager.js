@@ -109,6 +109,10 @@ class GameManager {
 		this.nextTree = QuadTree.empty();
 	}
 
+	setConfig(config) {
+		this.config = config;
+	}
+
 	/**
 	 * The number of cells currently alive in the simulation.
 	 * @returns {number}
@@ -234,7 +238,7 @@ class GameManager {
 		this.nextTree.index(nextAliveCells);
 
 		//3. Feed the cells to the scene manager.
-		registerCellTraits(this.config, nextAliveCells);
+		//registerCellTraits(this.config, nextAliveCells); Disabled for web worker.
 		scene.push(nextAliveCells);
 	}
 

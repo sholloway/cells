@@ -15,8 +15,8 @@
 		"profile": "NODE_ENV=test NODE_PATH=. node_modules/mocha/bin/mocha -f 'Profiling' --prof -t 100000",
 		"start": "webpack-dev-server --config webpack.dev.js",
 		"test": "NODE_ENV=test NODE_PATH=. node_modules/mocha/bin/mocha",
-		"format:check": "prettier --config ./.prettierrc.json --check \"./{public,test,lib}/**/*.js\"",
-		"format:write": "prettier --config ./.prettierrc.json --write \"./{public,test,lib}/**/*.js\""
+		"format:check": "prettier --config ./.prettierrc.json --check \"./{public,test,lib}/**/*.{css, html, js}\"",
+		"format:write": "prettier --config ./.prettierrc.json --write \"./{public,test,lib}/**/*.{css, html, js}\""
 	},
 	"author": "Samuel D. Holloway",
 	"license": "MIT",

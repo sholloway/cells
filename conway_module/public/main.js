@@ -1,20 +1,32 @@
 /*
 Next Steps
-* Shift AltSystem to a worker.
+* Refactor LifeSystemWorkerController.initializeSeeder
+* Put tests around LifeSystemWorkerController and worker.
+* Move Replace AltLifeSystem with LifeSystem
+* JSDocs for LifeSystemWorkerController and LifeSystem.
+* Put tests around LifeSystem
 * Optimize Worker messaging
+* Add page level error handling? 
+  * Every cmd in a try/catch
+  * A way to display errors to the user.
+  * Still want trace info going to the console.
+* Remove the conway_module directory. Flatten the code base.
+* Add markdown to prettier.
 */
 
+//TODO: Inline all of this to reduce the file length.
+const Cell = Conways.Cell;
+const DrawingSceneBuilder = Conways.DrawingSceneBuilder;
+const LifeSceneBuilder = Conways.LifeSceneBuilder;
 const LifeSystem = Conways.LifeSystem;
+const HTMLCanvasRenderer = Conways.HTMLCanvasRenderer;
+const SceneManager = Conways.SceneManager;
 const SeederFactoryModule = Conways.SeederFactoryModule;
 const SeederFactory = SeederFactoryModule.SeederFactory;
 const SeederModels = SeederFactoryModule.SeederModels;
-const HTMLCanvasRenderer = Conways.HTMLCanvasRenderer;
 const TraitBuilderFactory = Conways.TraitBuilderFactory;
-const SceneManager = Conways.SceneManager;
-const WorkerSystem = Conways.WorkerSystem;
 const WorkerCommands = Conways.WorkerCommands;
-const DrawingSceneBuilder = Conways.DrawingSceneBuilder;
-const Cell = Conways.Cell;
+const WorkerSystem = Conways.WorkerSystem;
 
 const processDrawingWorker = 'Render Drawing Scene';
 
@@ -25,16 +37,22 @@ const Workers = {
 
 class Main {
 	constructor(gridCanvas, simCanvas, drawCanvas) {
+		this.setupProperties(gridCanvas, simCanvas, drawCanvas)
+			.setupRenderers()
+			.setupScenes()
+			.setupWorkers();
+	}
+
+	setupProperties() {
+		this.config = Conways.DefaultConfig;
+		this.drawingAllowed = true;
 		this.gridCanvas = gridCanvas;
 		this.simCanvas = simCanvas;
 		this.drawCanvas = drawCanvas;
+		return this;
+	}
 
-		this.config = Conways.DefaultConfig;
-
-		this.gridWorker = new Conways.GridSystemWorker();
-		this.drawingWorker = new Conways.DrawingSystemWorker();
-		this.lifeWorker = new Conways.LifeSystemWorker();
-
+	setupRenderers() {
 		this.gridRender = new HTMLCanvasRenderer(
 			this.gridCanvas.getContext('2d'),
 			this.config
@@ -43,16 +61,26 @@ class Main {
 			this.drawCanvas.getContext('2d'),
 			this.config
 		);
-		this.drawingScene = new SceneManager();
 
-		this.workerSystem = new WorkerSystem(window, this.config);
-		this.life = new LifeSystem(
-			window,
+		this.lifeSystemRender = new HTMLCanvasRenderer(
 			this.simCanvas.getContext('2d'),
 			this.config
 		);
-		this.drawingAllowed = true;
+		return this;
+	}
 
+	setupScenes() {
+		this.drawingScene = new SceneManager();
+		this.lifeScene = new SceneManager();
+		return this;
+	}
+
+	setupWorkers() {
+		this.gridWorker = new Conways.GridSystemWorker();
+		this.drawingWorker = new Conways.DrawingSystemWorker();
+		this.lifeWorker = new Conways.LifeSystemWorker();
+
+		this.workerSystem = new WorkerSystem(window, this.config);
 		this.gridWorker.onmessage = this.handleMessageFromGridWorker.bind(this);
 		this.drawingWorker.onmessage = this.handleMsgFromDrawingWorker.bind(this);
 		this.lifeWorker.onmessage = this.handleMessageFromLifeWorker.bind(this);
@@ -65,24 +93,13 @@ class Main {
 		this.workerSystem
 			.registerWorker(Workers.DRAWING_SYSTEM, this.drawingWorker)
 			.registerWorker(Workers.LIFE_SYSTEM, this.lifeWorker);
+		return this;
 	}
 
+	/**
+	 * Kicks off the main loop for all workers.
+	 */
 	initialize() {
-		let simTicked = function (lifeSystem) {
-			document.getElementById(
-				'alive_cells_count'
-			).value = lifeSystem.aliveCellsCount();
-			document.getElementById(
-				'sim_generation_count'
-			).value = lifeSystem.numberOfSimulationIterations();
-		};
-		this.life.subscribe('ticked', simTicked);
-
-		/*
-    This kicks off the main loop for all workers.
-    Need to consider the difference between running simulations and the 
-    request to get the scene data.
-    */
 		this.workerSystem.start();
 	}
 
@@ -110,7 +127,15 @@ class Main {
 		}
 	}
 
-	handleMessageFromLifeWorker(evelope) {}
+	handleMessageFromLifeWorker(envelope) {
+		if (envelope.data) {
+			if (envelope.data.promisedResponse) {
+				this.workerSystem.attemptToProcessPendingWork(envelope.data);
+			} else {
+				this.processMessageFromLifeSystemWorker(envelope.data);
+			}
+		}
+	}
 
 	processMessageFromDrawingWorker(message) {
 		switch (message.command) {
@@ -130,10 +155,29 @@ class Main {
 		}
 	}
 
+	processMessageFromLifeSystemWorker(message) {
+		switch (message.command) {
+			case WorkerCommands.LifeCycle.PROCESS_CYCLE:
+				this.lifeScene.clear();
+				LifeSceneBuilder.buildScene(this.lifeScene, this.config, message.stack);
+				this.lifeSystemRender.render(this.lifeScene);
+
+				//update the related controls.
+				document.getElementById('alive_cells_count').value =
+					message.aliveCellsCount;
+				document.getElementById('sim_generation_count').value =
+					message.numberOfSimulationIterations;
+				break;
+			default:
+				console.error(
+					`An unexpected message was sent from the Life System Worker. ${message}`
+				);
+		}
+	}
+
 	handlePageLoad(event) {
 		sizeCanvas(this.config);
 		let now = window.performance.now();
-		this.life.main(now);
 		this.workerSystem.main(now);
 		this.allowDrawing();
 	}
@@ -193,6 +237,7 @@ class Main {
 	//TODO: Yuck. Improve this. Isolate knowledge about the DOM.
 	toggleSimulation() {
 		let button = document.getElementById('play_pause_button');
+		let isInDrawingMode = document.getElementById('seed').value === 'draw';
 		switch (button.innerText) {
 			case 'Start':
 				button.innerText = 'Pause';
@@ -201,22 +246,36 @@ class Main {
 				break;
 			case 'Pause':
 				button.innerText = 'Resume';
-				if (document.getElementById('seed').value === 'draw') {
-					//copy the active cells to the drawing system.
-					let activeCells = this.life.getCells();
-					this.drawingWorker.postMessage({
-						command: WorkerCommands.DrawingSystemCommands.SET_CELLS,
-						cells: activeCells,
-					});
-					this.life.reset();
-					this.allowDrawing();
-				}
 				this.stopSimulation();
+				if (isInDrawingMode) {
+					this.workerSystem
+						.promiseResponse(
+							Workers.LIFE_SYSTEM,
+							WorkerCommands.LifeSystemCommands.SEND_CELLS
+						)
+						.then((response) => {
+							this.drawingWorker.postMessage({
+								command: WorkerCommands.DrawingSystemCommands.SET_CELLS,
+								cells: response.cells,
+							});
+							this.lifeWorker.postMessage({
+								command: WorkerCommands.LifeSystemCommands.RESET,
+								config: this.config,
+							});
+							this.lifeSystemRender.clear();
+							this.allowDrawing();
+						})
+						.catch((reason) => {
+							console.error(
+								`There was an error trying to pause the simulation.\n${reason}`
+							);
+						});
+				}
 				break;
 			case 'Resume':
 				button.innerText = 'Pause';
 				this.preventDrawing();
-				if (document.getElementById('seed').value === 'draw') {
+				if (isInDrawingMode) {
 					this.startSimulation();
 				} else {
 					this.resumeSimulation();
@@ -233,18 +292,25 @@ class Main {
 		button.innerText = 'Start';
 		document.getElementById('alive_cells_count').value = 0;
 		document.getElementById('sim_generation_count').value = 0;
-		this.life.reset();
 
-		//Reset the Drawing System
+		this.workerSystem
+			.promiseResponse(
+				Workers.LIFE_SYSTEM,
+				WorkerCommands.LifeSystemCommands.RESET,
+				{ config: this.config }
+			)
+			.then(() => {
+				this.lifeScene.clear();
+				this.lifeSystemRender.clear();
+			});
+
 		this.workerSystem
 			.promiseResponse(
 				Workers.DRAWING_SYSTEM,
 				WorkerCommands.DrawingSystemCommands.RESET,
 				{ config: this.config }
 			)
-			.then(() => {
-				this.drawingSystemRender.clear();
-			});
+			.then(() => this.drawingSystemRender.clear());
 	}
 
 	handleGridBackground() {
@@ -308,10 +374,21 @@ class Main {
 					this.config.canvas.height / this.config.zoom;
 				let seedPicker = document.getElementById('seed');
 				let seedSetting = seedPicker.value;
-				let seeder = SeederFactory.build(seedSetting);
-				seeder.setCells(drawingCells.map((c) => Cell.buildInstance(c)));
-				this.life.setSeeder(seeder);
-				this.life.start();
+
+				return this.workerSystem.promiseResponse(
+					Workers.LIFE_SYSTEM,
+					WorkerCommands.LifeSystemCommands.SET_SEEDER,
+					{
+						seedSetting: seedSetting,
+						config: this.config,
+						cells: drawingCells,
+					}
+				);
+			})
+			.then(() => {
+				this.lifeWorker.postMessage({
+					command: WorkerCommands.LifeCycle.START,
+				});
 			})
 			.catch((reason) => {
 				console.error(
@@ -321,16 +398,24 @@ class Main {
 	}
 
 	stopSimulation() {
-		this.life.stop();
+		this.lifeWorker.postMessage({
+			command: WorkerCommands.LifeCycle.STOP,
+		});
 	}
 
 	resumeSimulation() {
-		this.life.resume();
+		this.lifeWorker.postMessage({
+			command: WorkerCommands.LifeCycle.START,
+		});
 	}
 
 	toggleDisplayStorageStructure() {
 		let displayStorageCheckbox = document.getElementById('display_storage');
-		this.life.displayStorage(displayStorageCheckbox.checked);
+
+		this.lifeWorker.postMessage({
+			command: WorkerCommands.LifeSystemCommands.DISPLAY_STORAGE,
+			displayStorage: displayStorageCheckbox.checked,
+		});
 
 		this.drawingWorker.postMessage({
 			command: WorkerCommands.DrawingSystemCommands.DISPLAY_STORAGE,
@@ -340,7 +425,12 @@ class Main {
 
 	changedCellSize() {
 		let cellSize = getCellSize();
-		this.life.setCellSize(cellSize);
+
+		this.lifeWorker.postMessage({
+			command: WorkerCommands.LifeSystemCommands.SET_CELL_SIZE,
+			cellSize: cellSize,
+		});
+
 		this.drawingWorker.postMessage({
 			command: WorkerCommands.DrawingSystemCommands.SET_CELL_SIZE,
 			cellSize: cellSize,
