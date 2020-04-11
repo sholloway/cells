@@ -111,27 +111,23 @@ class LifeSystemWorkerController extends AbstractWorkerController {
 		}
 	}
 
-	//TODO: YUCK!! Refactor to make this flow like a pipeline.
 	initializeSeeder(msg) {
-		let seedSetting = this.findPromisedProperty(msg, 'seedSetting');
-		let seeder = SeederFactory.build(seedSetting);
-		let cells = this.findPromisedProperty(msg, 'cells');
-		if (cells) {
-			seeder.setCells(cells.map((c) => Cell.buildInstance(c)));
-		}
-		let config = this.findPromisedProperty(msg, 'config');
-		if (config) {
-			this.lifeSystem.setConfig(config);
-		}
-		this.lifeSystem.setSeeder(seeder);
-		this.lifeSystem.initializeSimulation();
-		if (msg.promisedResponse) {
+		let cells = this.findPromisedProperty(msg, 'cells') || [];
+		let seeder = SeederFactory.build(
+			this.findPromisedProperty(msg, 'seedSetting')
+		).setCells(cells.map((c) => Cell.buildInstance(c)));
+
+		this.lifeSystem
+			.setConfig(this.findPromisedProperty(msg, 'config'))
+			.setSeeder(seeder)
+			.initializeSimulation();
+
+		msg.promisedResponse &&
 			this.sendMessageToClient({
 				id: msg.id,
 				promisedResponse: msg.promisedResponse,
 				command: msg.command,
 			});
-		}
 	}
 }
 

@@ -5,6 +5,7 @@ Next Steps
 * Move Replace AltLifeSystem with LifeSystem
 * JSDocs for LifeSystemWorkerController and LifeSystem.
 * Put tests around LifeSystem
+* Refactor the DrawingSystemController to extend the AbstractController.
 * Optimize Worker messaging
 * Add page level error handling? 
   * Every cmd in a try/catch

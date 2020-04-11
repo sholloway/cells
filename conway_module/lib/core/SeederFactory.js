@@ -56,6 +56,7 @@ class Seeder {
 	 */
 	setCells(cells) {
 		this.cells = cells;
+		return this;
 	}
 }
 

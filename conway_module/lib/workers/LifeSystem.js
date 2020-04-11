@@ -40,6 +40,7 @@ class LifeSystem {
 	setConfig(config) {
 		this.config = config;
 		this.getStateManager().setConfig(this.config);
+		return this;
 	}
 
 	/**
@@ -106,6 +107,7 @@ class LifeSystem {
 	 */
 	setSeeder(seeder) {
 		this.seeder = seeder;
+		return this;
 	}
 
 	update() {
