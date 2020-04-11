@@ -1,11 +1,10 @@
 /*
 Next Steps
-* Refactor LifeSystemWorkerController.initializeSeeder
-* Put tests around LifeSystemWorkerController and worker.
 * Move Replace AltLifeSystem with LifeSystem
 * JSDocs for LifeSystemWorkerController and LifeSystem.
 * Put tests around LifeSystem
 * Refactor the DrawingSystemController to extend the AbstractController.
+* Refactor Main.js. Some functions are sloppy. Remove conditionals where possible.
 * Optimize Worker messaging
 * Add page level error handling? 
   * Every cmd in a try/catch

@@ -34,7 +34,7 @@ class AbstractWorkerController {
 			case LifeCycle.PAUSE:
 				break;
 			case LifeCycle.PROCESS_CYCLE:
-				this.processScene(msg);
+				this.workerState === WorkerState.RUNNING && this.processScene(msg);
 				break;
 			default:
 				this.routeCommand(msg);
@@ -47,7 +47,7 @@ class AbstractWorkerController {
 	 */
 	routeCommand(msg) {
 		throw new Error(
-			'Child classes of AbstractWorkerController must implement the method routeCommand().'
+			'Child classes of AbstractWorkerController must implement the method routeCommand(msg).'
 		);
 	}
 
@@ -78,7 +78,11 @@ class AbstractWorkerController {
 	}
 
 	//Maybe we can standardize this... Maybe not...
-	processScene(msg) {}
+	processScene(msg) {
+		throw new Error(
+			'Child classes of AbstractWorkerController must implement the method processScene().'
+		);
+	}
 
 	/**
 	 * @returns {Boolean} Determines if the service is running or not.

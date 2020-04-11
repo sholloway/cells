@@ -32,13 +32,12 @@ class LifeSystemWorkerController extends AbstractWorkerController {
 					(msg) => this.findPromisedProperty(msg, 'config'),
 					(msg) => {
 						this.lifeSystem.reset(msg.config);
-						if (msg.promisedResponse) {
+						msg.promisedResponse &&
 							this.sendMessageToClient({
 								id: msg.id,
 								promisedResponse: msg.promisedResponse,
 								command: msg.command,
 							});
-						}
 					},
 					'The configuration was not provided.'
 				);
@@ -47,7 +46,7 @@ class LifeSystemWorkerController extends AbstractWorkerController {
 				this.processCmd(
 					msg,
 					msg.command,
-					() => true,
+					(msg) => this.findPromisedProperty(msg, 'promisedResponse'),
 					(msg) => {
 						this.sendMessageToClient({
 							id: msg.id,
@@ -56,7 +55,7 @@ class LifeSystemWorkerController extends AbstractWorkerController {
 							cells: this.lifeSystem.getCells(),
 						});
 					},
-					'Could not send the drawing system cells.'
+					'Could not send the life system cells.'
 				);
 				break;
 			case LifeSystemCmds.SET_CELL_SIZE:
