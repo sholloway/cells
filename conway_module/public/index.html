@@ -9,7 +9,6 @@
 		<meta charset="utf-8" />
 		<link href="main.css" rel="stylesheet" type="text/css" />
 		<script src="dist/conways-game.js"></script>
-		<script type="text/javascript" src="main.js"></script>
 	</head>
 	<body>
 		<div class="container col">
@@ -99,7 +98,8 @@
 			</div>
 		</div>
 		<script type="application/javascript">
-			const main = new Main(
+			const getElementById = Conways.DomUtilities.getElementById;
+			const main = new Conways.Game(
 				getElementById('grid_canvas'),
 				getElementById('sim_canvas'),
 				getElementById('draw_canvas')

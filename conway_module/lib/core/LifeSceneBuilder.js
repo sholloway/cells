@@ -15,13 +15,15 @@ class LifeSceneBuilder {
 		let entities = objs.map((obj) => {
 			let entity;
 			if (obj.className === 'Box') {
-				entity = Box.buildInstance(obj)
+				entity = Box.buildInstance(obj);
+				entity
 					.register(new ProcessBoxAsRect())
 					.register(new ScaleTransformer(config.zoom))
 					.register(new ColorByContents())
 					.register(new RectOutlineTrait());
 			} else if (obj.className === 'Cell') {
-				entity = Cell.buildInstance(obj)
+				entity = Cell.buildInstance(obj);
+				entity
 					.register(new GridCellToRenderingEntity())
 					.register(new ScaleTransformer(config.zoom))
 					.register(new ColorByAgeTrait())

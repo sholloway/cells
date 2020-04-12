@@ -114,8 +114,10 @@ class Box extends Entity {
 		this.className = 'Box';
 	}
 
-	static buildInstance(params, traitBuilderMap) {
-		return new Box().copyParams(params).initTraits(params, traitBuilderMap);
+	static buildInstance(params, traitBuilderMap = null) {
+		let box = new Box().copyParams(params);
+		traitBuilderMap && box.initTraits(params, traitBuilderMap);
+		return box;
 	}
 }
 

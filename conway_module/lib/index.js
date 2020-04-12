@@ -1,12 +1,16 @@
 //The Core System
-module.exports.Cell = require('./core/Quadtree').Cell;
+module.exports.Cell = require('./core/Quadtree.js').Cell;
 module.exports.DefaultConfig = require('./core/DefaultConfig.js');
 module.exports.DrawingSceneBuilder = require('./core/DrawingStateManager.js').DrawingSceneBuilder;
 module.exports.GridSystem = require('./core/GridSystem.js');
 module.exports.LifeSceneBuilder = require('./core/LifeSceneBuilder.js');
+module.exports.QuadTree = require('./core/Quadtree.js');
 module.exports.SceneManager = require('./core/SceneManager');
 module.exports.SeederFactoryModule = require('./core/SeederFactory.js');
 module.exports.WorkerSystem = require('./core/WorkerSystem.js');
+
+//DOM
+module.exports.DomUtilities = require('./dom/DomUtilities.js');
 
 //Rendering System
 module.exports.HTMLCanvasRenderer = require('./renderer/HTMLCanvasRenderer.js');
@@ -19,3 +23,6 @@ module.exports.WorkerCommands = require('./workers/WorkerCommands.js');
 module.exports.GridSystemWorker = require('worker-loader!./workers/GridSystem.worker.js');
 module.exports.DrawingSystemWorker = require('worker-loader!./workers/DrawingSystem.worker.js');
 module.exports.LifeSystemWorker = require('worker-loader!./workers/LifeSystem.worker.js');
+
+//The Application
+module.exports.Game = require('./Main.js');

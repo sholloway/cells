@@ -14,7 +14,23 @@ Next Steps
 * Add markdown to prettier.
 */
 
-const WorkerCommands = Conways.WorkerCommands;
+const { getElementById, setElementValue } = require('./dom/DomUtilities.js');
+
+const Cell = require('./core/Quadtree.js').Cell;
+const DefaultConfig = require('./core/DefaultConfig.js');
+const { DrawingSceneBuilder } = require('./core/DrawingStateManager.js');
+const LifeSceneBuilder = require('./core/LifeSceneBuilder.js');
+const SceneManager = require('./core/SceneManager');
+
+const HTMLCanvasRenderer = require('./renderer/HTMLCanvasRenderer.js');
+const TraitBuilderFactory = require('./entity-system/TraitBuilderFactory.js');
+
+//Workers
+const WorkerSystem = require('./core/WorkerSystem.js');
+const WorkerCommands = require('./workers/WorkerCommands.js');
+const GridSystemWorker = require('worker-loader!./workers/GridSystem.worker.js');
+const DrawingSystemWorker = require('worker-loader!./workers/DrawingSystem.worker.js');
+const LifeSystemWorker = require('worker-loader!./workers/LifeSystem.worker.js');
 
 /**
  * The names of the registered web workers.
@@ -52,7 +68,7 @@ class Main {
 	 * @returns {Main} Returns the instance of the main thread being modified.
 	 */
 	setupProperties(gridCanvas, simCanvas, drawCanvas) {
-		this.config = Conways.DefaultConfig;
+		this.config = DefaultConfig;
 		this.drawingAllowed = true;
 		this.gridCanvas = gridCanvas;
 		this.simCanvas = simCanvas;
@@ -66,16 +82,16 @@ class Main {
 	 * @returns {Main} Returns the instance of the main thread being modified.
 	 */
 	setupRenderers() {
-		this.gridRender = new Conways.HTMLCanvasRenderer(
+		this.gridRender = new HTMLCanvasRenderer(
 			this.gridCanvas.getContext('2d'),
 			this.config
 		);
-		this.drawingSystemRender = new Conways.HTMLCanvasRenderer(
+		this.drawingSystemRender = new HTMLCanvasRenderer(
 			this.drawCanvas.getContext('2d'),
 			this.config
 		);
 
-		this.lifeSystemRender = new Conways.HTMLCanvasRenderer(
+		this.lifeSystemRender = new HTMLCanvasRenderer(
 			this.simCanvas.getContext('2d'),
 			this.config
 		);
@@ -88,8 +104,8 @@ class Main {
 	 * @returns {Main} Returns the instance of the main thread being modified.
 	 */
 	setupScenes() {
-		this.drawingScene = new Conways.SceneManager();
-		this.lifeScene = new Conways.SceneManager();
+		this.drawingScene = new SceneManager();
+		this.lifeScene = new SceneManager();
 		return this;
 	}
 
@@ -99,11 +115,11 @@ class Main {
 	 * @returns {Main} Returns the instance of the main thread being modified.
 	 */
 	setupWorkers() {
-		this.gridWorker = new Conways.GridSystemWorker();
-		this.drawingWorker = new Conways.DrawingSystemWorker();
-		this.lifeWorker = new Conways.LifeSystemWorker();
+		this.gridWorker = new GridSystemWorker();
+		this.drawingWorker = new DrawingSystemWorker();
+		this.lifeWorker = new LifeSystemWorker();
 
-		this.workerSystem = new Conways.WorkerSystem(window, this.config);
+		this.workerSystem = new WorkerSystem(window, this.config);
 		this.gridWorker.onmessage = this.handleMessageFromGridWorker.bind(this);
 		this.drawingWorker.onmessage = this.handleMsgFromDrawingWorker.bind(this);
 		this.lifeWorker.onmessage = this.handleMessageFromLifeWorker.bind(this);
@@ -136,10 +152,7 @@ class Main {
 	handleMessageFromGridWorker(envelope) {
 		if (envelope && envelope.data) {
 			let sceneObj = JSON.parse(envelope.data);
-			let scene = Conways.SceneManager.fromObject(
-				sceneObj,
-				Conways.TraitBuilderFactory.select
-			);
+			let scene = SceneManager.fromObject(sceneObj, TraitBuilderFactory.select);
 			let htmlCanvasContext = this.gridCanvas.getContext('2d');
 			htmlCanvasContext.strokeStyle = '#757575';
 			htmlCanvasContext.lineWidth = 0.5;
@@ -182,7 +195,7 @@ class Main {
 		switch (message.command) {
 			case WorkerCommands.LifeCycle.PROCESS_CYCLE:
 				this.drawingScene.clear();
-				Conways.DrawingSceneBuilder.buildScene(
+				DrawingSceneBuilder.buildScene(
 					this.drawingScene,
 					this.config,
 					message.stack
@@ -205,11 +218,7 @@ class Main {
 		switch (message.command) {
 			case WorkerCommands.LifeCycle.PROCESS_CYCLE:
 				this.lifeScene.clear();
-				Conways.LifeSceneBuilder.buildScene(
-					this.lifeScene,
-					this.config,
-					message.stack
-				);
+				LifeSceneBuilder.buildScene(this.lifeScene, this.config, message.stack);
 				this.lifeSystemRender.render(this.lifeScene);
 
 				//update the related controls.
@@ -644,31 +653,11 @@ class Main {
 } //End of Main Class
 
 /**
- * Helper function for finding elements on the document.
- * @param {*} id The ID of the element to fetch.
- * Throws an error if the element could not be found.
- */
-function getElementById(id) {
-	let element = document.getElementById(id);
-	if (!element) {
-		throw new Error(`No element could be found with the ID of ${id}`);
-	}
-	return element;
-}
-
-/**
- * Helper function for setting an elements value.
- * @param {string} id
- * @param {*} value
- */
-function setElementValue(id, value) {
-	getElementById(id).value = value;
-}
-
-/**
  * Helper function for finding the cell size as a number.
  * @returns {number} The cell size.
  */
 function getCellSize() {
 	return Number.parseInt(getElementById('cell_size').value);
 }
+
+module.exports = Main;
