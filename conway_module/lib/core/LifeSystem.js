@@ -27,6 +27,7 @@ class LifeSystem {
 	}
 
 	/**
+	 * Getter for the internal system state.
 	 * @returns {State} Returns the active state.
 	 */
 	getState() {
@@ -35,7 +36,7 @@ class LifeSystem {
 
 	/**
 	 * Replaces the current configuration.
-	 * @param {*} config
+	 * @param {*} config The configuration.
 	 */
 	setConfig(config) {
 		this.config = config;
@@ -57,6 +58,10 @@ class LifeSystem {
 		return this.stateManager;
 	}
 
+	/**
+	 * Calculates if the system can perform an update or not.
+	 * @returns {Boolean}
+	 */
 	canUpdate() {
 		return this.state === States.IDLE;
 	}
@@ -79,7 +84,7 @@ class LifeSystem {
 
 	/**
 	 * Sets the cell size to use.
-	 * @param {number} size
+	 * @param {number} size The cell size
 	 */
 	setCellSize(size) {
 		this.config.zoom = size;
@@ -87,7 +92,7 @@ class LifeSystem {
 
 	/**
 	 * Sets whether to draw the quad tree.
-	 * @param {boolean} display
+	 * @param {boolean} display The display value.
 	 */
 	displayStorage(display) {
 		this.displayStorageStructure = display;
@@ -110,6 +115,11 @@ class LifeSystem {
 		return this;
 	}
 
+	/**
+	 * Processes the scene for one tick of the simulation.
+	 * @throws {Error} Throws an error if called before the simulation has been intialized.
+	 * @returns {LifeSystem} Returns the LifeSystem instance.
+	 */
 	update() {
 		if (this.simulationInitialized) {
 			this.scene.clear();
@@ -125,10 +135,12 @@ class LifeSystem {
 				'Cannot update. The simulation has not been initialized yet.'
 			);
 		}
+		return this;
 	}
 
 	/**
 	 * Seeds the world when the simulation starts.
+	 * @returns {LifeSystem} Returns the LifeSystem instance.
 	 */
 	initializeSimulation() {
 		if (!this.simulationInitialized) {
@@ -140,6 +152,7 @@ class LifeSystem {
 
 	/**
 	 * Clears the simulation.
+	 * @returns {LifeSystem} Returns the LifeSystem instance.
 	 */
 	reset(config) {
 		this.tickCounter = 0;
@@ -147,8 +160,13 @@ class LifeSystem {
 		this.setConfig(config);
 		this.scene.clear();
 		this.getStateManager().clear();
+		return this;
 	}
 
+	/**
+	 * Returns the number of simulation ticks the life system has been updated.
+	 * @returns {number} Simulation ticks.
+	 */
 	numberOfSimulationIterations() {
 		return this.tickCounter;
 	}

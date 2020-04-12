@@ -1,12 +1,18 @@
 const WorkerCommands = require('./WorkerCommands.js');
 const LifeCycle = WorkerCommands.LifeCycle;
 
+/**
+ * The possible states a web worker can be in.
+ */
 const WorkerState = {
 	STOPPED: 1,
-	PAUSED: 2,
+	PAUSED: 2, //Reserved. Not currently used.
 	RUNNING: 3,
 };
 
+/**
+ * Base class that defines the common capabilities of the Web Worker controllers.
+ */
 class AbstractWorkerController {
 	constructor(worker) {
 		this.worker = worker;
@@ -16,7 +22,7 @@ class AbstractWorkerController {
 	/**
 	 * The core logic of the controller. Responsible for routing incomming messages to
 	 * the appropriate command.
-	 * @param {*} msg
+	 * @param {*} msg - The message to process.
 	 */
 	process(msg) {
 		if (!msg.command) {
@@ -77,7 +83,10 @@ class AbstractWorkerController {
 		return msg.params ? msg.params[name] : msg[name];
 	}
 
-	//Maybe we can standardize this... Maybe not...
+	/**
+	 * Processes the scene for a single tick.
+	 * @param {*} msg The message to process.
+	 */
 	processScene(msg) {
 		throw new Error(
 			'Child classes of AbstractWorkerController must implement the method processScene().'
@@ -93,7 +102,7 @@ class AbstractWorkerController {
 
 	/**
 	 * Sends a message to the web worker's client (main thread).
-	 * @param {*} msg
+	 * @param {*} msg The message to send.
 	 */
 	sendMessageToClient(msg) {
 		this.worker.postMessage(msg);

@@ -1,6 +1,5 @@
 /*
 Next Steps
-* JSDocs for LifeSystemWorkerController and LifeSystem.
 * Put tests around LifeSystem
 * Refactor the DrawingSystemController to extend the AbstractController.
 * Refactor Main.js. Some functions are sloppy. Remove conditionals where possible.

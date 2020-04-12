@@ -5,13 +5,15 @@ const LifeSystem = require('./../core/LifeSystem.js');
 const { Cell } = require('./../core/Quadtree.js');
 const { AbstractWorkerController } = require('./AbstractWorkerController.js');
 const { SeederFactory } = require('./../core/SeederFactory.js');
+
 /**
  * Controller for the Life System web worker.
+ * @extends AbstractWorkerController
  */
 class LifeSystemWorkerController extends AbstractWorkerController {
 	/**
-	 * Creates a new instance of a DrawingSystemWorkerController.
-	 * @param {WorkerGlobalScope} worker
+	 * Creates a new instance of a LifeSystemWorkerController.
+	 * @param {WorkerGlobalScope} worker - The web worker that the controller performs orchestration for.
 	 */
 	constructor(worker) {
 		super(worker);
@@ -96,7 +98,8 @@ class LifeSystemWorkerController extends AbstractWorkerController {
 
 	/**
 	 * Updates the drawing scene and sends it to the client.
-	 * @param {*} msg
+	 * @override
+	 * @param {*} msg - The message to process.
 	 */
 	processScene(msg) {
 		if (this.systemRunning() && this.lifeSystem.canUpdate()) {
@@ -110,6 +113,11 @@ class LifeSystemWorkerController extends AbstractWorkerController {
 		}
 	}
 
+	/**
+	 * Initializes the seeder for the life system. Sends a message back to the
+	 * client if promised a response.
+	 * @param {*} msg - The message to process.
+	 */
 	initializeSeeder(msg) {
 		let cells = this.findPromisedProperty(msg, 'cells') || [];
 		let seeder = SeederFactory.build(
