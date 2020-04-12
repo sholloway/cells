@@ -1,54 +1,30 @@
+const { AbstractWorkerController } = require('./AbstractWorkerController.js');
 const DrawingSystem = require('./../core/DrawingSystem.js');
 const WorkerCommands = require('./WorkerCommands.js');
 const LifeCycle = WorkerCommands.LifeCycle;
 const DrawingSystemCommands = WorkerCommands.DrawingSystemCommands;
 
 /**
- * The possible states the worker can be in.
- * @private
- */
-const WorkerState = {
-	STOPPED: 1,
-	PAUSED: 2,
-	RUNNING: 3,
-};
-
-/**
  * Controller for the Drawing System web worker.
+ * @extends AbstractWorkerController
  */
-class DrawingSystemWorkerController {
+class DrawingSystemWorkerController extends AbstractWorkerController {
 	/**
 	 * Creates a new instance of a DrawingSystemWorkerController.
 	 * @param {WorkerGlobalScope} worker
 	 */
 	constructor(worker) {
-		this.worker = worker;
+		super(worker);
 		this.drawingSystem = new DrawingSystem();
-		this.workerState = WorkerState.STOPPED;
 	}
 
 	/**
-	 * The core logic of the controller. Responsible for routing incomming messages to
-	 * the appropriate command.
-	 * @param {*} msg
+	 * Route the inbound command to the appropriate processor.
+	 * @param {*} msg The message to be routed.
+	 * @override
 	 */
-	process(msg) {
-		if (!msg.command) {
-			throw new Error('DrawingSystem.worker: Command not provided in message.');
-		}
-
+	routeCommand(msg) {
 		switch (msg.command) {
-			case LifeCycle.PROCESS_CYCLE:
-				this.processScene(msg);
-				break;
-			case LifeCycle.START:
-				this.workerState = WorkerState.RUNNING;
-				break;
-			case LifeCycle.STOP:
-				this.workerState = WorkerState.STOPPED;
-				break;
-			case LifeCycle.PAUSE:
-				break;
 			case DrawingSystemCommands.SET_CELLS:
 				this.processCmd(
 					msg,
@@ -128,39 +104,6 @@ class DrawingSystemWorkerController {
 	}
 
 	/**
-	 * Processes an inbound message.
-	 * @param {*} msg - The message that was passed to the web worker.
-	 * @param {String} commandName - The enumerated command to process.
-	 * @param {Function} commandCriteria - Conditional that determines whether to run the command processor or not.
-	 * @param {Function} cmdProcessor - The command function to run when the criteria is met.
-	 * @param {String} errMsg - The error message to throw when the conditional isn't met.
-	 */
-	processCmd(msg, commandName, commandCriteria, cmdProcessor, errMsg) {
-		if (commandCriteria(msg)) {
-			cmdProcessor(msg);
-		} else {
-			throw new Error(
-				`Cannot process command DrawingSystem Worker.${commandName}: ${errMsg}`
-			);
-		}
-	}
-
-	/**
-	 * @returns {Boolean} Determines if the service is running or not.
-	 */
-	systemRunning() {
-		return this.workerState === WorkerState.RUNNING;
-	}
-
-	/**
-	 * Sends a message to the web worker's client (main thread).
-	 * @param {*} msg
-	 */
-	sendMessageToClient(msg) {
-		this.worker.postMessage(msg);
-	}
-
-	/**
 	 * Updates the drawing scene and sends it to the client.
 	 * @param {*} msg
 	 */
@@ -177,7 +120,4 @@ class DrawingSystemWorkerController {
 	}
 }
 
-module.exports = {
-	DrawingSystemWorkerController,
-	WorkerState, //exported only for tests
-};
+module.exports = DrawingSystemWorkerController;

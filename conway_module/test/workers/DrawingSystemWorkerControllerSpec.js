@@ -2,10 +2,7 @@ const chai = require('chai');
 const expect = chai.expect;
 const sinon = require('sinon');
 
-const {
-	DrawingSystemWorkerController,
-	WorkerState,
-} = require('./../../lib/workers/DrawingSystemWorkerController.js');
+const DrawingSystemWorkerController = require('./../../lib/workers/DrawingSystemWorkerController.js');
 const WorkerCommands = require('./../../lib/workers/WorkerCommands');
 const { Cell } = require('./../../lib/core/Quadtree.js');
 
@@ -17,41 +14,7 @@ describe('DrawingSystemWorkerController', function () {
 		});
 	});
 
-	it('should define worker states', function () {
-		expect(WorkerState.STOPPED).to.equal(1);
-		expect(WorkerState.PAUSED).to.equal(2);
-		expect(WorkerState.RUNNING).to.equal(3);
-	});
-
-	it('should postMessage', function () {
-		sinon.stub(controller.worker, 'postMessage');
-		expect(controller.worker.postMessage.calledOnce).to.be.false;
-		controller.sendMessageToClient('fake message');
-		expect(controller.worker.postMessage.calledOnce).to.be.true;
-	});
-
 	describe('Command Routing', function () {
-		it('should start and stop the system is running', function () {
-			expect(controller.systemRunning()).to.be.false;
-			controller.process({
-				command: WorkerCommands.LifeCycle.START,
-			});
-			expect(controller.systemRunning()).to.be.true;
-			controller.process({
-				command: WorkerCommands.LifeCycle.STOP,
-			});
-			expect(controller.systemRunning()).to.be.false;
-		});
-
-		it('should throw an error if command is not specified', function () {
-			expect(() => {
-				controller.process({});
-			}).to.throw(
-				Error,
-				'DrawingSystem.worker: Command not provided in message.'
-			);
-		});
-
 		it('should throw an error if command is unknown', function () {
 			expect(() => {
 				controller.process({
@@ -127,7 +90,7 @@ describe('DrawingSystemWorkerController', function () {
 			expect(controller.drawingSystem.config.zoom).to.equal(5);
 		});
 
-		it('should throw an error if the config is not provided', function () {
+		it('should throw an error if the config is not provided during reset', function () {
 			expect(() => {
 				controller.process({
 					command: WorkerCommands.DrawingSystemCommands.RESET,

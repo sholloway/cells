@@ -2,9 +2,7 @@
  * A web worker that is responsible for the drawing system.
  */
 
-const {
-	DrawingSystemWorkerController,
-} = require('./DrawingSystemWorkerController.js');
+const DrawingSystemWorkerController = require('./DrawingSystemWorkerController.js');
 
 const { establishWorkerContext } = require('./WorkerUtils.js');
 
