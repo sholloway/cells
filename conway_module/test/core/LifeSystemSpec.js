@@ -2,8 +2,8 @@ const chai = require('chai');
 const expect = chai.expect;
 const sinon = require('sinon');
 
-const LifeSystem = require('./../../lib/core/AlternativeLifeSystem.js');
-const GameManager = require('./../../lib/core/GameManager.js');
+const LifeSystem = require('./../../lib/core/LifeSystem.js');
+const GameManager = require('../../lib/core/GameManager.js');
 
 describe('Life System', function () {
 	it('should implement getStateManager()', function () {
@@ -16,12 +16,15 @@ describe('Life System', function () {
 		fakeGameManager.evaluateCellsFaster = sinon.spy();
 		fakeGameManager.stageStorage = sinon.spy();
 		fakeGameManager.activateNext = sinon.spy();
+		fakeGameManager.seedWorld = sinon.spy();
+		let fakeSeeder = {};
 
 		let ls = new LifeSystem({}, {}, {});
 		ls.stateManager = fakeGameManager;
 
-		ls.update();
+		ls.setSeeder(fakeSeeder).initializeSimulation().update();
 
+		expect(fakeGameManager.seedWorld.calledOnce).to.be.true;
 		expect(fakeGameManager.evaluateCellsFaster.calledOnce).to.be.true;
 		expect(fakeGameManager.stageStorage.calledOnce).to.be.true;
 		expect(fakeGameManager.activateNext.calledOnce).to.be.true;

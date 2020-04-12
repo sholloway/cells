@@ -4,7 +4,6 @@ module.exports.DefaultConfig = require('./core/DefaultConfig.js');
 module.exports.DrawingSceneBuilder = require('./core/DrawingStateManager.js').DrawingSceneBuilder;
 module.exports.GridSystem = require('./core/GridSystem.js');
 module.exports.LifeSceneBuilder = require('./core/LifeSceneBuilder.js');
-module.exports.LifeSystem = require('./core/AlternativeLifeSystem.js');
 module.exports.SceneManager = require('./core/SceneManager');
 module.exports.SeederFactoryModule = require('./core/SeederFactory.js');
 module.exports.WorkerSystem = require('./core/WorkerSystem.js');

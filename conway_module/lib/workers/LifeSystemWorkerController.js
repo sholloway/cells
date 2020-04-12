@@ -1,7 +1,7 @@
 const WorkerCommands = require('./WorkerCommands.js');
 const LifeCycle = WorkerCommands.LifeCycle;
 const LifeSystemCmds = WorkerCommands.LifeSystemCommands;
-const LifeSystem = require('./LifeSystem.js');
+const LifeSystem = require('./../core/LifeSystem.js');
 const { Cell } = require('./../core/Quadtree.js');
 const { AbstractWorkerController } = require('./AbstractWorkerController.js');
 const { SeederFactory } = require('./../core/SeederFactory.js');

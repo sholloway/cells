@@ -1,6 +1,5 @@
 /*
 Next Steps
-* Move Replace AltLifeSystem with LifeSystem
 * JSDocs for LifeSystemWorkerController and LifeSystem.
 * Put tests around LifeSystem
 * Refactor the DrawingSystemController to extend the AbstractController.
@@ -12,13 +11,16 @@ Next Steps
   * Still want trace info going to the console.
 * Remove the conway_module directory. Flatten the code base.
 * Add markdown to prettier.
+* Move Cell into Entities.js
+* Move QTNode into its own file.
+* Rename entities.js and traits.js to be capitialized.
+* Organize the JSDoc modules.
 */
 
 //TODO: Inline all of this to reduce the file length.
 const Cell = Conways.Cell;
 const DrawingSceneBuilder = Conways.DrawingSceneBuilder;
 const LifeSceneBuilder = Conways.LifeSceneBuilder;
-const LifeSystem = Conways.LifeSystem;
 const HTMLCanvasRenderer = Conways.HTMLCanvasRenderer;
 const SceneManager = Conways.SceneManager;
 const SeederFactoryModule = Conways.SeederFactoryModule;

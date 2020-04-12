@@ -1,9 +1,6 @@
-/**
- * This will replace the AlternativeLifeSystem.
- */
-
-const GameManager = require('./../../lib/core/GameManager.js');
-const SceneManager = require('./../../lib/core/SceneManager.js');
+const { CanvasBasedSystem } = require('./System.js');
+const GameManager = require('./GameManager.js');
+const SceneManager = require('./SceneManager.js');
 
 /**
  * The possible states the drawing system can be in.
@@ -14,6 +11,9 @@ const States = {
 	UPDATING: 'UPDATING',
 };
 
+/**
+ * A Quad tree based Conway's Game of Life simulation.
+ */
 class LifeSystem {
 	constructor() {
 		this.config = {};
@@ -135,6 +135,7 @@ class LifeSystem {
 			this.getStateManager().seedWorld(this.seeder);
 			this.simulationInitialized = true;
 		}
+		return this;
 	}
 
 	/**
