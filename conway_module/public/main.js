@@ -1,7 +1,5 @@
 /*
 Next Steps
-* Refactor the DrawingSystemController to extend the AbstractController.
-* DeprecationWarning: Configuration via mocha.opts is DEPRECATED and will be removed from a future version of Mocha. Use RC files or package.json instead.
 * Refactor Main.js. Some functions are sloppy. Remove conditionals where possible.
 * Optimize Worker messaging
 * Add page level error handling? 
