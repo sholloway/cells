@@ -1,17 +1,20 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 	<head>
 		<title>Conway's Game of Life</title>
-		<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
-		<meta charset="utf-8">
-		<link href="main.css" rel="stylesheet" type="text/css" >
+		<link
+			href="https://fonts.googleapis.com/css?family=Roboto"
+			rel="stylesheet"
+		/>
+		<meta charset="utf-8" />
+		<link href="main.css" rel="stylesheet" type="text/css" />
 		<script src="dist/conways-game.js"></script>
 		<script type="text/javascript" src="main.js"></script>
 	</head>
 	<body>
 		<div class="container col">
-			<div id='block'></div>
-			<div id='header'>
+			<div id="block"></div>
+			<div id="header">
 				<h1>Conway's Game Of Life</h1>
 			</div>
 			<div id="control_bar">
@@ -33,16 +36,46 @@
 					</select>
 
 					<label for="cell_size">Cell Size</label>
-					<input id="cell_size" type="number" min="1" max="100" value="20" step="1" onchange="main.changedCellSize();"/>
+					<input
+						id="cell_size"
+						type="number"
+						min="1"
+						max="100"
+						value="20"
+						step="1"
+						onchange="main.changedCellSize();"
+					/>
 
-					<button id="play_pause_button" type="button" onclick="main.toggleSimulation();">Start</button>
-					<button id="reset_button" type="button" onclick="main.resetSimulation();">Reset</button>
+					<button
+						id="play_pause_button"
+						type="button"
+						onclick="main.toggleSimulation();"
+					>
+						Start
+					</button>
+					<button
+						id="reset_button"
+						type="button"
+						onclick="main.resetSimulation();"
+					>
+						Reset
+					</button>
 				</div>
 				<div class="container row">
-					<input type="checkbox" id="display_storage" name="display_storage" onclick="main.toggleDisplayStorageStructure();"/>
+					<input
+						type="checkbox"
+						id="display_storage"
+						name="display_storage"
+						onclick="main.toggleDisplayStorageStructure();"
+					/>
 					<label for="display_storage">Display Storage Structure</label>
 
-					<input type="checkbox" id="display_grid_background" name="display_grid_background" onclick="main.handleGridBackground();"/>
+					<input
+						type="checkbox"
+						id="display_grid_background"
+						name="display_grid_background"
+						onclick="main.handleGridBackgroundClicked();"
+					/>
 					<label for="display_grid_background">Display Grid</label>
 				</div>
 			</div>
@@ -54,24 +87,25 @@
 			<div id="status_bar">
 				<span>
 					<label for="alive_cells_count"># Alive Cells: </label>
-					<input id="alive_cells_count" type="text" readonly="true" value="0"/>
+					<input id="alive_cells_count" type="text" readonly="true" value="0" />
 					<label for="sim_generation_count">Generation:</label>
-					<input id="sim_generation_count" type="text" readonly="true" value="0"/>
+					<input
+						id="sim_generation_count"
+						type="text"
+						readonly="true"
+						value="0"
+					/>
 				</span>
 			</div>
 		</div>
 		<script type="application/javascript">
-			let gridCanvas = document.getElementById('grid_canvas');
-    	let simCanvas = document.getElementById('sim_canvas');
-			let drawCanvas = document.getElementById('draw_canvas');
-			
-			const main = new Main(gridCanvas, simCanvas, drawCanvas);
-
-			window.addEventListener('load', main.handlePageLoad.bind(main));
-			window.addEventListener('resize', main.handlePageResize.bind(main));
-			drawCanvas.addEventListener('click', main.handleDrawCanvasClicked.bind(main));
-
-			main.initialize();
+			const main = new Main(
+				getElementById('grid_canvas'),
+				getElementById('sim_canvas'),
+				getElementById('draw_canvas')
+			)
+				.registerEventHandlers(window)
+				.initialize();
 		</script>
 	</body>
 </html>

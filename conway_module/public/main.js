@@ -1,40 +1,41 @@
 /*
 Next Steps
-* Refactor Main.js. Some functions are sloppy. Remove conditionals where possible.
+* Get Main.js under test.
 * Optimize Worker messaging
+* Move Cell into Entities.js
+* Move QTNode into its own file.
+* Rename entities.js and traits.js to be capitialized.
 * Add page level error handling? 
   * Every cmd in a try/catch
   * A way to display errors to the user.
   * Still want trace info going to the console.
+* Organize the JSDoc modules.
 * Remove the conway_module directory. Flatten the code base.
 * Add markdown to prettier.
-* Move Cell into Entities.js
-* Move QTNode into its own file.
-* Rename entities.js and traits.js to be capitialized.
-* Organize the JSDoc modules.
 */
 
-//TODO: Inline all of this to reduce the file length.
-const Cell = Conways.Cell;
-const DrawingSceneBuilder = Conways.DrawingSceneBuilder;
-const LifeSceneBuilder = Conways.LifeSceneBuilder;
-const HTMLCanvasRenderer = Conways.HTMLCanvasRenderer;
-const SceneManager = Conways.SceneManager;
-const SeederFactoryModule = Conways.SeederFactoryModule;
-const SeederFactory = SeederFactoryModule.SeederFactory;
-const SeederModels = SeederFactoryModule.SeederModels;
-const TraitBuilderFactory = Conways.TraitBuilderFactory;
 const WorkerCommands = Conways.WorkerCommands;
-const WorkerSystem = Conways.WorkerSystem;
 
-const processDrawingWorker = 'Render Drawing Scene';
-
+/**
+ * The names of the registered web workers.
+ */
 const Workers = {
 	DRAWING_SYSTEM: 'DRAWING_SYSTEM_WORKER',
 	LIFE_SYSTEM: 'LIFE_SYSTEM',
 };
 
+const MISSING_CELLS = 'Cells were not provided.';
+
+/**
+ * Represents the main thread of the simulation.
+ */
 class Main {
+	/**
+	 * Creates a new instance of the main thread.
+	 * @param {HTMLCanvasElement} gridCanvas - The HTML canvas to use for rendering the grid.
+	 * @param {HTMLCanvasElement} simCanvas - The HTML canvas to use for rendering the simulation.
+	 * @param {HTMLCanvasElement} drawCanvas - The HTML canvas to use for drawing.
+	 */
 	constructor(gridCanvas, simCanvas, drawCanvas) {
 		this.setupProperties(gridCanvas, simCanvas, drawCanvas)
 			.setupRenderers()
@@ -42,7 +43,15 @@ class Main {
 			.setupWorkers();
 	}
 
-	setupProperties() {
+	/**
+	 * Initialize all properties for the main thread.
+	 * @param {HTMLCanvasElement} gridCanvas - The HTML canvas to use for rendering the grid.
+	 * @param {HTMLCanvasElement} simCanvas - The HTML canvas to use for rendering the simulation.
+	 * @param {HTMLCanvasElement} drawCanvas - The HTML canvas to use for drawing.
+	 * @private
+	 * @returns {Main} Returns the instance of the main thread being modified.
+	 */
+	setupProperties(gridCanvas, simCanvas, drawCanvas) {
 		this.config = Conways.DefaultConfig;
 		this.drawingAllowed = true;
 		this.gridCanvas = gridCanvas;
@@ -51,35 +60,50 @@ class Main {
 		return this;
 	}
 
+	/**
+	 * Establishes the renderers.
+	 * @private
+	 * @returns {Main} Returns the instance of the main thread being modified.
+	 */
 	setupRenderers() {
-		this.gridRender = new HTMLCanvasRenderer(
+		this.gridRender = new Conways.HTMLCanvasRenderer(
 			this.gridCanvas.getContext('2d'),
 			this.config
 		);
-		this.drawingSystemRender = new HTMLCanvasRenderer(
+		this.drawingSystemRender = new Conways.HTMLCanvasRenderer(
 			this.drawCanvas.getContext('2d'),
 			this.config
 		);
 
-		this.lifeSystemRender = new HTMLCanvasRenderer(
+		this.lifeSystemRender = new Conways.HTMLCanvasRenderer(
 			this.simCanvas.getContext('2d'),
 			this.config
 		);
 		return this;
 	}
 
+	/**
+	 * Sets up the scenes.
+	 * @private
+	 * @returns {Main} Returns the instance of the main thread being modified.
+	 */
 	setupScenes() {
-		this.drawingScene = new SceneManager();
-		this.lifeScene = new SceneManager();
+		this.drawingScene = new Conways.SceneManager();
+		this.lifeScene = new Conways.SceneManager();
 		return this;
 	}
 
+	/**
+	 * Initializes and configures the web workers.
+	 * @private
+	 * @returns {Main} Returns the instance of the main thread being modified.
+	 */
 	setupWorkers() {
 		this.gridWorker = new Conways.GridSystemWorker();
 		this.drawingWorker = new Conways.DrawingSystemWorker();
 		this.lifeWorker = new Conways.LifeSystemWorker();
 
-		this.workerSystem = new WorkerSystem(window, this.config);
+		this.workerSystem = new Conways.WorkerSystem(window, this.config);
 		this.gridWorker.onmessage = this.handleMessageFromGridWorker.bind(this);
 		this.drawingWorker.onmessage = this.handleMsgFromDrawingWorker.bind(this);
 		this.lifeWorker.onmessage = this.handleMessageFromLifeWorker.bind(this);
@@ -97,18 +121,25 @@ class Main {
 
 	/**
 	 * Kicks off the main loop for all workers.
+	 * @returns {Main} Returns the instance of the main thread being modified.
 	 */
 	initialize() {
 		this.workerSystem.start();
+		return this;
 	}
 
 	/**
 	 * Render the grid canvas when a message is received from the GridSystemWorker.
+	 * @param {*} envelope - The message sent.
+	 * @private
 	 */
 	handleMessageFromGridWorker(envelope) {
-		if (envelope.data) {
+		if (envelope && envelope.data) {
 			let sceneObj = JSON.parse(envelope.data);
-			let scene = SceneManager.fromObject(sceneObj, TraitBuilderFactory.select);
+			let scene = Conways.SceneManager.fromObject(
+				sceneObj,
+				Conways.TraitBuilderFactory.select
+			);
 			let htmlCanvasContext = this.gridCanvas.getContext('2d');
 			htmlCanvasContext.strokeStyle = '#757575';
 			htmlCanvasContext.lineWidth = 0.5;
@@ -116,31 +147,42 @@ class Main {
 		}
 	}
 
+	/**
+	 * Process a message received from the drawing system web worker.
+	 * @param {*} envelope - The message sent.
+	 * @private
+	 */
 	handleMsgFromDrawingWorker(envelope) {
-		if (envelope.data) {
-			if (envelope.data.promisedResponse) {
-				this.workerSystem.attemptToProcessPendingWork(envelope.data);
-			} else {
-				this.processMessageFromDrawingWorker(envelope.data);
-			}
+		if (envelope && envelope.data) {
+			envelope.data.promisedResponse
+				? this.workerSystem.attemptToProcessPendingWork(envelope.data)
+				: this.processMessageFromDrawingWorker(envelope.data);
 		}
 	}
 
+	/**
+	 * Process a message received from the life system web worker.
+	 * @param {*} envelope - The message sent.
+	 * @private
+	 */
 	handleMessageFromLifeWorker(envelope) {
-		if (envelope.data) {
-			if (envelope.data.promisedResponse) {
-				this.workerSystem.attemptToProcessPendingWork(envelope.data);
-			} else {
-				this.processMessageFromLifeSystemWorker(envelope.data);
-			}
+		if (envelope && envelope.data) {
+			envelope.data.promisedResponse
+				? this.workerSystem.attemptToProcessPendingWork(envelope.data)
+				: this.processMessageFromLifeSystemWorker(envelope.data);
 		}
 	}
 
+	/**
+	 * Process the various messages the drawing worker may send.
+	 * @param {*} message - The message sent.
+	 * @private
+	 */
 	processMessageFromDrawingWorker(message) {
 		switch (message.command) {
 			case WorkerCommands.LifeCycle.PROCESS_CYCLE:
 				this.drawingScene.clear();
-				DrawingSceneBuilder.buildScene(
+				Conways.DrawingSceneBuilder.buildScene(
 					this.drawingScene,
 					this.config,
 					message.stack
@@ -154,18 +196,28 @@ class Main {
 		}
 	}
 
+	/**
+	 * Process the various messages the drawing worker may send.
+	 * @param {*} message - The message sent.
+	 * @private
+	 */
 	processMessageFromLifeSystemWorker(message) {
 		switch (message.command) {
 			case WorkerCommands.LifeCycle.PROCESS_CYCLE:
 				this.lifeScene.clear();
-				LifeSceneBuilder.buildScene(this.lifeScene, this.config, message.stack);
+				Conways.LifeSceneBuilder.buildScene(
+					this.lifeScene,
+					this.config,
+					message.stack
+				);
 				this.lifeSystemRender.render(this.lifeScene);
 
 				//update the related controls.
-				document.getElementById('alive_cells_count').value =
-					message.aliveCellsCount;
-				document.getElementById('sim_generation_count').value =
-					message.numberOfSimulationIterations;
+				setElementValue('alive_cells_count', message.aliveCellsCount);
+				setElementValue(
+					'sim_generation_count',
+					message.numberOfSimulationIterations
+				);
 				break;
 			default:
 				console.error(
@@ -174,18 +226,46 @@ class Main {
 		}
 	}
 
+	/**
+	 * Register all event listeners on the hosting window.
+	 * @param {Window} window - The Window object.
+	 * @returns {Main} Returns the instance of the main thread being modified.
+	 */
+	registerEventHandlers(window) {
+		window.addEventListener('load', this.handlePageLoad.bind(this));
+		window.addEventListener('resize', this.handlePageResize.bind(this));
+		this.drawCanvas.addEventListener(
+			'click',
+			this.handleDrawCanvasClicked.bind(this)
+		);
+		return this;
+	}
+
+	/**
+	 * Event handler for reacting to when the hosting web page is loaded.
+	 * @param {*} event
+	 * @private
+	 */
 	handlePageLoad(event) {
-		sizeCanvas(this.config);
+		this.sizeCanvas();
 		let now = window.performance.now();
 		this.workerSystem.main(now);
 		this.allowDrawing();
 	}
 
+	/**
+	 * Event handler for reacting to when the hosting web page is resized.
+	 * @param {*} event
+	 * @private
+	 */
 	handlePageResize(event) {
-		sizeCanvas(this.config);
-		this.handleGridBackground();
+		this.sizeCanvas().handleGridBackgroundClicked();
 	}
 
+	/**
+	 * Event handler for processing a user click when in drawing mode.
+	 * @param {Event} clickEvent Event generated when the draw canvas is clicked.
+	 */
 	handleDrawCanvasClicked(clickEvent) {
 		if (this.drawingAllowed) {
 			//Get Pixel clicked.
@@ -205,23 +285,37 @@ class Main {
 		}
 	}
 
+	/**
+	 * Enables drawing mode.
+	 * @private
+	 * @returns {Main} Returns the instance of the main thread being modified.
+	 */
 	allowDrawing() {
 		this.drawingAllowed = true;
 		this.drawingWorker.postMessage({
 			command: WorkerCommands.LifeCycle.START,
 		});
+		return this;
 	}
 
+	/**
+	 * Disables drawing mode.
+	 * @private
+	 * @returns {Main} Returns the instance of the main thread being modified.
+	 */
 	preventDrawing() {
 		this.drawingAllowed = false;
 		this.drawingWorker.postMessage({
 			command: WorkerCommands.LifeCycle.STOP,
 		});
+		return this;
 	}
 
+	/**
+	 * Sets the simulation's seeder based on the UI.
+	 */
 	setSeedingOption() {
-		let option = document.getElementById('seed');
-		switch (option.value) {
+		switch (getElementById('seed').value) {
 			case 'draw':
 				this.resetSimulation();
 				this.allowDrawing();
@@ -233,100 +327,131 @@ class Main {
 		}
 	}
 
-	//TODO: Yuck. Improve this. Isolate knowledge about the DOM.
+	/**
+	 * Starts and stops the simulation.
+	 */
 	toggleSimulation() {
-		let button = document.getElementById('play_pause_button');
-		let isInDrawingMode = document.getElementById('seed').value === 'draw';
+		let button = getElementById('play_pause_button');
+		let isInDrawingMode = getElementById('seed').value === 'draw';
 		switch (button.innerText) {
 			case 'Start':
-				button.innerText = 'Pause';
-				this.preventDrawing();
-				this.startSimulation();
+				this.transitionToThePauseButton().preventDrawing().startSimulation();
 				break;
 			case 'Pause':
-				button.innerText = 'Resume';
-				this.stopSimulation();
-				if (isInDrawingMode) {
-					this.workerSystem
-						.promiseResponse(
-							Workers.LIFE_SYSTEM,
-							WorkerCommands.LifeSystemCommands.SEND_CELLS
-						)
-						.then((response) => {
-							this.drawingWorker.postMessage({
-								command: WorkerCommands.DrawingSystemCommands.SET_CELLS,
-								cells: response.cells,
-							});
-							this.lifeWorker.postMessage({
-								command: WorkerCommands.LifeSystemCommands.RESET,
-								config: this.config,
-							});
-							this.lifeSystemRender.clear();
-							this.allowDrawing();
-						})
-						.catch((reason) => {
-							console.error(
-								`There was an error trying to pause the simulation.\n${reason}`
-							);
-						});
-				}
+				this.transitionToTheResumeButton().stopSimulation();
+				isInDrawingMode && this.pauseSimulationInDrawingMode();
 				break;
 			case 'Resume':
-				button.innerText = 'Pause';
-				this.preventDrawing();
-				if (isInDrawingMode) {
-					this.startSimulation();
-				} else {
-					this.resumeSimulation();
-				}
+				this.transitionToThePauseButton().preventDrawing();
+				isInDrawingMode ? this.startSimulation() : this.resumeSimulation();
 				break;
 			default:
 				break;
 		}
 	}
 
-	resetSimulation() {
-		this.stopSimulation();
-		let button = document.getElementById('play_pause_button');
-		button.innerText = 'Start';
-		document.getElementById('alive_cells_count').value = 0;
-		document.getElementById('sim_generation_count').value = 0;
+	/**
+	 * Changes the current state of the simulation button.
+	 * @private
+	 * @returns {Main} Returns the instance of the main thread being modified.
+	 */
+	transitionToThePauseButton() {
+		getElementById('play_pause_button').innerText = 'Pause';
+		return this;
+	}
 
+	/**
+	 * Changes the current state of the simulation button.
+	 * @private
+	 * @returns {Main} Returns the instance of the main thread being modified.
+	 */
+	transitionToTheResumeButton() {
+		getElementById('play_pause_button').innerText = 'Resume';
+		return this;
+	}
+
+	/**
+	 * Changes the current state of the simulation button.
+	 * @private
+	 * @returns {Main} Returns the instance of the main thread being modified.
+	 */
+	transitionToThePauseButton() {
+		getElementById('play_pause_button').innerText = 'Pause';
+		return this;
+	}
+
+	/**
+	 * Orchestrates the drawing and life web workers to pause both systems.
+	 * @private
+	 * @returns {Main} Returns the instance of the main thread being modified.
+	 */
+	pauseSimulationInDrawingMode() {
 		this.workerSystem
 			.promiseResponse(
 				Workers.LIFE_SYSTEM,
-				WorkerCommands.LifeSystemCommands.RESET,
-				{ config: this.config }
+				WorkerCommands.LifeSystemCommands.SEND_CELLS
 			)
-			.then(() => {
-				this.lifeScene.clear();
+			.then((response) => {
+				this.drawingWorker.postMessage({
+					command: WorkerCommands.DrawingSystemCommands.SET_CELLS,
+					cells: response.cells,
+				});
+				this.lifeWorker.postMessage({
+					command: WorkerCommands.LifeSystemCommands.RESET,
+					config: this.config,
+				});
+			})
+			.catch((reason) => {
+				throw new Error(
+					`There was an error trying to pause the simulation.\n${reason}`
+				);
+			})
+			.finally(() => {
 				this.lifeSystemRender.clear();
+				this.allowDrawing();
 			});
-
-		this.workerSystem
-			.promiseResponse(
-				Workers.DRAWING_SYSTEM,
-				WorkerCommands.DrawingSystemCommands.RESET,
-				{ config: this.config }
-			)
-			.then(() => this.drawingSystemRender.clear());
+		return this;
 	}
 
-	handleGridBackground() {
-		let displayGridBackground = document.getElementById(
-			'display_grid_background'
+	/**
+	 * Resets all web workers and the UI.
+	 */
+	resetSimulation() {
+		this.stopSimulation();
+		let button = getElementById('play_pause_button');
+		button.innerText = 'Start';
+		setElementValue('alive_cells_count', 0);
+		setElementValue('sim_generation_count', 0);
+
+		let promisedResponses = this.workerSystem.promiseResponses(
+			WorkerCommands.LifeSystemCommands.RESET,
+			{ config: this.config }
 		);
-		if (displayGridBackground.checked) {
-			this.requestToDrawGrid();
-		} else {
-			this.requestToClearGrid();
-		}
+
+		Promise.all(promisedResponses).then(() => {
+			this.lifeScene.clear();
+			this.lifeSystemRender.clear();
+			this.drawingSystemRender.clear();
+		});
 	}
 
+	/**
+	 * Event handler for when the grid checkbox is clicked.
+	 */
+	handleGridBackgroundClicked() {
+		getElementById('display_grid_background').checked
+			? this.requestToDrawGrid()
+			: this.requestToClearGrid();
+	}
+
+	/**
+	 * Requests the grid worker to generate a grid scene.
+	 * @private
+	 */
 	requestToDrawGrid() {
 		let cellSize = getCellSize();
 		this.gridWorker.postMessage({
-			command: 'CREATE_GRID', //TODO: Make a constant
+			command: 'CREATE_GRID',
 			parameters: {
 				cellWidth: cellSize,
 				cellHeight: cellSize,
@@ -336,53 +461,30 @@ class Main {
 		});
 	}
 
+	/**
+	 * Clears the grid renderer.
+	 * @private
+	 */
 	requestToClearGrid() {
 		this.gridRender.clear();
 	}
 
+	/**
+	 * Starts the simulation.
+	 * @private
+	 */
 	startSimulation() {
-		/**
-		 * First we are fetching the cells, then asynchronously telling the
-		 * drawing system to reset. Finally we're building up the seeder
-		 * and starting the simulation.
-		 */
 		this.workerSystem
 			.promiseResponse(
 				Workers.DRAWING_SYSTEM,
 				WorkerCommands.DrawingSystemCommands.SEND_CELLS
 			)
 			.then((response) => {
-				return new Promise((resolve, reject) => {
-					this.drawingWorker.postMessage({
-						command: WorkerCommands.DrawingSystemCommands.RESET,
-						config: this.config,
-					});
-					this.drawingSystemRender.clear();
-					if (response.cells) {
-						resolve(response.cells);
-					} else {
-						reject('Cells were not provided.');
-					}
-				});
+				return this.resetDrawingSystem(response);
 			})
 			.then((drawingCells) => {
-				this.config.zoom = getCellSize();
-				this.config.landscape.width =
-					this.config.canvas.width / this.config.zoom;
-				this.config.landscape.height =
-					this.config.canvas.height / this.config.zoom;
-				let seedPicker = document.getElementById('seed');
-				let seedSetting = seedPicker.value;
-
-				return this.workerSystem.promiseResponse(
-					Workers.LIFE_SYSTEM,
-					WorkerCommands.LifeSystemCommands.SET_SEEDER,
-					{
-						seedSetting: seedSetting,
-						config: this.config,
-						cells: drawingCells,
-					}
-				);
+				this.updateConfiguredZoom().updateConfiguredLandscape();
+				return this.setSeederOnLifeSystem(drawingCells);
 			})
 			.then(() => {
 				this.lifeWorker.postMessage({
@@ -396,86 +498,177 @@ class Main {
 			});
 	}
 
+	/**
+	 * Send configuration and cells to the life system worker to initialize the seeder with.
+	 * @private
+	 * @param {Cell[]} drawingCells The cells to populate the seeder with.
+	 * @returns {Promise} Promise to invoke the life system worker.
+	 */
+	setSeederOnLifeSystem(drawingCells) {
+		return this.workerSystem.promiseResponse(
+			Workers.LIFE_SYSTEM,
+			WorkerCommands.LifeSystemCommands.SET_SEEDER,
+			{
+				seedSetting: getElementById('seed').value,
+				config: this.config,
+				cells: drawingCells,
+			}
+		);
+	}
+
+	/**
+	 * Command the drawing system to reset with the provided configuration.
+	 * @private
+	 * @param {*} response
+	 * @returns {Promise} Promise to invoke the drawing system worker.
+	 */
+	resetDrawingSystem(response) {
+		return new Promise((resolve, reject) => {
+			this.drawingWorker.postMessage({
+				command: WorkerCommands.DrawingSystemCommands.RESET,
+				config: this.config,
+			});
+			this.drawingSystemRender.clear();
+			response.cells ? resolve(response.cells) : reject(MISSING_CELLS);
+		});
+	}
+
+	/**
+	 * Updates the zoom setting all threads should use.
+	 * @private
+	 * @returns {Main} Returns the instance of the main thread being modified.
+	 */
+	updateConfiguredZoom() {
+		this.config.zoom = getCellSize();
+		return this;
+	}
+
+	/**
+	 * Updates the landscape dimensions all threads should use.
+	 * @private
+	 * @returns {Main} Returns the instance of the main thread being modified.
+	 */
+	updateConfiguredLandscape() {
+		this.config.landscape.width = this.config.canvas.width / this.config.zoom;
+		this.config.landscape.height = this.config.canvas.height / this.config.zoom;
+		return this;
+	}
+
+	/**
+	 * Command the life worker to stop the simulation.
+	 * @private
+	 */
 	stopSimulation() {
 		this.lifeWorker.postMessage({
 			command: WorkerCommands.LifeCycle.STOP,
 		});
 	}
 
+	/**
+	 * Command the life worker to start the simulation.
+	 * @private
+	 */
 	resumeSimulation() {
 		this.lifeWorker.postMessage({
 			command: WorkerCommands.LifeCycle.START,
 		});
 	}
 
+	/**
+	 * Command all registered workers to set their display storage setting.
+	 * @private
+	 */
 	toggleDisplayStorageStructure() {
-		let displayStorageCheckbox = document.getElementById('display_storage');
-
-		this.lifeWorker.postMessage({
+		this.workerSystem.broadcast({
 			command: WorkerCommands.LifeSystemCommands.DISPLAY_STORAGE,
-			displayStorage: displayStorageCheckbox.checked,
-		});
-
-		this.drawingWorker.postMessage({
-			command: WorkerCommands.DrawingSystemCommands.DISPLAY_STORAGE,
-			displayStorage: displayStorageCheckbox.checked,
+			displayStorage: getElementById('display_storage').checked,
 		});
 	}
 
+	/**
+	 * Command all registered workers to set their cell size.
+	 */
 	changedCellSize() {
-		let cellSize = getCellSize();
-
-		this.lifeWorker.postMessage({
+		this.workerSystem.broadcast({
 			command: WorkerCommands.LifeSystemCommands.SET_CELL_SIZE,
-			cellSize: cellSize,
+			cellSize: getCellSize(),
 		});
-
-		this.drawingWorker.postMessage({
-			command: WorkerCommands.DrawingSystemCommands.SET_CELL_SIZE,
-			cellSize: cellSize,
-		});
-		this.handleGridBackground();
+		this.handleGridBackgroundClicked();
 	}
+
+	/**
+	 * Override the current configuration to size the HTML Canvas
+	 * to fit the document.
+	 * @param {*} config
+	 */
+	sizeCanvas() {
+		this.config.canvas.height = this.calculateConfiguredCanvasHeight();
+		let canvasContainerDiv = getElementById('canvas_container');
+
+		//WARNING: Setting the canvas height changes the body
+		//width so always set the height before the width.
+		canvasContainerDiv.style.height = `${this.config.canvas.height}px`;
+		this.gridCanvas.setAttribute('height', this.config.canvas.height);
+		this.simCanvas.setAttribute('height', this.config.canvas.height);
+		this.drawCanvas.setAttribute('height', this.config.canvas.height);
+
+		this.config.canvas.width = document.body.clientWidth;
+		canvasContainerDiv.style.width = `${this.config.canvas.width}px`;
+		this.gridCanvas.setAttribute('width', this.config.canvas.width);
+		this.simCanvas.setAttribute('width', this.config.canvas.width);
+		this.drawCanvas.setAttribute('width', this.config.canvas.width);
+		return this;
+	}
+
+	/**
+	 * Calculate the new height of the canvas elements.
+	 * @returns {number} The intended canvas height.
+	 */
+	calculateConfiguredCanvasHeight() {
+		// Note: This will use the same padding/margins as the HTML Body.
+		let blockElement = getElementById('block');
+		let headerElement = getElementById('header');
+		let controlBarElement = getElementById('control_bar');
+		let statusBarElement = getElementById('status_bar');
+		let bodyMargin = 8 * 2; //Padding on body element in CSS is 8 top and bottom.
+
+		return (
+			window.innerHeight -
+			bodyMargin -
+			(blockElement.offsetHeight +
+				headerElement.offsetHeight +
+				controlBarElement.offsetHeight +
+				statusBarElement.offsetHeight)
+		);
+	}
+} //End of Main Class
+
+/**
+ * Helper function for finding elements on the document.
+ * @param {*} id The ID of the element to fetch.
+ * Throws an error if the element could not be found.
+ */
+function getElementById(id) {
+	let element = document.getElementById(id);
+	if (!element) {
+		throw new Error(`No element could be found with the ID of ${id}`);
+	}
+	return element;
 }
 
-function sizeCanvas(config) {
-	//Override the default configuration to size the HTML Canvas
-	//to fit the document. Note: This will use the same padding/margins
-	//as the HTML Body.
-	let blockElement = document.getElementById('block');
-	let headerElement = document.getElementById('header');
-	let controlBarElement = document.getElementById('control_bar');
-	let statusBarElement = document.getElementById('status_bar');
-	let bodyMargin = 8 * 2; //Padding on body element in CSS is 8 top and bottom.
-
-	config.canvas.height =
-		window.innerHeight -
-		bodyMargin -
-		(blockElement.offsetHeight +
-			headerElement.offsetHeight +
-			controlBarElement.offsetHeight +
-			statusBarElement.offsetHeight);
-
-	let canvasContainerDiv = document.getElementById('canvas_container');
-	let gridCanvas = document.getElementById('grid_canvas');
-	let simCanvas = document.getElementById('sim_canvas');
-	let drawCanvas = document.getElementById('draw_canvas');
-
-	//WARNING: Setting the canvas height changes the body
-	//width so always set the height before the width.
-	canvasContainerDiv.style.height = `${config.canvas.height}px`;
-	gridCanvas.setAttribute('height', config.canvas.height);
-	simCanvas.setAttribute('height', config.canvas.height);
-	drawCanvas.setAttribute('height', config.canvas.height);
-
-	config.canvas.width = document.body.clientWidth;
-	canvasContainerDiv.style.width = `${config.canvas.width}px`;
-	gridCanvas.setAttribute('width', config.canvas.width);
-	simCanvas.setAttribute('width', config.canvas.width);
-	drawCanvas.setAttribute('width', config.canvas.width);
+/**
+ * Helper function for setting an elements value.
+ * @param {string} id
+ * @param {*} value
+ */
+function setElementValue(id, value) {
+	getElementById(id).value = value;
 }
 
+/**
+ * Helper function for finding the cell size as a number.
+ * @returns {number} The cell size.
+ */
 function getCellSize() {
-	let cellSizeControl = document.getElementById('cell_size');
-	return Number.parseInt(cellSizeControl.value);
+	return Number.parseInt(getElementById('cell_size').value);
 }

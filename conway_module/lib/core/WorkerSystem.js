@@ -52,22 +52,21 @@ class WorkerSystem extends BrowserSystem {
 
 	/**
 	 * Override parent
-	 * Sends a notifican to each registered web worker.
+	 * Sends an update notifican to each registered web worker.
 	 * @private
 	 */
 	update(frame) {
-		this.workers.forEach((worker, name) => {
-			worker.postMessage({
-				command: WorkerCommands.PROCESS_CYCLE,
-			});
+		this.broadcast({
+			command: WorkerCommands.PROCESS_CYCLE,
 		});
 	}
 
-	/*
-  I'm not sure how I'm going to have a generic way of handling worker.onmessage. 
-  I'd like to support both ways of communication (RPC and promise driven). 
-  Perhaps read through Nolan's library to see if he handles that.
-  */
+	broadcast(msg) {
+		this.workers.forEach((worker, name) => {
+			worker.postMessage(msg);
+		});
+	}
+
 	promiseResponse(workerName, command, params) {
 		if (!this.workers.has(workerName)) {
 			throw new Error(
@@ -87,6 +86,14 @@ class WorkerSystem extends BrowserSystem {
 			});
 			this.workers.get(workerName).postMessage(message);
 		});
+	}
+
+	promiseResponses(command, params) {
+		let promises = [];
+		this.workers.forEach((worker, name) => {
+			promises.push(this.promiseResponse(name, command, params));
+		});
+		return promises;
 	}
 
 	attemptToProcessPendingWork(message) {
