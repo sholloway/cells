@@ -309,7 +309,6 @@ class DarkThinLines extends Trait {
 	}
 
 	process(context) {
-		//TODO Make Background #f5f5f. Background is it's own enity.
 		context.rendererContext.strokeStyle = '#757575';
 		context.rendererContext.lineWidth = 0.5;
 	}

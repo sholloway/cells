@@ -1,8 +1,8 @@
 /**
  * @private
  */
-function clearCanvas(htmlCanvasContext, config) {
-	htmlCanvasContext.clearRect(0, 0, config.canvas.width, config.canvas.height);
+function clearCanvas(ctx) {
+	ctx.clearRect(0, 0, ctx.canvas.clientWidth, ctx.canvas.clientHeight);
 }
 
 /**
@@ -12,11 +12,9 @@ class HTMLCanvasRenderer {
 	/**
 	 * Initializes a new HTMLRenderer
 	 * @param {HTMLCanvasContext} htmlCanvasContext
-	 * @param {object} config - The simulation's configuration object.
 	 */
-	constructor(htmlCanvasContext, config) {
+	constructor(htmlCanvasContext) {
 		this.htmlCanvasContext = htmlCanvasContext;
-		this.config = config;
 	}
 
 	/**
@@ -35,7 +33,15 @@ class HTMLCanvasRenderer {
 	 * Erases the entire canvas.
 	 */
 	clear() {
-		clearCanvas(this.htmlCanvasContext, this.config);
+		clearCanvas(this.htmlCanvasContext);
+	}
+
+	/**
+	 *
+	 * @param {Function} draw - A function that works with the HTMLCanvasContext
+	 */
+	processCanvas(draw) {
+		draw(this.this.htmlCanvasContext);
 	}
 }
 

@@ -58,21 +58,6 @@ class SceneManager {
 	serializeStack() {
 		return JSON.stringify(this.stack);
 	}
-
-	/**
-	 * Builds a scene from a Javascript Literal. Intended to be used to
-	 * reconstruct a serialized scene by a web worker.
-	 * @param {Object} sceneObject
-	 */
-	static fromObject(sceneObject, traitFactory) {
-		let scene = new SceneManager();
-		sceneObject.stack.forEach((entityLit) => {
-			let entityFunc = EntityBuilderFactory.select(entityLit.className);
-			let entity = entityFunc(entityLit, traitFactory);
-			scene.push(entity); //BUG??: This may be reversing the order.
-		});
-		return scene;
-	}
 }
 
 module.exports = SceneManager;

@@ -1,13 +1,6 @@
+const WorkerCommands = require('./WorkerCommands.js');
 /**
  * A web worker dedicated to constructing a 2D grid. Rendered by the main frame.
- */
-
-/**
- * Processes a message sent by the main thread.
- *
- * Message Types
- * {command: 'CREATE_GRID', parameters: { cellWidth: Integer, cellHeight: Integer, gridWidth: Integer, gridHeight: Integer}}
- * {command: 'CLEAR_GRID', parameters: { gridWidth: Integer, gridHeight: Integer}}
  */
 onmessage = function (event) {
 	let msg = event.data;
@@ -19,17 +12,11 @@ onmessage = function (event) {
 
 	let scene;
 	switch (msg.command) {
-		case 'CREATE_GRID':
+		case WorkerCommands.LifeCycle.PROCESS_CYCLE:
 			//TODO: Add error handling around parameters
 			scene = GridBuilder.buildGrid(
 				msg.parameters.cellWidth,
 				msg.parameters.cellHeight,
-				msg.parameters.gridWidth,
-				msg.parameters.gridHeight
-			);
-			break;
-		case 'CLEAR_GRID':
-			scene = GridBuilder.buildClearedArea(
 				msg.parameters.gridWidth,
 				msg.parameters.gridHeight
 			);
@@ -40,7 +27,10 @@ onmessage = function (event) {
 			scene = GridBuilder.buildEmptyScene();
 			break;
 	}
-	postMessage(JSON.stringify(scene));
+	postMessage({
+		command: msg.command,
+		stack: scene.getStack(),
+	});
 };
 
 const SceneManager = require('../core/SceneManager.js');

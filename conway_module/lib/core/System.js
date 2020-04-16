@@ -4,7 +4,7 @@
  */
 
 const HTMLCanvasRenderer = require('./../renderer/HTMLCanvasRenderer.js');
-const SceneManager = require('./../core/SceneManager.js');
+const SceneManager = require('./SceneManager.js');
 
 /**
  * The possible states the drawing system can be in.

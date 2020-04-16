@@ -13,7 +13,7 @@ function getController() {
 }
 
 onmessage = function (event) {
-	controller.process(event.data);
+	event && event.data && controller.process(event.data);
 };
 
 // These are to enable unit tests. Do not invoke directly.

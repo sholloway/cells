@@ -6,7 +6,12 @@ const SceneManager = require('./../../lib/core/SceneManager.js');
 
 describe('HTMLCanvasRenderer', function () {
 	it('should render all entities in a scene', function () {
-		let fakeCanvasContext = {};
+		let fakeCanvasContext = {
+			canvas: {
+				clientWidth: 1,
+				clientHeight: 1,
+			},
+		};
 		fakeCanvasContext.clearRect = sinon.spy();
 		let oneFakeEntity = {};
 		oneFakeEntity.render = sinon.spy();
@@ -17,14 +22,7 @@ describe('HTMLCanvasRenderer', function () {
 		let scene = new SceneManager();
 		scene.push(oneFakeEntity).push(anotherFakeEntity);
 
-		let config = {
-			canvas: {
-				width: 1,
-				height: 1,
-			},
-		};
-
-		let renderer = new HTMLCanvasRenderer(fakeCanvasContext, config);
+		let renderer = new HTMLCanvasRenderer(fakeCanvasContext);
 		renderer.render(scene);
 
 		expect(fakeCanvasContext.clearRect.calledOnce).to.be.true;

@@ -1,4 +1,4 @@
-const { DrawingStateManager } = require('./DrawingStateManager.js');
+const DrawingStateManager = require('./DrawingStateManager.js');
 const SceneManager = require('./SceneManager.js');
 
 /**

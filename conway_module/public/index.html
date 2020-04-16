@@ -99,7 +99,7 @@
 		</div>
 		<script type="application/javascript">
 			const getElementById = Conways.DomUtilities.getElementById;
-			const main = new Conways.Game(
+			const main = Conways.Game.buildInstance(
 				getElementById('grid_canvas'),
 				getElementById('sim_canvas'),
 				getElementById('draw_canvas')

@@ -1,5 +1,5 @@
-const { Cell } = require('./Quadtree.js');
-const { Box } = require('../entity-system/entities');
+const { Cell } = require('./../core/Quadtree.js');
+const { Box } = require('./../entity-system/entities.js');
 const {
 	CircleTrait,
 	ColorByAgeTrait,
@@ -8,7 +8,7 @@ const {
 	ProcessBoxAsRect,
 	RectOutlineTrait,
 	ScaleTransformer,
-} = require('../entity-system/traits');
+} = require('./../entity-system/traits.js');
 
 class LifeSceneBuilder {
 	static buildScene(scene, config, objs) {

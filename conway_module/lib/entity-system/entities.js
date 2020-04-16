@@ -83,12 +83,13 @@ class GridEntity extends Entity {
 		this.width = width;
 		this.height = height;
 		this.cell = { width: cWidth, height: cHeight };
+		this.className = 'GridEntity';
 	}
 
-	static buildInstance(params, traitBuilderMap) {
-		return new GridEntity()
-			.copyParams(params)
-			.initTraits(params, traitBuilderMap);
+	static buildInstance(params, traitBuilderMap = null) {
+		let entity = new GridEntity().copyParams(params);
+		traitBuilderMap && entity.initTraits(params, traitBuilderMap);
+		return entity;
 	}
 }
 
