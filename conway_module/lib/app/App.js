@@ -1,11 +1,10 @@
 /*
 Next Steps
-* Get App.js under test.
+* Get app module under test.
 * Get DOMUtils under test.
 * Move Cell into Entities.js
 * Move QTNode into its own file.
 * Rename entities.js and traits.js to be capitialized.
-* Get everything under test.
 * Remove index.js and just use Main.js.
 * Get a handle on the FPS calculation. Is it really 8 FPS? 
 * Optimize Worker messaging
@@ -83,8 +82,15 @@ class Main {
 	 */
 	handlePageLoad(event) {
 		sizeCanvas(this);
-		let now = window.performance.now();
+		let now = this.getWindow().performance.now();
 		this.stateManager.start(now);
+	}
+
+	/**
+	 * A getter for the window object. Aids with testings.
+	 */
+	getWindow() {
+		return typeof window !== 'undefined' ? window : this.window;
 	}
 
 	/**
