@@ -8,7 +8,7 @@ const {
 	ProcessBoxAsRect,
 	RectOutlineTrait,
 	ScaleTransformer,
-} = require('./../entity-system/traits.js');
+} = require('../entity-system/Traits.js');
 
 class LifeSceneBuilder {
 	static buildScene(scene, config, objs) {

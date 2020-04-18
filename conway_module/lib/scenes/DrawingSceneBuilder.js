@@ -9,7 +9,7 @@ const {
 	RectOutlineTrait,
 	ScaleTransformer,
 	StrokeStyle,
-} = require('../entity-system/traits');
+} = require('../entity-system/Traits');
 
 class DrawingSceneBuilder {
 	static buildScene(scene, config, objs) {

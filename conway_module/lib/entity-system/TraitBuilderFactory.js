@@ -13,7 +13,7 @@ const {
 	ScaleTransformer,
 	StrokeStyle,
 	Trait,
-} = require('./traits.js');
+} = require('./Traits.js');
 
 class TraitBuilderFactory {
 	static select(traitName) {
