@@ -1,7 +1,5 @@
 /*
 Next Steps
-* Get app module under test.
-* Get DOMUtils under test.
 * Move Cell into Entities.js
 * Move QTNode into its own file.
 * Rename entities.js and traits.js to be capitialized.
