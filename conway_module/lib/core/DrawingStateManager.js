@@ -1,5 +1,5 @@
 const { QuadTree, cloneCells } = require('./Quadtree.js');
-const { Box, Cell } = require('../entity-system/entities');
+const { Box, Cell } = require('../entity-system/Entities.js');
 
 const {
 	ColorByContents,
@@ -10,7 +10,7 @@ const {
 	RectOutlineTrait,
 	ScaleTransformer,
 	StrokeStyle,
-} = require('../entity-system/traits');
+} = require('../entity-system/Traits.js');
 
 /**
  * Specify what traits to render the cells with.

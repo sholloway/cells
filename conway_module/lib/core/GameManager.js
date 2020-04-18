@@ -1,6 +1,6 @@
 const { QuadTree, findAliveNeighbors, cloneCells } = require('./Quadtree.js');
 const CellEvaluator = require('./CellEvaluator.js');
-const { Box, Cell } = require('../entity-system/entities');
+const { Box, Cell } = require('../entity-system/Entities.js');
 const {
 	ColorByAgeTrait,
 	CircleTrait,
@@ -11,7 +11,7 @@ const {
 	RectOutlineTrait,
 	DarkThinLines,
 	GridPattern,
-} = require('../entity-system/traits');
+} = require('../entity-system/Traits.js');
 
 const CellStates = require('./../entity-system/CellStates.js');
 const { SeederFactory, SeederModels } = require('./SeederFactory.js');

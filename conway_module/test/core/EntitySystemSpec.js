@@ -17,13 +17,13 @@ const {
 	ScaleTransformer,
 	StrokeStyle,
 	Trait,
-} = require('./../../lib/entity-system/traits');
+} = require('./../../lib/entity-system/Traits.js');
 
 const {
 	Box,
 	Entity,
 	GridEntity,
-} = require('./../../lib/entity-system/entities');
+} = require('./../../lib/entity-system/Entities.js');
 
 describe('The Entity System', function () {
 	describe('Entities', function () {

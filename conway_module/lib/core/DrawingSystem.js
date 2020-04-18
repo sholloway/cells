@@ -93,6 +93,9 @@ class DrawingSystem {
 	 * @param {number} size
 	 */
 	setCellSize(size) {
+		if (!this.config) {
+			this.config = {};
+		}
 		this.config.zoom = size;
 	}
 

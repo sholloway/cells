@@ -87,6 +87,9 @@ class LifeSystem {
 	 * @param {number} size The cell size
 	 */
 	setCellSize(size) {
+		if (!this.config) {
+			this.config = {};
+		}
 		this.config.zoom = size;
 	}
 

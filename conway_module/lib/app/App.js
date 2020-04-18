@@ -1,7 +1,6 @@
 /*
 Next Steps
-* Move Cell into Entities.js
-* Move QTNode into its own file.
+* Toggle: Transferable Array Buffers
 * Make sure the entire code base is over 90% test coverage
 * Get a handle on the FPS calculation. Is it really 8 FPS? 
 * Optimize Worker messaging

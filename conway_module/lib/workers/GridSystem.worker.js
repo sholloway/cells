@@ -34,8 +34,8 @@ onmessage = function (event) {
 };
 
 const SceneManager = require('../core/SceneManager.js');
-const { Box, GridEntity } = require('../entity-system/entities');
-const { ProcessBoxAsRect, GridPattern } = require('../entity-system/traits');
+const { Box, GridEntity } = require('../entity-system/Entities.js');
+const { ProcessBoxAsRect, GridPattern } = require('../entity-system/Traits.js');
 
 class GridBuilder {
 	/**
