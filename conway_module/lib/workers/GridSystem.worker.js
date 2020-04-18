@@ -1,32 +1,25 @@
+const WorkerCommands = require('./WorkerCommands.js');
 /**
  * A web worker dedicated to constructing a 2D grid. Rendered by the main frame.
  */
-
-/**
- * Processes a message sent by the main thread.
- *
- * Message Types
- * {command: 'CREATE_GRID', parameters: { cellWidth: Integer, cellHeight: Integer, gridWidth: Integer, gridHeight: Integer}}
- * {command: 'CLEAR_GRID', parameters: { gridWidth: Integer, gridHeight: Integer}}
- */
-onmessage = function(event) {
+onmessage = function (event) {
 	let msg = event.data;
-	if (!msg.command){
+	if (!msg.command) {
 		console.error('Unexpected messaged received in GridSystemWorker.');
 		console.error(event);
 		return;
 	}
 
 	let scene;
-	switch (msg.command){
-		case 'CREATE_GRID':
+	switch (msg.command) {
+		case WorkerCommands.LifeCycle.PROCESS_CYCLE:
 			//TODO: Add error handling around parameters
 			scene = GridBuilder.buildGrid(
-				msg.parameters.cellWidth, msg.parameters.cellHeight,
-				msg.parameters.gridWidth, msg.parameters.gridHeight);
-			break;
-		case 'CLEAR_GRID':
-			scene = GridBuilder.buildClearedArea(msg.parameters.gridWidth, msg.parameters.gridHeight);
+				msg.parameters.cellWidth,
+				msg.parameters.cellHeight,
+				msg.parameters.gridWidth,
+				msg.parameters.gridHeight
+			);
 			break;
 		default:
 			console.error('Unsupported command received in GridSystemWorker.');
@@ -34,14 +27,17 @@ onmessage = function(event) {
 			scene = GridBuilder.buildEmptyScene();
 			break;
 	}
-	postMessage(JSON.stringify(scene));
-}
+	postMessage({
+		command: msg.command,
+		stack: scene.getStack(),
+	});
+};
 
 const SceneManager = require('../core/SceneManager.js');
-const {Box, GridEntity} = require('../entity-system/entities');
-const {ProcessBoxAsRect, GridPattern} = require('../entity-system/traits');
+const { Box, GridEntity } = require('../entity-system/Entities.js');
+const { ProcessBoxAsRect, GridPattern } = require('../entity-system/Traits.js');
 
-class GridBuilder{
+class GridBuilder {
 	/**
 	 * Constructs a scene containing a 2D grid.
 	 * @param {number} cellWidth
@@ -50,7 +46,7 @@ class GridBuilder{
 	 * @param {number} gridHeight
 	 * @returns SceneManager
 	 */
-	static buildGrid(cellWidth, cellHeight, gridWidth, gridHeight){
+	static buildGrid(cellWidth, cellHeight, gridWidth, gridHeight) {
 		let scene = new SceneManager();
 		let grid = new GridEntity(gridWidth, gridHeight, cellWidth, cellHeight);
 		grid.register(new GridPattern());
@@ -62,18 +58,17 @@ class GridBuilder{
 	 * @param {number} gridWidth
 	 * @param {number} gridHeight
 	 */
-	static buildClearedArea(gridWidth, gridHeight){
+	static buildClearedArea(gridWidth, gridHeight) {
 		let scene = new SceneManager();
 		let area = new Box(0, 0, gridWidth, gridHeight, false);
-		area.register(new ProcessBoxAsRect())
-			.register(new ClearArea());
+		area.register(new ProcessBoxAsRect()).register(new ClearArea());
 		return scene.push(area);
 	}
 
 	/**
 	 * Creates an empty scene to support the Null object pattern.
 	 */
-	static buildEmptyScene(){
+	static buildEmptyScene() {
 		return new SceneManager();
 	}
 }

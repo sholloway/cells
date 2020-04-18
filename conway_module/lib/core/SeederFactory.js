@@ -2,16 +2,16 @@
  * Conway's Game Initial State Seeder Module
  * @module seeders
  */
-const { CellStates } = require('./CellStates.js')
-const {Cell} = require('./Quadtree.js')
+const CellStates = require('./../entity-system/CellStates.js');
+const { Cell } = require('./../entity-system/Entities.js');
 
 /**
  * Randomly selects 0 or 1.
  * @private
  * @returns {number}
  */
-function randomAliveOrDead(){
-  return getRandomIntInclusive(CellStates.DEAD, CellStates.ALIVE)
+function randomAliveOrDead() {
+	return getRandomIntInclusive(CellStates.DEAD, CellStates.ALIVE);
 }
 
 /**
@@ -22,20 +22,20 @@ function randomAliveOrDead(){
  * @returns {number}
  */
 function getRandomIntInclusive(min, max) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive
+	min = Math.ceil(min);
+	max = Math.floor(max);
+	return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive
 }
 
 /**
  * Abstract class. Defines a seeder.
  */
-class Seeder{
+class Seeder {
 	/**
 	 * Initialize a new seeder.
 	 */
-	constructor(){
-		this.cells = []
+	constructor() {
+		this.cells = [];
 	}
 
 	/**
@@ -44,16 +44,19 @@ class Seeder{
 	 * @param {number} width
 	 * @param {number} height
 	 */
-	seed(width, height){
-		throw new Error('Seeder implementations must implement the seed(width, height) method.')
+	seed(width, height) {
+		throw new Error(
+			'Seeder implementations must implement the seed(width, height) method.'
+		);
 	}
 
 	/**
 	 * Initial cells to use by the seeder.
 	 * @param {Cell[]} cells
 	 */
-	setCells(cells){
-		this.cells = cells
+	setCells(cells) {
+		this.cells = cells;
+		return this;
 	}
 }
 
@@ -61,21 +64,21 @@ class Seeder{
  * Seeds a simulation with randomly selecting alive or dead for each cell.
  * @extends Seeder
  */
-class RandomSeeder extends Seeder{
-	constructor(){
-		super()
+class RandomSeeder extends Seeder {
+	constructor() {
+		super();
 	}
 
-	seed(width, height){
-		for(let x = 0; x < width; x++){
-			for (let y = 0; y < height; y++){
-				let birthChance = randomAliveOrDead()
-				if (birthChance == 1){
-					this.cells.push(new Cell(x,y, 1))
+	seed(width, height) {
+		for (let x = 0; x < width; x++) {
+			for (let y = 0; y < height; y++) {
+				let birthChance = randomAliveOrDead();
+				if (birthChance == 1) {
+					this.cells.push(new Cell(x, y, 1));
 				}
 			}
 		}
-		return this.cells
+		return this.cells;
 	}
 }
 
@@ -83,13 +86,13 @@ class RandomSeeder extends Seeder{
  * Seeds a simulation with a provided set of alive cells.
  * @extends Seeder
  */
-class StaticCellsSeeder extends Seeder{
-	constructor(){
-		super()
+class StaticCellsSeeder extends Seeder {
+	constructor() {
+		super();
 	}
 
-	seed(width, height){
-		return this.cells
+	seed(width, height) {
+		return this.cells;
 	}
 }
 
@@ -98,32 +101,32 @@ class StaticCellsSeeder extends Seeder{
  */
 SeederModels = {
 	DRAWING: 'draw',
-	RANDOM: 'random'
-}
+	RANDOM: 'random',
+};
 
 /**
  * Creates a new seeder based on a specified seeder model name.
  */
-class SeederFactory{
+class SeederFactory {
 	/**
 	 * Initializes a new seeder.
 	 * @param {string} modelName
 	 * @returns {Seeder}
 	 */
-	static build(modelName){
+	static build(modelName) {
 		let seeder = null;
-		switch (modelName){
+		switch (modelName) {
 			case SeederModels.RANDOM:
-				seeder = new RandomSeeder()
-				break
+				seeder = new RandomSeeder();
+				break;
 			case SeederModels.DRAWING:
-				seeder = new StaticCellsSeeder()
-				break
+				seeder = new StaticCellsSeeder();
+				break;
 			default:
-				throw new Error(`Unknown seeder model name: ${modelName}`)
+				throw new Error(`Unknown seeder model name: ${modelName}`);
 		}
-		return seeder
+		return seeder;
 	}
 }
 
-module.exports = {Seeder, SeederFactory, SeederModels}
+module.exports = { Seeder, SeederFactory, SeederModels };

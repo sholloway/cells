@@ -3,15 +3,17 @@
  * @module entity_system
  */
 
- /**
+const CellStates = require('./CellStates.js');
+
+/**
  * A render-able entity. The entity is defined by registering traits.
  */
-class Entity{
+class Entity {
 	/**
 	 * Create a new Entity.
 	 */
-	constructor(){
-		this.traits = []
+	constructor() {
+		this.traits = [];
 		this.className = 'Entity';
 	}
 
@@ -19,23 +21,23 @@ class Entity{
 	 * Process all register traits.
 	 * @param {HTMLCanvasContext} rendererContext
 	 */
-	render(rendererContext){
+	render(rendererContext) {
 		let context = {
 			rendererContext: rendererContext,
-			entity: this
-		}
-		this.traits.forEach((trait) =>{
-			trait.process(context)
-		})
+			entity: this,
+		};
+		this.traits.forEach((trait) => {
+			trait.process(context);
+		});
 	}
 
 	/**
 	 * Expands the definition of the entity by registering traits.
 	 * @param {Trait} trait - An implementation of the Trait abstract class.
 	 */
-	register(trait){
-		this.traits.push(trait)
-		return this
+	register(trait) {
+		this.traits.push(trait);
+		return this;
 	}
 
 	/**
@@ -44,33 +46,103 @@ class Entity{
 	 * which an be used to rebuild a Scene after communicated from a thread.
 	 * @returns Entity
 	 */
-	toJSON(){
+	toJSON() {
 		this.className = this.constructor.name;
 		return this;
 	}
 
-	copyParams(original){
-		for (var key in original){
-			if (key != 'className' && key != 'traits'){
+	copyParams(original) {
+		for (var key in original) {
+			if (key != 'className' && key != 'traits') {
 				this[key] = original[key];
 			}
 		}
 		return this;
 	}
 
-	initTraits(original, traitBuilderFactory){
-		this.traits = original.traits.map(traitLit => {
+	initTraits(original, traitBuilderFactory) {
+		this.traits = original.traits.map((traitLit) => {
 			var traitBuilder = traitBuilderFactory(traitLit.className);
-			return (traitBuilder)? traitBuilder(traitLit) : new Trait();
+			return traitBuilder ? traitBuilder(traitLit) : new Trait();
 		});
 		return this;
 	}
 }
 
 /**
+ * Represents a single unit on an abstract 2D grid.
+ *
+ * The width and height of the cell are the equal.
+ * The grid is uniform.
+ * @extends Entity
+ */
+class Cell extends Entity {
+	/**
+	 * Create a new cell.
+	 * @param {number} row - The horizontal location of the cell on a grid.
+	 * @param {number} col - The vertical location of the cell on a grid.
+	 * @param {number} age - The number of simulation iterations the cell has been alive.
+	 * @param {CellState} state - The state of the cell.
+	 */
+	constructor(row, col, age = 0, state = CellStates.ALIVE) {
+		super();
+		this.className = 'Cell';
+		this.location = { row: row, col: col };
+		this.age = age;
+		this.width = 1;
+		this.height = 1;
+		this.state = state;
+	}
+
+	/**
+	 * Intersection Test. Is the cell inside of a provided rectangle.
+	 * @param {number} x
+	 * @param {number} y
+	 * @param {number} xx
+	 * @param {number} yy
+	 * @returns {boolean}
+	 */
+	isInsideRect(x, y, xx, yy) {
+		return (
+			x <= this.location.row &&
+			this.location.row <= xx &&
+			y <= this.location.col &&
+			this.location.col <= yy
+		);
+	}
+
+	/**
+	 * Getter for the cell's state.
+	 */
+	getState() {
+		return this.state;
+	}
+
+	/**
+	 * Create a deep copy of the cell.
+	 * @returns {Cell}
+	 */
+	clone() {
+		return new Cell(this.location.row, this.location.col, this.age, this.state);
+	}
+
+	rightBoundary() {
+		return this.location.row + this.width;
+	}
+
+	lowerBoundary() {
+		return this.location.col + this.height;
+	}
+
+	static buildInstance(params) {
+		return new Cell().copyParams(params);
+	}
+}
+
+/**
  * A grid.
  */
-class GridEntity extends Entity{
+class GridEntity extends Entity {
 	/**
 	 * Creates a new grid entity
 	 * @param {number} width - The total width of the grid.
@@ -78,24 +150,25 @@ class GridEntity extends Entity{
 	 * @param {number} cWidth - The width of a grid cell.
 	 * @param {number} cHeight - The height of a grid cell.
 	 */
-	constructor(width = null, height = null, cWidth = null, cHeight = null){
-		super()
-		this.width = width
-		this.height = height
-		this.cell = { width: cWidth, height: cHeight}
+	constructor(width = null, height = null, cWidth = null, cHeight = null) {
+		super();
+		this.width = width;
+		this.height = height;
+		this.cell = { width: cWidth, height: cHeight };
+		this.className = 'GridEntity';
 	}
 
-	static buildInstance(params, traitBuilderMap){
-		return new GridEntity()
-			.copyParams(params)
-			.initTraits(params, traitBuilderMap);
+	static buildInstance(params, traitBuilderMap = null) {
+		let entity = new GridEntity().copyParams(params);
+		traitBuilderMap && entity.initTraits(params, traitBuilderMap);
+		return entity;
 	}
 }
 
 /**
  * Represents a box that can be processed via Traits.
  */
-class Box extends Entity{
+class Box extends Entity {
 	/**
 	 * Creates a new Box.
 	 * @param {number} x - Left most X coordinate.
@@ -104,25 +177,26 @@ class Box extends Entity{
 	 * @param {number} yy - Lower most Y coordinate.
 	 * @param {boolean} alive - If the cell is alive or not.
 	 */
-	constructor(x = null,y = null, xx = null, yy = null, alive = null){
-		super()
-		this.x = x
-		this.y = y
-		this.xx = xx
-		this.yy = yy
-		this.alive = alive
+	constructor(x = null, y = null, xx = null, yy = null, alive = null) {
+		super();
+		this.x = x;
+		this.y = y;
+		this.xx = xx;
+		this.yy = yy;
+		this.alive = alive;
 		this.className = 'Box';
 	}
 
-	static buildInstance(params, traitBuilderMap){
-		return new Box()
-			.copyParams(params)
-			.initTraits(params, traitBuilderMap);
+	static buildInstance(params, traitBuilderMap = null) {
+		let box = new Box().copyParams(params);
+		traitBuilderMap && box.initTraits(params, traitBuilderMap);
+		return box;
 	}
 }
 
 module.exports = {
 	Box,
+	Cell,
 	Entity,
-	GridEntity
-}
+	GridEntity,
+};
