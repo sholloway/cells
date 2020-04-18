@@ -1,5 +1,4 @@
-const { Cell } = require('./../core/Quadtree.js');
-const { Box } = require('../entity-system/Entities.js');
+const { Box, Cell } = require('../entity-system/Entities.js');
 const {
 	ColorByContents,
 	FilledRectTrait,

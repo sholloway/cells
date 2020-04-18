@@ -3,7 +3,7 @@ const expect = chai.expect;
 const sinon = require('sinon');
 
 const DrawingStateManager = require('./../../lib/core/DrawingStateManager.js');
-const { Cell } = require('./../../lib/core/Quadtree.js');
+const { Cell } = require('./../../lib/entity-system/Entities.js');
 const SceneManager = require('./../../lib/core/SceneManager.js');
 const { makeIdentity } = require('./QuadTreeTestHelper.js');
 

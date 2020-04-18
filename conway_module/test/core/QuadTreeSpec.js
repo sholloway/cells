@@ -1,7 +1,8 @@
 const chai = require('chai');
 const expect = chai.expect;
+
+const { Cell } = require('./../../lib/entity-system/Entities.js');
 const {
-	Cell,
 	QTNode,
 	QuadTree,
 	uniformScale,

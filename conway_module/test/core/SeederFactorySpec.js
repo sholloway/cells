@@ -1,7 +1,7 @@
 const chai = require('chai');
 const expect = chai.expect;
 const sinon = require('sinon');
-const { Cell } = require('./../../lib/core/Quadtree.js');
+const { Cell } = require('./../../lib/entity-system/Entities.js');
 
 const {
 	SeederFactory,

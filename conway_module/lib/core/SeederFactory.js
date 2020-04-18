@@ -2,8 +2,8 @@
  * Conway's Game Initial State Seeder Module
  * @module seeders
  */
-const { CellStates } = require('./CellStates.js');
-const { Cell } = require('./Quadtree.js');
+const CellStates = require('./../entity-system/CellStates.js');
+const { Cell } = require('./../entity-system/Entities.js');
 
 /**
  * Randomly selects 0 or 1.

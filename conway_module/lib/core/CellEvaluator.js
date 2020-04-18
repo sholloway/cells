@@ -1,4 +1,4 @@
-const { CellStates } = require('./CellStates.js');
+const CellStates = require('./../entity-system/CellStates.js');
 
 /**
  * Enforces the simulation (game) rules.

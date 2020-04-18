@@ -8,9 +8,9 @@ const {
 	makeFull10By10,
 	makeCellsFrom2DArray,
 } = require('./QuadTreeTestHelper.js');
+
+const { Cell } = require('./../../lib/entity-system/Entities.js');
 const {
-	Cell,
-	QTNode,
 	QuadTree,
 	findAliveNeighbors,
 } = require('./../../lib/core/Quadtree.js');

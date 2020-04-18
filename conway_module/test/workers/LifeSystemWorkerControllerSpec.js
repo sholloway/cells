@@ -4,7 +4,7 @@ const sinon = require('sinon');
 
 const LifeSystemWorkerController = require('./../../lib/workers/LifeSystemWorkerController.js');
 const WorkerCommands = require('./../../lib/workers/WorkerCommands.js');
-const { Cell } = require('./../../lib/core/Quadtree.js');
+const { Cell } = require('./../../lib/entity-system/Entities.js');
 
 describe('Life System Controller', function () {
 	let controller;

@@ -1,5 +1,5 @@
-const { Cell, QuadTree, cloneCells } = require('./Quadtree.js');
-const { Box } = require('../entity-system/entities');
+const { QuadTree, cloneCells } = require('./Quadtree.js');
+const { Box, Cell } = require('../entity-system/entities');
 
 const {
 	ColorByContents,

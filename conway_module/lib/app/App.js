@@ -2,8 +2,6 @@
 Next Steps
 * Move Cell into Entities.js
 * Move QTNode into its own file.
-* Rename entities.js and traits.js to be capitialized.
-* Remove index.js and just use Main.js.
 * Make sure the entire code base is over 90% test coverage
 * Get a handle on the FPS calculation. Is it really 8 FPS? 
 * Optimize Worker messaging
@@ -22,7 +20,7 @@ Next Steps
 const Layers = require('./AppLayers.js');
 const AppBuilder = require('./AppBuilder.js');
 const { getElementById, setElementValue } = require('../dom/DomUtilities.js');
-const Cell = require('../core/Quadtree.js').Cell;
+const { Cell } = require('./../entity-system/Entities.js');
 
 const WorkerCommands = require('./../workers/WorkerCommands.js');
 

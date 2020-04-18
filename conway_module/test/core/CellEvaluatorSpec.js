@@ -2,7 +2,7 @@ const chai = require('chai');
 const expect = chai.expect;
 
 const CellEvaluator = require('./../../lib/core/CellEvaluator.js');
-const { CellStates } = require('./../../lib/core/CellStates.js');
+const CellStates = require('./../../lib/entity-system/CellStates.js');
 
 describe('Cell Evaluator', function () {
 	it('should use the default of [3] for birth rules', function () {

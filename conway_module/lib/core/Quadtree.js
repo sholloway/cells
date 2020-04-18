@@ -3,78 +3,8 @@
  * @module quadtree
  */
 
-const { CellStates } = require('./CellStates.js');
-const { Entity } = require('../entity-system/Entities');
-
-/**
- * Represents a single unit on an abstract 2D grid.
- *
- * The width and height of the cell are the equal.
- * The grid is uniform.
- * @extends Entity
- */
-class Cell extends Entity {
-	/**
-	 * Create a new cell.
-	 * @param {number} row - The horizontal location of the cell on a grid.
-	 * @param {number} col - The vertical location of the cell on a grid.
-	 * @param {number} age - The number of simulation iterations the cell has been alive.
-	 * @param {CellState} state - The state of the cell.
-	 */
-	constructor(row, col, age = 0, state = CellStates.ALIVE) {
-		super();
-		this.className = 'Cell';
-		this.location = { row: row, col: col };
-		this.age = age;
-		this.width = 1;
-		this.height = 1;
-		this.state = state;
-	}
-
-	/**
-	 * Intersection Test. Is the cell inside of a provided rectangle.
-	 * @param {number} x
-	 * @param {number} y
-	 * @param {number} xx
-	 * @param {number} yy
-	 * @returns {boolean}
-	 */
-	isInsideRect(x, y, xx, yy) {
-		return (
-			x <= this.location.row &&
-			this.location.row <= xx &&
-			y <= this.location.col &&
-			this.location.col <= yy
-		);
-	}
-
-	/**
-	 * Getter for the cell's state.
-	 */
-	getState() {
-		return this.state;
-	}
-
-	/**
-	 * Create a deep copy of the cell.
-	 * @returns {Cell}
-	 */
-	clone() {
-		return new Cell(this.location.row, this.location.col, this.age, this.state);
-	}
-
-	rightBoundary() {
-		return this.location.row + this.width;
-	}
-
-	lowerBoundary() {
-		return this.location.col + this.height;
-	}
-
-	static buildInstance(params) {
-		return new Cell().copyParams(params);
-	}
-}
+const CellStates = require('../entity-system/CellStates.js');
+const { Cell } = require('../entity-system/Entities');
 
 /**
  * Singleton instance of a dead cell.
