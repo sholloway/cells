@@ -4,7 +4,7 @@ const WorkerSystem = require('./../core/WorkerSystem.js');
 const WorkerCommands = require('./../workers/WorkerCommands.js');
 
 const Layers = require('./AppLayers.js');
-const { getElementById, setElementValue } = require('./../dom/DomUtilities.js');
+const { getElementById } = require('./../dom/DomUtilities.js');
 const {
 	updateConfiguredZoom,
 	updateConfiguredLandscape,
@@ -12,7 +12,7 @@ const {
 
 const SEEDER_CREATION_ERR_MSG = 'There was an error trying to build the seeder';
 const PROCESS_CYCLE_MESSAGE_ERR_MSG =
-	'AppStateManager.processCycleMessage: Can only process messages that are PROCESS_CYCLE';
+	'AppStateManager.processCycleMessage: Can only process messages that are PROCESS_CYCLE and contain a stack.';
 const MISSING_CELLS = 'Cells were not provided.';
 const PAUSE_SIM_IN_DRAWING_MODE_ERR =
 	'There was an error trying to pause the simulation.';
@@ -36,7 +36,11 @@ class AppStateManager {
 		this.scenes = new Map();
 		this.sceneBuilders = new Map();
 		this.workers = new Map();
-		this.workerSystem = new WorkerSystem(window, config);
+		this.workerSystem = new WorkerSystem(this.getWindow(), config);
+	}
+
+	getWindow() {
+		return typeof window === 'undefined' ? this.window : window;
 	}
 
 	/**
@@ -62,7 +66,7 @@ class AppStateManager {
 	/**
 	 * Creates a SceneManager for a layer.
 	 * @param {*} name - The name of layer.
-	 * @param {*} sceneBuilder - The scene.
+	 * @param {*} sceneBuilder - The function that builds the scene.
 	 * @returns {AppStateManager} The instance.
 	 */
 	createScene(name, sceneBuilder) {
@@ -123,9 +127,11 @@ class AppStateManager {
 	 * @returns {AppStateManager} The instance.
 	 */
 	startWorker(name) {
-		this.workers.get(name).postMessage({
-			command: WorkerCommands.LifeCycle.START,
-		});
+		if (this.workers.has(name)) {
+			this.workers.get(name).postMessage({
+				command: WorkerCommands.LifeCycle.START,
+			});
+		}
 		return this;
 	}
 
@@ -135,9 +141,11 @@ class AppStateManager {
 	 * @returns {AppStateManager} The instance.
 	 */
 	stopWorker(name) {
-		this.workers.get(name).postMessage({
-			command: WorkerCommands.LifeCycle.STOP,
-		});
+		if (this.workers.has(name)) {
+			this.workers.get(name).postMessage({
+				command: WorkerCommands.LifeCycle.STOP,
+			});
+		}
 		return this;
 	}
 
@@ -147,7 +155,9 @@ class AppStateManager {
 	 * @returns {AppStateManager} The instance.
 	 */
 	render(name) {
-		this.renderers.get(name).render(this.getScene(name));
+		if (this.renderers.has(name) && this.scenes.has(name)) {
+			this.renderers.get(name).render(this.getScene(name));
+		}
 		return this;
 	}
 
@@ -213,7 +223,9 @@ class AppStateManager {
 	 * @returns {AppStateManager} The instance.
 	 */
 	buildScene(name, stack) {
-		this.sceneBuilders.get(name)(this.getScene(name), this.config, stack);
+		if (this.sceneBuilders.has(name) && this.scenes.has(name)) {
+			this.sceneBuilders.get(name)(this.getScene(name), this.config, stack);
+		}
 		return this;
 	}
 
@@ -224,7 +236,9 @@ class AppStateManager {
 	 * @returns {AppStateManager} The instance.
 	 */
 	sendWorkerMessage(name, msg) {
-		this.workers.get(name).postMessage(msg);
+		if (this.workers.has(name)) {
+			this.workers.get(name).postMessage(msg);
+		}
 		return this;
 	}
 
@@ -245,7 +259,7 @@ class AppStateManager {
 	 * @param {*} message - The message to process.
 	 */
 	processCycleMessage(name, message) {
-		if (message.command === 'PROCESS_CYCLE') {
+		if (message && message.command === 'PROCESS_CYCLE' && message.stack) {
 			this.clearScene(name)
 				.buildScene(name, message.stack)
 				.render(name)
@@ -275,10 +289,10 @@ class AppStateManager {
 
 	/**
 	 * Starts the simulation.
-	 * @returns {AppStateManager} The instance.
+	 * @returns {Promise}
 	 */
 	startSimulation() {
-		this.workerSystem
+		return this.workerSystem
 			.promiseResponse(
 				Layers.DRAWING,
 				WorkerCommands.DrawingSystemCommands.SEND_CELLS
@@ -297,15 +311,14 @@ class AppStateManager {
 			.catch((reason) => {
 				throw new Error(`${SEEDER_CREATION_ERR_MSG}.\n${reason}`);
 			});
-		return this;
 	}
 
 	/**
 	 * Orchestrates the drawing and life web workers to pause both systems.
-	 * @returns {AppStateManager} Returns the instance.
+	 * @returns {Promise}
 	 */
 	pauseSimulationInDrawingMode() {
-		this.workerSystem
+		return this.workerSystem
 			.promiseResponse(Layers.SIM, WorkerCommands.LifeSystemCommands.SEND_CELLS)
 			.then((response) => {
 				this.sendWorkerMessage(Layers.DRAWING, {
@@ -322,7 +335,6 @@ class AppStateManager {
 			.finally(() => {
 				this.clearRender(Layers.SIM).allowDrawing();
 			});
-		return this;
 	}
 
 	/**
