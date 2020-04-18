@@ -1,4 +1,4 @@
-const { Entity, GridEntity } = require('./../entity-system/entities.js');
+const { Entity, GridEntity } = require('../entity-system/Entities.js');
 const { GridPattern, DarkThinLines } = require('./../entity-system/traits.js');
 
 class GridSceneBuilder {

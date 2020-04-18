@@ -1,4 +1,4 @@
-const { Box, Entity, GridEntity } = require('./entities.js');
+const { Box, Entity, GridEntity } = require('./Entities.js');
 class EntityBuilderFactory {
 	static select(entityName) {
 		let builder;

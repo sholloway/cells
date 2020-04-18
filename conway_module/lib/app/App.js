@@ -4,6 +4,7 @@ Next Steps
 * Move QTNode into its own file.
 * Rename entities.js and traits.js to be capitialized.
 * Remove index.js and just use Main.js.
+* Make sure the entire code base is over 90% test coverage
 * Get a handle on the FPS calculation. Is it really 8 FPS? 
 * Optimize Worker messaging
 * Add page level error handling? 
