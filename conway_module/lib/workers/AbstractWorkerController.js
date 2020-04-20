@@ -35,7 +35,7 @@ class AbstractWorkerController {
 				this.workerState = WorkerState.RUNNING;
 				break;
 			case LifeCycle.STOP:
-				this.workerState = WorkerState.STOPPED;
+				this.stop();
 				break;
 			case LifeCycle.PAUSE:
 				break;
@@ -45,6 +45,10 @@ class AbstractWorkerController {
 			default:
 				this.routeCommand(msg);
 		}
+	}
+
+	stop() {
+		this.workerState = WorkerState.STOPPED;
 	}
 
 	/**

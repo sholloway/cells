@@ -30,6 +30,8 @@ const window = {
 };
 
 let uiConfigUtils = {
+	updateConfiguredZoom: sinon.stub(),
+	updateConfiguredLandscape: sinon.stub(),
 	getCellSize: sinon.stub().returns(20),
 };
 
@@ -96,61 +98,29 @@ describe('The App', function () {
 
 		it('should toggleSimulation from Start', function () {
 			getElementResult.innerText = 'Start';
-			sinon.stub(app, 'transitionToThePauseButton').returns(app);
-			app.toggleSimulation();
-			expect(app.transitionToThePauseButton.calledOnce).to.be.true;
-			expect(app.stateManager.preventDrawing.calledOnce).to.be.true;
-			expect(app.stateManager.startSimulation.calledOnce).to.be.true;
+			app.handleStartButtonClicked = sinon.stub().resolves();
+
+			return Promise.resolve(app.toggleSimulation()).then(() => {
+				expect(app.handleStartButtonClicked.calledOnce).to.be.true;
+			});
 		});
 
-		it('should toggleSimulation from Pause', function () {
+		it('should toggleSimulation from pause', function () {
 			getElementResult.innerText = 'Pause';
+			app.handlePauseButtonClicked = sinon.stub().resolves();
 
-			//In drawing mode
-			getElementResult.value = 'draw';
-			sinon.stub(app, 'transitionToTheResumeButton').returns(app);
-
-			app.toggleSimulation();
-
-			expect(app.transitionToTheResumeButton.calledOnce).to.be.true;
-			expect(app.stateManager.stopSimulation.calledOnce).to.be.true;
-			expect(app.stateManager.pauseSimulationInDrawingMode.calledOnce).to.be
-				.true;
-
-			//not in drawing mode
-			getElementResult.value = 'random';
-			sinon.resetHistory();
-			app.toggleSimulation();
-
-			expect(app.transitionToTheResumeButton.calledOnce).to.be.true;
-			expect(app.stateManager.stopSimulation.calledOnce).to.be.true;
-			expect(app.stateManager.pauseSimulationInDrawingMode.calledOnce).to.be
-				.false;
+			return Promise.resolve(app.toggleSimulation()).then(() => {
+				expect(app.handlePauseButtonClicked.calledOnce).to.be.true;
+			});
 		});
 
-		it('should toggleSimulation from Resume', function () {
+		it('should toggleSimulation from resume', function () {
 			getElementResult.innerText = 'Resume';
+			app.handleResumeButtonClicked = sinon.stub().resolves();
 
-			//In drawing mode
-			getElementResult.value = 'draw';
-			sinon.stub(app, 'transitionToThePauseButton').returns(app);
-
-			app.toggleSimulation();
-
-			expect(app.transitionToThePauseButton.calledOnce).to.be.true;
-			expect(app.stateManager.preventDrawing.calledOnce).to.be.true;
-			expect(app.stateManager.startSimulation.calledOnce).to.be.true;
-			expect(app.stateManager.resumeSimulation.calledOnce).to.be.false;
-
-			//not in drawing mode
-			getElementResult.value = 'random';
-			sinon.resetHistory();
-			app.toggleSimulation();
-
-			expect(app.transitionToThePauseButton.calledOnce).to.be.true;
-			expect(app.stateManager.preventDrawing.calledOnce).to.be.true;
-			expect(app.stateManager.startSimulation.calledOnce).to.be.false;
-			expect(app.stateManager.resumeSimulation.calledOnce).to.be.true;
+			return Promise.resolve(app.toggleSimulation()).then(() => {
+				expect(app.handleResumeButtonClicked.calledOnce).to.be.true;
+			});
 		});
 
 		it('should toggleSimulation from unknown', function () {

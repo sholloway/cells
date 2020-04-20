@@ -22,13 +22,24 @@ function calculateConfiguredCanvasHeight() {
 	);
 }
 
+function calculateFullScreenHeight() {
+	return screen.height;
+}
+
+function isFullscreen() {
+	return document.fullscreenElement != null;
+}
+
 /**
  * Override the current configuration to size the HTML Canvas
  * to fit the document.
  * @param {*} config
  */
 function sizeCanvas(game) {
-	game.config.canvas.height = calculateConfiguredCanvasHeight();
+	game.config.canvas.height = isFullscreen()
+		? calculateFullScreenHeight()
+		: calculateConfiguredCanvasHeight();
+
 	let canvasContainerDiv = getElementById('canvas_container');
 
 	//WARNING: Setting the canvas height changes the body

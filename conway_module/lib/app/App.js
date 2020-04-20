@@ -1,5 +1,9 @@
 /*
 Next Steps
+* Make the seed generation display before starting the simulation.
+	Toggle Button Behavior
+	Click Seed -> Draw the output of the seeder into the drawing system.
+	Click Start -> Loads the drawing surface into the SIM.
 * Toggle: Transferable Array Buffers
 * Make sure the entire code base is over 90% test coverage
 * Get a handle on the FPS calculation. Is it really 8 FPS? 
@@ -26,7 +30,11 @@ const WorkerCommands = require('./../workers/WorkerCommands.js');
 const Workers = require('../workers/WorkerNames.js');
 const { sizeCanvas } = require('../ui/CanvasUtilities.js');
 
-const { getCellSize } = require('../ui/UIConfigurationUtilities.js');
+const {
+	updateConfiguredZoom,
+	updateConfiguredLandscape,
+	getCellSize,
+} = require('../ui/UIConfigurationUtilities.js');
 
 /**
  * Represents the main thread of the simulation.
@@ -96,6 +104,8 @@ class Main {
 	 */
 	handlePageResize(event) {
 		sizeCanvas(this);
+		updateConfiguredZoom(this.config);
+		updateConfiguredLandscape(this.config);
 		this.handleGridBackgroundClicked();
 	}
 
@@ -157,27 +167,63 @@ class Main {
 	toggleSimulation() {
 		let button = getElementById('play_pause_button');
 		let isInDrawingMode = getElementById('seed').value === 'draw';
+		let promise;
 		switch (button.innerText) {
 			case 'Start':
-				this.transitionToThePauseButton();
-				this.stateManager.preventDrawing();
-				this.stateManager.startSimulation();
+				promise = this.handleStartButtonClicked();
 				break;
 			case 'Pause':
-				this.transitionToTheResumeButton();
-				this.stateManager.stopSimulation();
-				isInDrawingMode && this.stateManager.pauseSimulationInDrawingMode();
+				promise = this.handlePauseButtonClicked(isInDrawingMode);
 				break;
 			case 'Resume':
-				this.transitionToThePauseButton();
-				this.stateManager.preventDrawing();
-				isInDrawingMode
-					? this.stateManager.startSimulation()
-					: this.stateManager.resumeSimulation();
+				promise = this.handleResumeButtonClicked(isInDrawingMode);
 				break;
 			default:
 				throw new Error('Unknown button state.');
 		}
+		return promise;
+	}
+
+	handleStartButtonClicked() {
+		return new Promise((resolve, reject) => {
+			this.transitionToThePauseButton();
+			this.displayManager
+				.setDisplayMode(this.stateManager.getDisplayPreference())
+				.catch((reason) => {
+					console.error(
+						'There was an error attempting to change display modes.'
+					);
+					console.error(reason);
+				})
+				.then(() => {
+					document.fullscreenElement && this.handlePageResize();
+					this.stateManager.preventDrawing();
+					this.stateManager.startSimulation();
+				});
+		});
+	}
+
+	handlePauseButtonClicked(isInDrawingMode) {
+		this.transitionToTheResumeButton();
+		this.stateManager.stopSimulation();
+		isInDrawingMode && this.stateManager.pauseSimulationInDrawingMode();
+	}
+
+	handleResumeButtonClicked(isInDrawingMode) {
+		this.transitionToThePauseButton();
+		this.displayManager
+			.setDisplayMode(this.stateManager.getDisplayPreference())
+			.catch((reason) => {
+				console.error('There was an error attempting to change display modes.');
+				console.error(reason);
+			})
+			.then(() => {
+				document.fullscreenElement && this.handlePageResize();
+				this.stateManager.preventDrawing();
+				isInDrawingMode
+					? this.stateManager.startSimulation()
+					: this.stateManager.resumeSimulation();
+			});
 	}
 
 	/**
@@ -271,7 +317,7 @@ class Main {
 	 * Updates the UI based on a message sent from a web worker.
 	 * If the value is present in the message, the corrisponding UI component is updated.
 	 * @param {*} message
-	 * @returns {AppStateManager} The instance.
+	 * @returns {App} The instance.
 	 */
 	updateUI(message) {
 		message.aliveCellsCount &&
@@ -282,7 +328,18 @@ class Main {
 				'sim_generation_count',
 				message.numberOfSimulationIterations
 			);
+
+		if (message.simulationStopped) {
+			document && document.exitFullscreen();
+			this.resetSimulation();
+		}
 		return this;
+	}
+
+	handleFullScreenClicked() {
+		this.stateManager.setDisplayPreference(
+			getElementById('display_fullscreen').checked
+		);
 	}
 } //End of Main Class
 

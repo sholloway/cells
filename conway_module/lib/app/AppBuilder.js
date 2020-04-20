@@ -8,6 +8,7 @@ const Layers = require('./AppLayers.js');
 const DrawingSceneBuilder = require('./../scenes/DrawingSceneBuilder.js');
 const GridSceneBuilder = require('./../scenes/GridSceneBuilder.js');
 const LifeSceneBuilder = require('./../scenes/LifeSceneBuilder.js');
+const DisplayManager = require('./DisplayManager.js');
 
 const {
 	GridSystemWorker,
@@ -47,6 +48,8 @@ class AppBuilder {
 			AppStateManagerEvents.UI_CHANGES,
 			app.updateUI.bind(app)
 		);
+
+		app.displayManager = new DisplayManager();
 		return app;
 	}
 

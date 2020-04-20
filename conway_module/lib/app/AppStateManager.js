@@ -32,6 +32,7 @@ class AppStateManager {
 		this.config = config;
 		this.observers = new Map();
 		this.drawingAllowed = true;
+		this.fullScreenDesired = false;
 		this.renderers = new Map();
 		this.scenes = new Map();
 		this.sceneBuilders = new Map();
@@ -309,6 +310,8 @@ class AppStateManager {
 				this.startWorker(Layers.SIM);
 			})
 			.catch((reason) => {
+				console.error('AppStateManager.startSimulation(): There was an error.');
+				console.error(reason);
 				throw new Error(`${SEEDER_CREATION_ERR_MSG}.\n${reason}`);
 			});
 	}
@@ -398,6 +401,14 @@ class AppStateManager {
 				.clearRender(Layers.SIM)
 				.clearRender(Layers.DRAWING);
 		});
+	}
+
+	setDisplayPreference(pref) {
+		this.fullScreenDesired = pref;
+	}
+
+	getDisplayPreference(){
+		return this.fullScreenDesired;
 	}
 }
 

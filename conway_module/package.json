@@ -37,6 +37,8 @@
 		"worker-loader": "2.0.0"
 	},
 	"dependencies": {
-		"nanoid": "^3.0.2"
+		"nanoid": "^3.0.2",
+		"open-simplex-noise": "^2.2.0",
+		"worley-noise": "^2.0.1"
 	}
 }
