@@ -309,6 +309,8 @@ class AppStateManager {
 				this.startWorker(Layers.SIM);
 			})
 			.catch((reason) => {
+				console.error('AppStateManager.startSimulation(): There was an error.');
+				console.error(reason);
 				throw new Error(`${SEEDER_CREATION_ERR_MSG}.\n${reason}`);
 			});
 	}

@@ -133,6 +133,9 @@ class LifeSystemWorkerController extends AbstractWorkerController {
 				id: msg.id,
 				promisedResponse: msg.promisedResponse,
 				command: msg.command,
+				stack: this.lifeSystem.getScene().getStack(),
+				aliveCellsCount: this.lifeSystem.aliveCellsCount(),
+				numberOfSimulationIterations: this.lifeSystem.numberOfSimulationIterations(),
 			});
 	}
 }

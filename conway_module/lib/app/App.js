@@ -1,5 +1,9 @@
 /*
 Next Steps
+* Make the seed generation display before starting the simulation.
+	Toggle Button Behavior
+	Click Seed -> Draw the output of the seeder into the drawing system.
+	Click Start -> Loads the drawing surface into the SIM.
 * Toggle: Transferable Array Buffers
 * Make sure the entire code base is over 90% test coverage
 * Get a handle on the FPS calculation. Is it really 8 FPS? 
