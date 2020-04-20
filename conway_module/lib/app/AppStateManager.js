@@ -32,6 +32,7 @@ class AppStateManager {
 		this.config = config;
 		this.observers = new Map();
 		this.drawingAllowed = true;
+		this.fullScreenDesired = false;
 		this.renderers = new Map();
 		this.scenes = new Map();
 		this.sceneBuilders = new Map();
@@ -400,6 +401,14 @@ class AppStateManager {
 				.clearRender(Layers.SIM)
 				.clearRender(Layers.DRAWING);
 		});
+	}
+
+	setDisplayPreference(pref) {
+		this.fullScreenDesired = pref;
+	}
+
+	getDisplayPreference(){
+		return this.fullScreenDesired;
 	}
 }
 
