@@ -103,11 +103,15 @@ class LifeSystemWorkerController extends AbstractWorkerController {
 	processScene(msg) {
 		if (this.systemRunning() && this.lifeSystem.canUpdate()) {
 			this.lifeSystem.update();
+			let aliveCellsCount = this.lifeSystem.aliveCellsCount();
+			let isSimulationDone = aliveCellsCount == 0;
+			isSimulationDone && this.stop();
 			this.sendMessageToClient({
 				command: msg.command,
 				stack: this.lifeSystem.getScene().getStack(),
-				aliveCellsCount: this.lifeSystem.aliveCellsCount(),
+				aliveCellsCount: aliveCellsCount,
 				numberOfSimulationIterations: this.lifeSystem.numberOfSimulationIterations(),
+				simulationStopped: isSimulationDone,
 			});
 		}
 	}

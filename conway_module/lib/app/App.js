@@ -317,7 +317,7 @@ class Main {
 	 * Updates the UI based on a message sent from a web worker.
 	 * If the value is present in the message, the corrisponding UI component is updated.
 	 * @param {*} message
-	 * @returns {AppStateManager} The instance.
+	 * @returns {App} The instance.
 	 */
 	updateUI(message) {
 		message.aliveCellsCount &&
@@ -328,6 +328,11 @@ class Main {
 				'sim_generation_count',
 				message.numberOfSimulationIterations
 			);
+
+		if (message.simulationStopped) {
+			document && document.exitFullscreen();
+			this.resetSimulation();
+		}
 		return this;
 	}
 
