@@ -52,9 +52,8 @@
 Use the Google Icon: arrow-right for span:after 
 CSS Trick Ref: https://css-tricks.com/ligature-icons/
 */
-
-[data-icon]::after {
-	content: attr(data-icon);
+[arrow-icon]::after {
+	content: attr(arrow-icon);
 	font-family: 'Material Icons';
 	font-weight: normal;
 	font-style: normal;
@@ -83,12 +82,16 @@ CSS Trick Ref: https://css-tricks.com/ligature-icons/
 	font-feature-settings: 'liga';
 }
 
+[arrow-icon='arrow_left']::after {
+	float: left;
+}
+
 /* Happy Path */
 .submenu:hover .menu-options.right {
 	display: block;
 	width: 160px;
 	left: 160px;
-	top: 0px;
+	bottom: 0px;
 }
 
 /* Menu open to the left*/
@@ -96,7 +99,7 @@ CSS Trick Ref: https://css-tricks.com/ligature-icons/
 	display: block;
 	width: 160px;
 	right: 160px;
-	top: 0px;
+	bottom: 0px;
 }
 
 .submenu ul {
