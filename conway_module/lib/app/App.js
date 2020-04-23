@@ -1,5 +1,7 @@
 /*
 Next Steps
+* Controll CSS with webpack.
+* In drawing mode always draw a yellow rect under the mouse.
 * Make the seed generation display before starting the simulation.
 	Toggle Button Behavior
 	Click Seed -> Draw the output of the seeder into the drawing system.
@@ -22,7 +24,12 @@ Next Steps
 
 const Layers = require('./AppLayers.js');
 const AppBuilder = require('./AppBuilder.js');
-const { getElementById, setElementValue } = require('../dom/DomUtilities.js');
+const {
+	getElementById,
+	querySelector,
+	querySelectorAll,
+	setElementValue,
+} = require('../dom/DomUtilities.js');
 const { Cell } = require('./../entity-system/Entities.js');
 
 const WorkerCommands = require('./../workers/WorkerCommands.js');
@@ -114,6 +121,11 @@ class Main {
 	 * @param {Event} clickEvent Event generated when the draw canvas is clicked.
 	 */
 	handleDrawCanvasClicked(clickEvent) {
+		if (this.canvasContextMenu.isVisibile()) {
+			this.canvasContextMenu.hideMenu();
+			return;
+		}
+
 		if (this.stateManager.isDrawingAllowed()) {
 			//Get Pixel clicked.
 			let boundary = this.drawCanvas.getBoundingClientRect();
@@ -340,6 +352,66 @@ class Main {
 		this.stateManager.setDisplayPreference(
 			getElementById('display_fullscreen').checked
 		);
+	}
+
+	//https://www.hongkiat.com/blog/html5-contextual-menu/
+	//https://www.codementor.io/@richyafro/how-to-create-a-custom-context-menu-for-your-web-application-goyjiark7
+	//https://codepen.io/Iamafro/pen/bLqyGd
+	displayContextMenu(clickEvent) {
+		clickEvent.preventDefault();
+		console.log('got here');
+		console.log(clickEvent);
+		let menuLocation = this.findMenuLocation(clickEvent);
+		console.log('Calculated Menu Location');
+		console.log(menuLocation);
+		this.canvasContextMenu.setMenuPosition(menuLocation.x, menuLocation.y);
+		return false;
+	}
+
+	//The menu should only be displayed inside of the canvas
+	findMenuLocation(clickEvent) {
+		let menuHeight = 145;
+		let menuWidth = 160;
+
+		//Get Pixel clicked.
+		let boundary = this.drawCanvas.getBoundingClientRect();
+		console.log('Boundary');
+		console.log(boundary);
+		console.log(`Client Point: ${clickEvent.clientX}, ${clickEvent.clientY}`);
+		console.log(`Page Point: ${clickEvent.pageX}, ${clickEvent.pageY}`);
+
+		//Make sure there is room from the bottom.
+		let distFromBottom = boundary.bottom - clickEvent.clientY;
+		let py =
+			distFromBottom >= menuHeight
+				? clickEvent.clientY
+				: boundary.bottom - menuHeight;
+
+		//Make sure there is room from the right boundary.
+		let distFromRight = boundary.right - clickEvent.clientX;
+		let tooCloseToRight = distFromRight < menuWidth;
+		let willSubMenuFit = distFromRight > menuWidth * 2;
+		let px;
+		let submenus = querySelectorAll('.submenu ul');
+		if (tooCloseToRight) {
+			px = boundary.right - menuWidth; //Align the menu to the right boundary.
+		} else {
+			px = clickEvent.clientX;
+		}
+
+		if (willSubMenuFit) {
+			submenus.forEach((menu) => (menu.className = 'menu-options right'));
+		} else {
+			submenus.forEach((menu) => (menu.className = 'menu-options left'));
+		}
+
+		/*
+		Next Steps
+		- Change the data-icon to support two directions.
+		- Add support to shift the submenus up when close to the bottom.
+		*/
+
+		return { x: px, y: py };
 	}
 } //End of Main Class
 

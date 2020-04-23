@@ -20,4 +20,17 @@ function setElementValue(id, value) {
 	getElementById(id).value = value;
 }
 
-module.exports = { getElementById, setElementValue };
+function querySelector(query) {
+	return document.querySelector(query);
+}
+
+function querySelectorAll(query) {
+	return document.querySelectorAll(query);
+}
+
+module.exports = {
+	getElementById,
+	querySelector,
+	querySelectorAll,
+	setElementValue,
+};
