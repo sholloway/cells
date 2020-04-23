@@ -67,6 +67,7 @@ class Main {
 	 * @returns {Main} Returns the instance of the main thread being modified.
 	 */
 	initialize() {
+		this.canvasContextMenu.initialize(querySelector('.context-menu'));
 		this.stateManager.startMainLoop();
 		return this;
 	}

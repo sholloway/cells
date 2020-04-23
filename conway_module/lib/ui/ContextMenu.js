@@ -19,15 +19,19 @@ Next Steps
 class ContextMenu {
 	constructor() {
 		this.menuVisible = false;
-		this.menuElement = querySelector('.context-menu');
-		this.menuItems = querySelectorAll('.menu-options');
-		this.menuItems.forEach((item) =>
-			item.addEventListener('click', this.runItem.bind(this))
-		);
 		this.state = MenuStates.HIDE;
 		// TODO: It would be better to dynamically calculate this.
 		this.menuHeight = 145;
 		this.menuWidth = 160;
+	}
+
+	initialize(menuElement) {
+		this.menuElement = menuElement;
+		this.menuElement
+			.querySelectorAll('.menu-options')
+			.forEach((item) =>
+				item.addEventListener('click', this.runItem.bind(this))
+			);
 	}
 
 	isVisibile() {
@@ -38,7 +42,7 @@ class ContextMenu {
 		this.menuVisible && this.toggleMenu(MenuStates.HIDE);
 	}
 
-  /*
+	/*
   Next Steps
   Subscriber method for invoking the appropriate command or cmd pattern?
   - Basically want a seeder for the drawing layer.
@@ -103,7 +107,7 @@ class ContextMenu {
 	}
 
 	positionSubMenus(situation) {
-		let submenus = querySelectorAll('.submenu ul');
+		let submenus = this.menuElement.querySelectorAll('.submenu ul');
 		if (situation.willSubMenuFit) {
 			submenus.forEach((menu) => {
 				menu.className = 'menu-options right';
