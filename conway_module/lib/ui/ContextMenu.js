@@ -5,6 +5,8 @@ const {
 	setElementValue,
 } = require('./../dom/DomUtilities');
 
+const { convertToCell } = require('./CanvasUtilities.js');
+
 const MenuStates = {
 	SHOW: 'SHOW',
 	HIDE: 'HIDE',
@@ -23,15 +25,17 @@ class ContextMenu {
 		// TODO: It would be better to dynamically calculate this.
 		this.menuHeight = 145;
 		this.menuWidth = 160;
+		this.activeCell = null;
 	}
 
-	initialize(menuElement) {
+	initialize(menuElement, eventHandler) {
 		this.menuElement = menuElement;
 		this.menuElement
 			.querySelectorAll('.menu-options')
 			.forEach((item) =>
 				item.addEventListener('click', this.runItem.bind(this))
 			);
+		this.eventHandler = eventHandler;
 	}
 
 	isVisibile() {
@@ -42,16 +46,13 @@ class ContextMenu {
 		this.menuVisible && this.toggleMenu(MenuStates.HIDE);
 	}
 
-	/*
-  Next Steps
-  Subscriber method for invoking the appropriate command or cmd pattern?
-  - Basically want a seeder for the drawing layer.
-  - 
-  */
 	runItem(event) {
-		console.log(event);
-		console.log(event.srcElement.id);
 		this.hideMenu();
+		this.eventHandler(
+			this.activeCell.x,
+			this.activeCell.y,
+			event.srcElement.id
+		);
 	}
 
 	/**
@@ -66,8 +67,12 @@ class ContextMenu {
 
 	/**
 	 * Moves the menu and displays it.
+	 * @param {MouseEvent} clickEvent
+	 * @param {DOMRect} boundary
+	 * @param {number} zoom
 	 */
-	setMenuPosition(clickEvent, boundary) {
+	setMenuPosition(clickEvent, boundary, zoom) {
+		this.activeCell = convertToCell(clickEvent, boundary, zoom);
 		let situation = this.findMenuScenario(clickEvent, boundary);
 		let menuLocation = this.findMenuLocation(clickEvent, boundary, situation);
 		this.positionSubMenus(situation);

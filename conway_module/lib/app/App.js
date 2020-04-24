@@ -35,7 +35,7 @@ const { Cell } = require('./../entity-system/Entities.js');
 const WorkerCommands = require('./../workers/WorkerCommands.js');
 
 const Workers = require('../workers/WorkerNames.js');
-const { sizeCanvas } = require('../ui/CanvasUtilities.js');
+const { convertToCell, sizeCanvas } = require('../ui/CanvasUtilities.js');
 
 const {
 	updateConfiguredZoom,
@@ -67,7 +67,10 @@ class Main {
 	 * @returns {Main} Returns the instance of the main thread being modified.
 	 */
 	initialize() {
-		this.canvasContextMenu.initialize(querySelector('.context-menu'));
+		this.canvasContextMenu.initialize(
+			querySelector('.context-menu'),
+			this.canvasContextMenuEventHandler.bind(this)
+		);
 		this.stateManager.startMainLoop();
 		return this;
 	}
@@ -128,19 +131,12 @@ class Main {
 		}
 
 		if (this.stateManager.isDrawingAllowed()) {
-			//Get Pixel clicked.
 			let boundary = this.drawCanvas.getBoundingClientRect();
-			let px = clickEvent.clientX - boundary.left;
-			let py = clickEvent.clientY - boundary.top;
-
-			//Project to a Cell
-			let cx = Math.floor(px / this.config.zoom);
-			let cy = Math.floor(py / this.config.zoom);
-
+			let cellLocation = convertToCell(clickEvent, boundary, this.config.zoom);
 			this.stateManager.sendWorkerMessage(Layers.DRAWING, {
 				command: WorkerCommands.DrawingSystemCommands.TOGGLE_CELL,
-				cx: cx,
-				cy: cy,
+				cx: cellLocation.x,
+				cy: cellLocation.y,
 			});
 		}
 	}
@@ -358,9 +354,68 @@ class Main {
 	displayContextMenu(clickEvent) {
 		clickEvent.preventDefault();
 		let boundary = this.drawCanvas.getBoundingClientRect();
-		this.canvasContextMenu.setMenuPosition(clickEvent, boundary);
+		this.canvasContextMenu.setMenuPosition(
+			clickEvent,
+			boundary,
+			this.config.zoom
+		);
 		return false;
 	}
+
+	//TODO: This is all going to get refactored out.
+	canvasContextMenuEventHandler(x, y, cmdName) {
+		console.log(`canvasContextMenuEventHandler(${x}, ${y}, ${cmdName})`);
+		switch (cmdName) {
+			case 'conways-memorial':
+				//TODO: JSON files to store this eventually?
+				//Each template should have an x,y offset
+				//for the shift process.
+				let template = getTemplate();
+				let cells = makeCellsFrom2DArray(template);
+				cells.forEach((c) => {
+					c.location.row += x;
+					c.location.col += y;
+				}); //shift cells
+
+				//TODO: will need to merge with the existing cells.
+				//Might need to remove duplicates.
+				this.stateManager.sendWorkerMessage(Layers.DRAWING, {
+					command: WorkerCommands.DrawingSystemCommands.SET_CELLS,
+					cells: cells,
+				});
+				break;
+			default:
+				break;
+		}
+	}
 } //End of Main Class
+
+//TODO: Put in dedicated file.
+function getTemplate() {
+	return [
+		[0, 0, 1, 1, 1, 0, 0],
+		[0, 0, 1, 0, 1, 0, 0],
+		[0, 0, 1, 0, 1, 0, 0],
+		[0, 0, 0, 1, 0, 0, 0],
+		[1, 0, 1, 1, 1, 0, 0],
+		[0, 1, 0, 1, 0, 1, 0],
+		[0, 0, 0, 1, 0, 0, 1],
+		[0, 0, 1, 0, 1, 0, 0],
+		[0, 0, 1, 0, 1, 0, 0],
+	];
+}
+
+//TODO: Put in dedicated file.
+function makeCellsFrom2DArray(grid) {
+	let cells = [];
+	grid.forEach((row, rowIndex) => {
+		row.forEach((value, colIndex) => {
+			if (value == 1) {
+				cells.push(new Cell(colIndex,rowIndex, 1));
+			}
+		});
+	});
+	return cells;
+}
 
 module.exports = Main;
