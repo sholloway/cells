@@ -379,10 +379,18 @@ class Main {
 
 				//TODO: will need to merge with the existing cells.
 				//Might need to remove duplicates.
-				this.stateManager.sendWorkerMessage(Layers.DRAWING, {
-					command: WorkerCommands.DrawingSystemCommands.SET_CELLS,
-					cells: cells,
-				});
+				this.stateManager
+					.promiseResponse(
+						Layers.DRAWING,
+						WorkerCommands.DrawingSystemCommands.SEND_CELLS
+					)
+					.then((response) => {
+						cells.push(...response.cells);
+						this.stateManager.sendWorkerMessage(Layers.DRAWING, {
+							command: WorkerCommands.DrawingSystemCommands.SET_CELLS,
+							cells: cells,
+						});
+					});
 				break;
 			default:
 				break;
@@ -411,7 +419,7 @@ function makeCellsFrom2DArray(grid) {
 	grid.forEach((row, rowIndex) => {
 		row.forEach((value, colIndex) => {
 			if (value == 1) {
-				cells.push(new Cell(colIndex,rowIndex, 1));
+				cells.push(new Cell(colIndex, rowIndex, 1));
 			}
 		});
 	});
