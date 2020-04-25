@@ -43,7 +43,7 @@ const {
 	getCellSize,
 } = require('../ui/UIConfigurationUtilities.js');
 
-const ConwayMemorial = require('./../templates/ConwayMemorial.js');
+const TemplateFactory = require('./../templates/TemplateFactory.js');
 
 /**
  * Represents the main thread of the simulation.
@@ -364,18 +364,14 @@ class Main {
 		return false;
 	}
 
-	//TODO: This is all going to get refactored out.
-	canvasContextMenuEventHandler(x, y, cmdName) {
-		let cells;
-		//TODO: Move switch to dedicated class.
-		switch (cmdName) {
-			case 'conways-memorial':
-				cells = new ConwayMemorial().generateCells(x, y);
-				break;
-			default:
-				cells = [];
-				break;
-		}
+	/**
+	 * Handles processing the context menu item clicked.
+	 * @param {number} row - The horizontal coordinate of the cell clicked.
+	 * @param {number} col - The vertical coordinate of the cell clicked.
+	 * @param {string} cmdName - The command clicked in the context menu
+	 */
+	canvasContextMenuEventHandler(row, col, cmdName) {
+		let cells = TemplateFactory.generate(cmdName, row, col);
 		if (cells.length > 0) {
 			this.stateManager
 				.promiseResponse(
@@ -383,19 +379,7 @@ class Main {
 					WorkerCommands.DrawingSystemCommands.SEND_CELLS
 				)
 				.then((response) => {
-					response.cells.forEach((obj) => {
-						//Don't include any boxes.
-						if (
-							obj.className === 'Cell' &&
-							!cells.some(
-								(c) =>
-									c.location.row == obj.location.row &&
-									c.location.col == obj.location.col
-							)
-						) {
-							cells.push(Cell.buildInstance(obj));
-						}
-					});
+					Cell.mergeObjsWithCells(cells, response.cells);
 					this.stateManager.sendWorkerMessage(Layers.DRAWING, {
 						command: WorkerCommands.DrawingSystemCommands.SET_CELLS,
 						cells: cells,
@@ -404,33 +388,5 @@ class Main {
 		}
 	}
 } //End of Main Class
-
-//TODO: Put in dedicated file.
-function getTemplate() {
-	return [
-		[0, 0, 1, 1, 1, 0, 0],
-		[0, 0, 1, 0, 1, 0, 0],
-		[0, 0, 1, 0, 1, 0, 0],
-		[0, 0, 0, 1, 0, 0, 0],
-		[1, 0, 1, 1, 1, 0, 0],
-		[0, 1, 0, 1, 0, 1, 0],
-		[0, 0, 0, 1, 0, 0, 1],
-		[0, 0, 1, 0, 1, 0, 0],
-		[0, 0, 1, 0, 1, 0, 0],
-	];
-}
-
-//TODO: Put in dedicated file.
-function makeCellsFrom2DArray(grid) {
-	let cells = [];
-	grid.forEach((row, rowIndex) => {
-		row.forEach((value, colIndex) => {
-			if (value == 1) {
-				cells.push(new Cell(colIndex, rowIndex, 1));
-			}
-		});
-	});
-	return cells;
-}
 
 module.exports = Main;

@@ -137,6 +137,22 @@ class Cell extends Entity {
 	static buildInstance(params) {
 		return new Cell().copyParams(params);
 	}
+
+	static mergeObjsWithCells(cells, objs) {
+		objs.forEach((obj) => {
+			//Don't include any boxes.
+			if (
+				obj.className === 'Cell' &&
+				!cells.some(
+					(c) =>
+						c.location.row == obj.location.row &&
+						c.location.col == obj.location.col
+				)
+			) {
+				cells.push(this.buildInstance(obj));
+			}
+		});
+	}
 }
 
 /**
