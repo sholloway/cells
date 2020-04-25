@@ -22,6 +22,10 @@ class DrawingTemplate {
 		throw new Error('Children of DrawingTemplate must implement pattern().');
 	}
 
+	origin() {
+		return { x: 0, y: 0 };
+	}
+
 	makeCellsFrom2DArray(grid) {
 		let cells = [];
 		grid.forEach((row, rowIndex) => {

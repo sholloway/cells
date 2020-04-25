@@ -1,18 +1,21 @@
 const ConwayMemorial = require('./ConwayMemorial.js');
+const Block = require('./Block.js');
 
 class TemplateFactory {
 	static generate(name, x, y) {
-		let cells;
-		//TODO: Move switch to dedicated class.
+		let template;
 		switch (name) {
 			case 'conways-memorial':
-				cells = new ConwayMemorial().generateCells(x, y);
+				template = new ConwayMemorial();
+				break;
+			case 'da-block':
+				template = new Block();
 				break;
 			default:
 				throw new Error('Unknown template name.');
 				break;
 		}
-		return cells;
+		return template.generateCells(x, y);
 	}
 }
 
