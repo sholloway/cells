@@ -43,6 +43,8 @@ const {
 	getCellSize,
 } = require('../ui/UIConfigurationUtilities.js');
 
+const ConwayMemorial = require('./../templates/ConwayMemorial.js');
+
 /**
  * Represents the main thread of the simulation.
  */
@@ -364,36 +366,41 @@ class Main {
 
 	//TODO: This is all going to get refactored out.
 	canvasContextMenuEventHandler(x, y, cmdName) {
-		console.log(`canvasContextMenuEventHandler(${x}, ${y}, ${cmdName})`);
+		let cells;
+		//TODO: Move switch to dedicated class.
 		switch (cmdName) {
 			case 'conways-memorial':
-				//TODO: JSON files to store this eventually?
-				//Each template should have an x,y offset
-				//for the shift process.
-				let template = getTemplate();
-				let cells = makeCellsFrom2DArray(template);
-				cells.forEach((c) => {
-					c.location.row += x;
-					c.location.col += y;
-				}); //shift cells
-
-				//TODO: will need to merge with the existing cells.
-				//Might need to remove duplicates.
-				this.stateManager
-					.promiseResponse(
-						Layers.DRAWING,
-						WorkerCommands.DrawingSystemCommands.SEND_CELLS
-					)
-					.then((response) => {
-						cells.push(...response.cells);
-						this.stateManager.sendWorkerMessage(Layers.DRAWING, {
-							command: WorkerCommands.DrawingSystemCommands.SET_CELLS,
-							cells: cells,
-						});
-					});
+				cells = new ConwayMemorial().generateCells(x, y);
 				break;
 			default:
+				cells = [];
 				break;
+		}
+		if (cells.length > 0) {
+			this.stateManager
+				.promiseResponse(
+					Layers.DRAWING,
+					WorkerCommands.DrawingSystemCommands.SEND_CELLS
+				)
+				.then((response) => {
+					response.cells.forEach((obj) => {
+						//Don't include any boxes.
+						if (
+							obj.className === 'Cell' &&
+							!cells.some(
+								(c) =>
+									c.location.row == obj.location.row &&
+									c.location.col == obj.location.col
+							)
+						) {
+							cells.push(Cell.buildInstance(obj));
+						}
+					});
+					this.stateManager.sendWorkerMessage(Layers.DRAWING, {
+						command: WorkerCommands.DrawingSystemCommands.SET_CELLS,
+						cells: cells,
+					});
+				});
 		}
 	}
 } //End of Main Class
