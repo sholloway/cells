@@ -2,6 +2,7 @@ const ConwayMemorial = require('./ConwayMemorial.js');
 const Block = require('./Block.js');
 const HorizontalSpinner = require('./HorizontalSpinner.js');
 const VerticalSpinner = require('./VerticalSpinner.js');
+const Toad = require('./Toad.js');
 
 class TemplateFactory {
 	static generate(name, x, y) {
@@ -18,6 +19,9 @@ class TemplateFactory {
 				break;
 			case 'horiz-spinner':
 				template = new HorizontalSpinner();
+				break;
+			case 'toad':
+				template = new Toad();
 				break;
 			default:
 				throw new Error('Unknown template name.');
