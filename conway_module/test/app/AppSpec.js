@@ -18,9 +18,13 @@ let domUtils = {
 		return getElementResult;
 	},
 	setElementValue: (id, value) => (setElementResult.value = value),
+	querySelector: () => {},
 };
 
-const canvasUtilities = { sizeCanvas: sinon.stub() };
+const canvasUtilities = {
+	sizeCanvas: sinon.stub(),
+	convertToCell: sinon.stub().returns({ x: 0, y: 0 }),
+};
 
 const window = {
 	performance: {
@@ -53,6 +57,11 @@ describe('The App', function () {
 	this.beforeEach(function () {
 		sinon.resetHistory();
 		app = new App();
+		app.canvasContextMenu = {
+			initialize: sinon.stub(),
+			isVisibile: () => false,
+			setMenuPosition: sinon.stub(),
+		};
 		let stateManager = {
 			allowDrawing: sinon.stub(),
 			preventDrawing: sinon.stub(),
@@ -173,6 +182,11 @@ describe('The App', function () {
 			expect(app.stateManager.startMainLoop.calledOnce).to.be.true;
 		});
 
+		it('should initialize the context menu when intitializing the app', function () {
+			app.initialize();
+			expect(app.canvasContextMenu.initialize.calledOnce).to.be.true;
+		});
+
 		it('should handlePageLoad', function () {
 			app.window = window;
 			app.handlePageLoad();
@@ -200,12 +214,15 @@ describe('The App', function () {
 			sinon
 				.stub(app.drawCanvas, 'getBoundingClientRect')
 				.returns({ left: 1, top: 1 });
+
 			sinon.stub(app.stateManager, 'sendWorkerMessage');
 
 			app.handleDrawCanvasClicked({ clientX: 10, clientY: 10 });
 
+			expect(canvasUtilities.convertToCell.calledOnce).to.be.true;
 			expect(app.drawCanvas.getBoundingClientRect.calledOnce).to.be.true;
 			expect(app.stateManager.sendWorkerMessage.calledOnce).to.be.true;
+			expect(app.canvasContextMenu.setMenuPosition.calledOnce).to.be.false;
 		});
 
 		it('should not allow toggle cells when drawing is not enabled', function () {

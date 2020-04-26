@@ -8,6 +8,11 @@
 		/>
 		<meta charset="utf-8" />
 		<link href="main.css" rel="stylesheet" type="text/css" />
+		<link
+			href="https://fonts.googleapis.com/icon?family=Material+Icons"
+			rel="stylesheet"
+		/>
+		<link href="context-menu.css" rel="stylesheet" type="text/css" />
 		<script src="dist/conways-game.js"></script>
 	</head>
 	<body>
@@ -19,8 +24,9 @@
 			<div id="control_bar">
 				<div class="container row">
 					<label for="topology">Topology</label>
-					<select id="topology">
-						<option value="plane_with_dead_border">Finite Grid</option>
+					<select id="topology" onchange="main.setTopology()">
+						<option value="finite-plane">Finite Plane</option>
+						<!-- <option value="torus">Torus</option> -->
 					</select>
 
 					<label for="seed">Preset</label>
@@ -88,10 +94,42 @@
 					<label for="display_fullscreen">Fullscreen</label>
 				</div>
 			</div>
-			<div id="canvas_container">
+			<div
+				id="canvas_container"
+				oncontextmenu="main.displayContextMenu(event);"
+			>
 				<canvas id="grid_canvas"></canvas>
 				<canvas id="sim_canvas"></canvas>
 				<canvas id="draw_canvas"></canvas>
+				<div class="context-menu">
+					<ul class="menu-options">
+						<li class="menu-option" id="conways-memorial">The Man</li>
+						<hr />
+						<li class="submenu" arrow-icon="arrow_right">
+							<span>Static Objects</span>
+							<ul class="menu-options right">
+								<li class="menu-option" id="da-block">Block</li>
+							</ul>
+						</li>
+						<li class="submenu" arrow-icon="arrow_right">
+							<span>Oscillators</span>
+							<ul class="menu-options right">
+								<li class="menu-option" id="vert-spinner">V-Spinner</li>
+								<li class="menu-option" id="horiz-spinner">
+									H-Spinner
+								</li>
+								<li class="menu-option" id="toad">Toad</li>
+							</ul>
+						</li>
+						<li class="submenu" arrow-icon="arrow_right">
+							<span>Ships</span>
+							<ul class="menu-options right">
+								<li class="menu-option" id="glider">Glider</li>
+								<li class="menu-option" id="light-ship">Light Space Ship</li>
+							</ul>
+						</li>
+					</ul>
+				</div>
 			</div>
 			<div id="status_bar">
 				<span>

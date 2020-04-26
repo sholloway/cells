@@ -1,5 +1,7 @@
 /*
 Next Steps
+* Controll CSS with webpack.
+* In drawing mode always draw a yellow rect under the mouse.
 * Make the seed generation display before starting the simulation.
 	Toggle Button Behavior
 	Click Seed -> Draw the output of the seeder into the drawing system.
@@ -22,19 +24,26 @@ Next Steps
 
 const Layers = require('./AppLayers.js');
 const AppBuilder = require('./AppBuilder.js');
-const { getElementById, setElementValue } = require('../dom/DomUtilities.js');
+const {
+	getElementById,
+	querySelector,
+	querySelectorAll,
+	setElementValue,
+} = require('../dom/DomUtilities.js');
 const { Cell } = require('./../entity-system/Entities.js');
 
 const WorkerCommands = require('./../workers/WorkerCommands.js');
 
 const Workers = require('../workers/WorkerNames.js');
-const { sizeCanvas } = require('../ui/CanvasUtilities.js');
+const { convertToCell, sizeCanvas } = require('../ui/CanvasUtilities.js');
 
 const {
 	updateConfiguredZoom,
 	updateConfiguredLandscape,
 	getCellSize,
 } = require('../ui/UIConfigurationUtilities.js');
+
+const TemplateFactory = require('./../templates/TemplateFactory.js');
 
 /**
  * Represents the main thread of the simulation.
@@ -60,6 +69,10 @@ class Main {
 	 * @returns {Main} Returns the instance of the main thread being modified.
 	 */
 	initialize() {
+		this.canvasContextMenu.initialize(
+			querySelector('.context-menu'),
+			this.canvasContextMenuEventHandler.bind(this)
+		);
 		this.stateManager.startMainLoop();
 		return this;
 	}
@@ -114,20 +127,18 @@ class Main {
 	 * @param {Event} clickEvent Event generated when the draw canvas is clicked.
 	 */
 	handleDrawCanvasClicked(clickEvent) {
+		if (this.canvasContextMenu.isVisibile()) {
+			this.canvasContextMenu.hideMenu();
+			return;
+		}
+
 		if (this.stateManager.isDrawingAllowed()) {
-			//Get Pixel clicked.
 			let boundary = this.drawCanvas.getBoundingClientRect();
-			let px = clickEvent.clientX - boundary.left;
-			let py = clickEvent.clientY - boundary.top;
-
-			//Project to a Cell
-			let cx = Math.floor(px / this.config.zoom);
-			let cy = Math.floor(py / this.config.zoom);
-
+			let cellLocation = convertToCell(clickEvent, boundary, this.config.zoom);
 			this.stateManager.sendWorkerMessage(Layers.DRAWING, {
 				command: WorkerCommands.DrawingSystemCommands.TOGGLE_CELL,
-				cx: cx,
-				cy: cy,
+				cx: cellLocation.x,
+				cy: cellLocation.y,
 			});
 		}
 	}
@@ -147,7 +158,11 @@ class Main {
 				break;
 		}
 	}
-	//HERE
+
+	setTopology() {
+		this.config.landscape.topology = getElementById('topology').value
+		this.stateManager.setTopology();
+	}
 
 	/**
 	 * Resets all web workers and the UI.
@@ -340,6 +355,41 @@ class Main {
 		this.stateManager.setDisplayPreference(
 			getElementById('display_fullscreen').checked
 		);
+	}
+
+	displayContextMenu(clickEvent) {
+		clickEvent.preventDefault();
+		let boundary = this.drawCanvas.getBoundingClientRect();
+		this.canvasContextMenu.setMenuPosition(
+			clickEvent,
+			boundary,
+			this.config.zoom
+		);
+		return false;
+	}
+
+	/**
+	 * Handles processing the context menu item clicked.
+	 * @param {number} row - The horizontal coordinate of the cell clicked.
+	 * @param {number} col - The vertical coordinate of the cell clicked.
+	 * @param {string} cmdName - The command clicked in the context menu
+	 */
+	canvasContextMenuEventHandler(row, col, cmdName) {
+		let cells = TemplateFactory.generate(cmdName, row, col);
+		if (cells.length > 0) {
+			this.stateManager
+				.promiseResponse(
+					Layers.DRAWING,
+					WorkerCommands.DrawingSystemCommands.SEND_CELLS
+				)
+				.then((response) => {
+					Cell.mergeObjsWithCells(cells, response.cells);
+					this.stateManager.sendWorkerMessage(Layers.DRAWING, {
+						command: WorkerCommands.DrawingSystemCommands.SET_CELLS,
+						cells: cells,
+					});
+				});
+		}
 	}
 } //End of Main Class
 

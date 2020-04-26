@@ -1,0 +1,116 @@
+.context-menu {
+	width: 160px;
+	border-radius: 10px;
+	background-color: #edefed;
+	box-shadow: 0 4px 5px 3px rgba(0, 0, 0, 0.2);
+	position: fixed;
+	z-index: 4;
+	display: none;
+	transition: 0.2s display ease-in;
+}
+
+.context-menu hr {
+	border: 0;
+	background: #dddddd;
+	height: 1px;
+}
+
+.context-menu .menu-options {
+	list-style: none;
+	padding: 10px 0;
+	margin: 0;
+}
+
+.context-menu .menu-options .menu-option {
+	font-weight: 500;
+	font-size: 14px;
+	padding: 10px 40px 10px 20px;
+	cursor: pointer;
+}
+
+.context-menu .menu-options .menu-option:hover {
+	background: rgba(0, 0, 0, 0.2);
+}
+
+.submenu {
+	position: relative;
+	padding-top: 5px;
+	padding-left: 20px;
+}
+
+.submenu:hover {
+	background: rgba(0, 0, 0, 0.2);
+	cursor: pointer;
+}
+
+.submenu span {
+	font-weight: 500;
+	font-size: 14px;
+}
+
+/* 
+Use the Google Icon: arrow-right for span:after 
+CSS Trick Ref: https://css-tricks.com/ligature-icons/
+*/
+[arrow-icon]::after {
+	content: attr(arrow-icon);
+	font-family: 'Material Icons';
+	font-weight: normal;
+	font-style: normal;
+	font-size: 24px;
+	vertical-align: middle;
+	width: 1em;
+	height: 1em;
+	line-height: 1;
+	text-transform: none;
+	letter-spacing: normal;
+	word-wrap: normal;
+	white-space: nowrap;
+	direction: ltr;
+	float: right;
+
+	/* Support for all WebKit browsers. */
+	-webkit-font-smoothing: antialiased;
+
+	/* Support for Safari and Chrome. */
+	text-rendering: optimizeLegibility;
+
+	/* Support for Firefox. */
+	-moz-osx-font-smoothing: grayscale;
+
+	/* Support for IE. */
+	font-feature-settings: 'liga';
+}
+
+[arrow-icon='arrow_left']::after {
+	float: left;
+}
+
+/* Happy Path */
+.submenu:hover .menu-options.right {
+	display: block;
+	width: 160px;
+	left: 160px;
+	bottom: 0px;
+}
+
+/* Menu open to the left*/
+.submenu:hover .menu-options.left {
+	display: block;
+	width: 160px;
+	right: 160px;
+	bottom: 0px;
+}
+
+.submenu ul {
+	background-color: #edefed;
+	box-shadow: 0 4px 5px 3px rgba(0, 0, 0, 0.2);
+	position: absolute;
+	display: none;
+	transition: 0.2s display ease-in;
+
+	border-top-left-radius: 10px;
+	border-top-right-radius: 10px;
+	border-bottom-right-radius: 10px;
+	border-bottom-left-radius: 10px;
+}

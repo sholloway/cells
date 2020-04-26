@@ -182,6 +182,20 @@ class GameManager {
 		scene.push(nextAliveCells);
 	}
 
+	/*
+	Next Steps: Wrapping Grid
+	The cells on the edges of the grid should wrap. 
+	Use Cases
+	- Corners
+		- Upper Left 	(0,0)
+		- Upper Right (Width - 1, 0)
+		- Lower Left 	(0, Height - 1)
+		- Lower Right	(Width - 1, Height - 1)
+	- Top Edge 			(1, 0) 					-> (Width - 1, 0)
+	- Bottom Edge		(1, Height - 1) -> (Width - 2, Height - 1)
+	- Left Edge			(0, 1) 					-> (0, Height - 2)
+	- Right Edge		(Width - 1, 1) 	-> (Width - 1, Height - 2)
+	*/
 	evaluateCellsFaster(scene, evaluator = defaultCellEvaluator()) {
 		//1. Traverse every possible cell on the landscape, building up a list of new alive cells.
 		let aliveNeighborsCount,
@@ -196,8 +210,6 @@ class GameManager {
 		let nextAliveCells = [];
 		for (let row = 0; row < this.config.landscape.width; row++) {
 			for (let col = 0; col < this.config.landscape.height; col++) {
-				// aliveNeighbors = findAliveNeighbors(this.currentTree, row, col)
-				// foundCell = this.currentTree.findCellIfAlive(row,col) //Returns DeadCell if not alive.
 				(x = row - 1), (y = col - 1), (xx = row + 1), (yy = col + 1);
 
 				//Note: This should never be greater than 9 cells.

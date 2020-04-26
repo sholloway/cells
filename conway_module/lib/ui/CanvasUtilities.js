@@ -57,4 +57,15 @@ function sizeCanvas(game) {
 	return game;
 }
 
-module.exports = { sizeCanvas };
+function convertToCell(clickEvent, boundary, scale) {
+	let px = clickEvent.clientX - boundary.left;
+	let py = clickEvent.clientY - boundary.top;
+
+	//Project to a Cell
+	let cellLocation = {};
+	cellLocation.x = Math.floor(px / scale);
+	cellLocation.y = Math.floor(py / scale);
+	return cellLocation;
+}
+
+module.exports = { convertToCell, sizeCanvas };

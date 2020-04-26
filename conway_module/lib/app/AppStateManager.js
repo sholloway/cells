@@ -243,6 +243,10 @@ class AppStateManager {
 		return this;
 	}
 
+	promiseResponse(name, command, params) {
+		return this.workerSystem.promiseResponse(name, command, params);
+	}
+
 	/**
 	 * Sends a message to every registered worker.
 	 * @param {*} msg - The message to send.
@@ -407,7 +411,7 @@ class AppStateManager {
 		this.fullScreenDesired = pref;
 	}
 
-	getDisplayPreference(){
+	getDisplayPreference() {
 		return this.fullScreenDesired;
 	}
 }
