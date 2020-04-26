@@ -1,7 +1,7 @@
 /*
 Next Steps
-* In drawing mode always draw a yellow rect under the mouse.
 * Full Screen Drawing
+	* From full screen, should be able to start the simulation.
 * Linear CA's like Wolfram 256 rules.
 * Make the seed generation display before starting the simulation.
 * Controll CSS with webpack.
@@ -43,6 +43,9 @@ const {
 } = require('../ui/UIConfigurationUtilities.js');
 
 const TemplateFactory = require('./../templates/TemplateFactory.js');
+
+const DISPLAY_TRANSITION_ERR_MSG =
+	'There was an error attempting to change display modes.';
 
 /**
  * Represents the main thread of the simulation.
@@ -215,9 +218,7 @@ class Main {
 			this.displayManager
 				.setDisplayMode(this.stateManager.getDisplayPreference())
 				.catch((reason) => {
-					console.error(
-						'There was an error attempting to change display modes.'
-					);
+					console.error(DISPLAY_TRANSITION_ERR_MSG);
 					console.error(reason);
 				})
 				.then(() => {
@@ -239,7 +240,7 @@ class Main {
 		this.displayManager
 			.setDisplayMode(this.stateManager.getDisplayPreference())
 			.catch((reason) => {
-				console.error('There was an error attempting to change display modes.');
+				console.error(DISPLAY_TRANSITION_ERR_MSG);
 				console.error(reason);
 			})
 			.then(() => {
@@ -400,6 +401,20 @@ class Main {
 					});
 				});
 		}
+	}
+
+	launchFullScreen() {
+		return new Promise((resolve, reject) => {
+			this.displayManager
+				.setDisplayMode(true)
+				.catch((reason) => {
+					console.error(DISPLAY_TRANSITION_ERR_MSG);
+					console.error(reason);
+				})
+				.then(() => {
+					document.fullscreenElement && this.handlePageResize();
+				});
+		});
 	}
 } //End of Main Class
 

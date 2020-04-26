@@ -52,7 +52,6 @@
 						step="1"
 						onchange="main.changedCellSize();"
 					/>
-
 					<button
 						id="play_pause_button"
 						type="button"
@@ -84,7 +83,6 @@
 						onclick="main.handleGridBackgroundClicked();"
 					/>
 					<label for="display_grid_background">Display Grid</label>
-
 					<input
 						type="checkbox"
 						id="display_fullscreen"
@@ -92,6 +90,13 @@
 						onclick="main.handleFullScreenClicked();"
 					/>
 					<label for="display_fullscreen">Fullscreen</label>
+					<button
+						id="fullscreen_button"
+						type="button"
+						onclick="main.launchFullScreen();"
+					>
+						Fullscreen
+					</button>
 				</div>
 			</div>
 			<div
