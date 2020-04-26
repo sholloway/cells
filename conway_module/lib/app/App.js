@@ -158,7 +158,11 @@ class Main {
 				break;
 		}
 	}
-	//HERE
+
+	setTopology() {
+		this.config.landscape.topology = getElementById('topology').value
+		this.stateManager.setTopology();
+	}
 
 	/**
 	 * Resets all web workers and the UI.
