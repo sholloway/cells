@@ -21,7 +21,10 @@ let domUtils = {
 	querySelector: () => {},
 };
 
-const canvasUtilities = { sizeCanvas: sinon.stub() };
+const canvasUtilities = {
+	sizeCanvas: sinon.stub(),
+	convertToCell: sinon.stub().returns({ x: 0, y: 0 }),
+};
 
 const window = {
 	performance: {
@@ -216,6 +219,7 @@ describe('The App', function () {
 
 			app.handleDrawCanvasClicked({ clientX: 10, clientY: 10 });
 
+			expect(canvasUtilities.convertToCell.calledOnce).to.be.true;
 			expect(app.drawCanvas.getBoundingClientRect.calledOnce).to.be.true;
 			expect(app.stateManager.sendWorkerMessage.calledOnce).to.be.true;
 			expect(app.canvasContextMenu.setMenuPosition.calledOnce).to.be.false;
