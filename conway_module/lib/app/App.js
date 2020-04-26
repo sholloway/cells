@@ -1,11 +1,10 @@
 /*
 Next Steps
-* Controll CSS with webpack.
 * In drawing mode always draw a yellow rect under the mouse.
+* Full Screen Drawing
+* Linear CA's like Wolfram 256 rules.
 * Make the seed generation display before starting the simulation.
-	Toggle Button Behavior
-	Click Seed -> Draw the output of the seeder into the drawing system.
-	Click Start -> Loads the drawing surface into the SIM.
+* Controll CSS with webpack.
 * Toggle: Transferable Array Buffers
 * Make sure the entire code base is over 90% test coverage
 * Get a handle on the FPS calculation. Is it really 8 FPS? 
@@ -89,7 +88,18 @@ class Main {
 			'click',
 			this.handleDrawCanvasClicked.bind(this)
 		);
+		this.drawCanvas.addEventListener(
+			'mousemove',
+			this.handleDrawCanvasMouseMoved.bind(this)
+		);
+		//  = function(e){}
 		return this;
+	}
+
+	handleDrawCanvasMouseMoved(event) {
+		let boundary = this.drawCanvas.getBoundingClientRect();
+		let cellLocation = convertToCell(event, boundary, this.config.zoom);
+		this.stateManager.setActiveCell(cellLocation);
 	}
 
 	/**
@@ -160,7 +170,7 @@ class Main {
 	}
 
 	setTopology() {
-		this.config.landscape.topology = getElementById('topology').value
+		this.config.landscape.topology = getElementById('topology').value;
 		this.stateManager.setTopology();
 	}
 

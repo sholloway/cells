@@ -5,6 +5,7 @@ const WorkerCommands = require('./../workers/WorkerCommands.js');
 
 const Layers = require('./AppLayers.js');
 const { getElementById } = require('./../dom/DomUtilities.js');
+
 const {
 	updateConfiguredZoom,
 	updateConfiguredLandscape,
@@ -30,6 +31,7 @@ const AppStateManagerEvents = {
 class AppStateManager {
 	constructor(config) {
 		this.config = config;
+		this.config.activeCell = { row: 0, col: 0 };
 		this.observers = new Map();
 		this.drawingAllowed = true;
 		this.fullScreenDesired = false;
@@ -38,6 +40,10 @@ class AppStateManager {
 		this.sceneBuilders = new Map();
 		this.workers = new Map();
 		this.workerSystem = new WorkerSystem(this.getWindow(), config);
+	}
+
+	setActiveCell(cellLocation) {
+		this.config.activeCell = cellLocation;
 	}
 
 	getWindow() {

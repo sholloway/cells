@@ -174,7 +174,7 @@ describe('The App', function () {
 			app.drawCanvas = { addEventListener: sinon.stub() };
 			app.registerEventHandlers(window);
 			expect(window.addEventListener.calledTwice).to.be.true;
-			expect(app.drawCanvas.addEventListener.calledOnce).to.be.true;
+			expect(app.drawCanvas.addEventListener.calledTwice).to.be.true;
 		});
 
 		it('initializing the app should start the worker system', function () {
