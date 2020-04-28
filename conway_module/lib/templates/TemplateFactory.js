@@ -5,7 +5,7 @@ const VerticalSpinner = require('./VerticalSpinner.js');
 const Toad = require('./Toad.js');
 const Glider = require('./Glider.js');
 const LightSpaceShip = require('./LightSpaceShip.js');
-const WolframRule90 = require('./WolframRule90.js');
+const WolframRule90 = require('./automata/WolframRule90.js');
 
 class TemplateFactory {
 	static generate(name, x, y, config) {
