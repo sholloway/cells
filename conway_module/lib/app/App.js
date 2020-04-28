@@ -2,7 +2,7 @@
 Next Steps
 * Full Screen Drawing
 	* From full screen, should be able to start the simulation.
-* Linear CA's like Wolfram 256 rules.
+* Add a CSS spinner/Progress bar for generating seeder and templates.
 * Make the seed generation display before starting the simulation.
 * Controll CSS with webpack.
 * Toggle: Transferable Array Buffers

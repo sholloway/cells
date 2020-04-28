@@ -7,6 +7,7 @@ const Glider = require('./Glider.js');
 const LightSpaceShip = require('./LightSpaceShip.js');
 const WolframRule90 = require('./automata/WolframRule90.js');
 const WolframRule110 = require('./automata/WolframRule110.js');
+const WolframRule30 = require('./automata/WolframRule30.js');
 
 class TemplateFactory {
 	static generate(name, x, y, config) {
@@ -38,6 +39,9 @@ class TemplateFactory {
 				break;
 			case 'wr-rule-110':
 				template = new WolframRule110(config);
+				break;
+			case 'wr-rule-30':
+				template = new WolframRule30(config);
 				break;
 			default:
 				throw new Error('Unknown template name.');
