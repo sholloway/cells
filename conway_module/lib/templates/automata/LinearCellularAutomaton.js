@@ -16,13 +16,13 @@ class LinearCellularAutomaton extends DrawingTemplate {
 		let height = Math.floor(this.config.landscape.height);
 		let width = Math.floor(this.config.landscape.width);
 
-		let midPoint = Math.floor(width / 2);
+		let startingPoint = this.findStartingIndex(width);
 
 		let ca = Array(height);
 
-		//The first row is initialized to zero except for it's midpoint.
+		//The first row is initialized to zero except for its starting point.
 		ca[0] = Array(width).fill(0);
-		ca[0][midPoint] = 1;
+		ca[0][startingPoint] = 1;
 
 		//Generate the next row based on the current row.
 		let neighborhood;
@@ -34,6 +34,11 @@ class LinearCellularAutomaton extends DrawingTemplate {
 			}
 		}
 		return ca;
+	}
+
+	findStartingIndex(width) {
+		//The default is to start the CA in the middle of row zero.
+		return Math.floor(width / 2);
 	}
 
 	findNeighborHood(generation, index) {
@@ -65,7 +70,7 @@ class LinearCellularAutomaton extends DrawingTemplate {
 	 * @param {number[]} ruleSet
 	 */
 	setRuleSet(ruleSet) {
-		this.rulesSet = ruleSet;
+		this.rulesSet = ruleSet.reverse();
 	}
 }
 
