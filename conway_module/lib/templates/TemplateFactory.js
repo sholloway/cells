@@ -5,9 +5,10 @@ const VerticalSpinner = require('./VerticalSpinner.js');
 const Toad = require('./Toad.js');
 const Glider = require('./Glider.js');
 const LightSpaceShip = require('./LightSpaceShip.js');
+const WolframRule90 = require('./WolframRule90.js');
 
 class TemplateFactory {
-	static generate(name, x, y) {
+	static generate(name, x, y, config) {
 		let template;
 		switch (name) {
 			case 'conways-memorial':
@@ -30,6 +31,9 @@ class TemplateFactory {
 				break;
 			case 'light-ship':
 				template = new LightSpaceShip();
+				break;
+			case 'wr-rule-90':
+				template = new WolframRule90(config);
 				break;
 			default:
 				throw new Error('Unknown template name.');

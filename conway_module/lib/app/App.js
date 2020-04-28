@@ -112,6 +112,7 @@ class Main {
 	 */
 	handlePageLoad(event) {
 		sizeCanvas(this);
+		updateConfiguredLandscape(this.config);
 		let now = this.getWindow().performance.now();
 		this.stateManager.start(now);
 	}
@@ -386,7 +387,16 @@ class Main {
 	 * @param {string} cmdName - The command clicked in the context menu
 	 */
 	canvasContextMenuEventHandler(row, col, cmdName) {
-		let cells = TemplateFactory.generate(cmdName, row, col);
+		if (cmdName === 'start-sim') {
+			this.handleStartButtonClicked();
+			return;
+		} else if (cmdName === 'reset') {
+			this.resetSimulation();
+			this.stateManager.allowDrawing();
+			return;
+		}
+
+		let cells = TemplateFactory.generate(cmdName, row, col, this.config);
 		if (cells.length > 0) {
 			this.stateManager
 				.promiseResponse(
