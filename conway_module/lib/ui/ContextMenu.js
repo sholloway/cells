@@ -23,7 +23,7 @@ class ContextMenu {
 		this.menuVisible = false;
 		this.state = MenuStates.HIDE;
 		// TODO: It would be better to dynamically calculate this.
-		this.menuHeight = 145;
+		this.menuHeight = 258;
 		this.menuWidth = 160;
 		this.activeCell = null;
 	}
