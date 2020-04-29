@@ -363,7 +363,7 @@ class Main {
 			);
 
 		if (message.simulationStopped) {
-			document && document.exitFullscreen();
+			document && document.fullscreenElement && document.exitFullscreen();
 			this.resetSimulation();
 		}
 		return this;
