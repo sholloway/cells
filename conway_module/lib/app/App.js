@@ -1,5 +1,11 @@
 /*
 Next Steps
+* Replace the individual Wolfram rules classes with a single class that 
+	given a base 10 number and starting condition, generates the rule.
+		Base 10 number range: 1 - 250
+		Starting Condition, 1 -> width of row, or a pattern for a single row.
+		Number of rows to pre-generate. This would have the affect of shifting the CA.
+		Animate the generating the rows in blocks based on the cell size.
 * Full Screen Drawing
 	* From full screen, should be able to start the simulation.
 * Add a CSS spinner/Progress bar for generating seeder and templates.

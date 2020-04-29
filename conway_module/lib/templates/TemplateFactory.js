@@ -5,9 +5,8 @@ const VerticalSpinner = require('./VerticalSpinner.js');
 const Toad = require('./Toad.js');
 const Glider = require('./Glider.js');
 const LightSpaceShip = require('./LightSpaceShip.js');
-const WolframRule90 = require('./automata/WolframRule90.js');
-const WolframRule110 = require('./automata/WolframRule110.js');
-const WolframRule30 = require('./automata/WolframRule30.js');
+const WolframRule184 = require('./automata/WolframRule184.js');
+const LinearCellularAutomaton = require('./automata/LinearCellularAutomaton.js');
 
 class TemplateFactory {
 	static generate(name, x, y, config) {
@@ -35,13 +34,27 @@ class TemplateFactory {
 				template = new LightSpaceShip();
 				break;
 			case 'wr-rule-90':
-				template = new WolframRule90(config);
+				//prettier-ignore
+				template = new LinearCellularAutomaton(config)
+					.setRuleSet([0, 1, 0, 1, 1, 0, 1, 0]);
 				break;
 			case 'wr-rule-110':
-				template = new WolframRule110(config);
+				template = new LinearCellularAutomaton(config)
+					.setRuleSet([0, 1, 1, 0, 1, 1, 1, 0])
+					.setInitializationAlgorithm((width) => width - 1);
 				break;
 			case 'wr-rule-30':
-				template = new WolframRule30(config);
+				//prettier-ignore
+				template = new LinearCellularAutomaton(config)
+					.setRuleSet([0, 0, 0, 1, 1, 1, 1, 0]);
+				break;
+			case 'wr-rule-184':
+				template = new WolframRule184(config);
+				break;
+			case 'wr-rule-250':
+				//prettier-ignore
+				template = new LinearCellularAutomaton(config)
+					.setRuleSet([1, 1, 1, 1, 1, 0, 1, 0]);
 				break;
 			default:
 				throw new Error('Unknown template name.');

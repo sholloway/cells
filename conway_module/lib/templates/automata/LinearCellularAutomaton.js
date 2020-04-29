@@ -5,6 +5,11 @@ class LinearCellularAutomaton extends DrawingTemplate {
 		super();
 		this.config = config;
 		this.rulesSet = null;
+
+		//The default is to start the CA in the middle of row zero.
+		this.initializationAlgorithm = (width) => {
+			return Math.floor(width / 2);
+		};
 	}
 
 	generateCells(x, y) {
@@ -36,9 +41,13 @@ class LinearCellularAutomaton extends DrawingTemplate {
 		return ca;
 	}
 
+	setInitializationAlgorithm(algorithm) {
+		this.initializationAlgorithm = algorithm;
+		return this;
+	}
+
 	findStartingIndex(width) {
-		//The default is to start the CA in the middle of row zero.
-		return Math.floor(width / 2);
+		return this.initializationAlgorithm(width);
 	}
 
 	findNeighborHood(generation, index) {
@@ -71,6 +80,7 @@ class LinearCellularAutomaton extends DrawingTemplate {
 	 */
 	setRuleSet(ruleSet) {
 		this.rulesSet = ruleSet.reverse();
+		return this;
 	}
 }
 
