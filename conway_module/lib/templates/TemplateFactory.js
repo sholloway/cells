@@ -34,27 +34,22 @@ class TemplateFactory {
 				template = new LightSpaceShip();
 				break;
 			case 'wr-rule-90':
-				//prettier-ignore
-				template = new LinearCellularAutomaton(config)
-					.setRuleSet([0, 1, 0, 1, 1, 0, 1, 0]);
+				template = new LinearCellularAutomaton(config, 90);
 				break;
 			case 'wr-rule-110':
-				template = new LinearCellularAutomaton(config)
-					.setRuleSet([0, 1, 1, 0, 1, 1, 1, 0])
-					.setInitializationAlgorithm((width) => width - 1);
+				template = new LinearCellularAutomaton(
+					config,
+					110
+				).setInitializationAlgorithm((width) => width - 1);
 				break;
 			case 'wr-rule-30':
-				//prettier-ignore
-				template = new LinearCellularAutomaton(config)
-					.setRuleSet([0, 0, 0, 1, 1, 1, 1, 0]);
+				template = new LinearCellularAutomaton(config, 30);
 				break;
 			case 'wr-rule-184':
 				template = new WolframRule184(config);
 				break;
 			case 'wr-rule-250':
-				//prettier-ignore
-				template = new LinearCellularAutomaton(config)
-					.setRuleSet([1, 1, 1, 1, 1, 0, 1, 0]);
+				template = new LinearCellularAutomaton(config, 250);
 				break;
 			default:
 				throw new Error('Unknown template name.');

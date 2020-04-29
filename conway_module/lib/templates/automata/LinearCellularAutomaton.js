@@ -1,15 +1,26 @@
 const DrawingTemplate = require('./../DrawingTemplate.js');
 
 class LinearCellularAutomaton extends DrawingTemplate {
-	constructor(config) {
+	constructor(config, rule = 0) {
 		super();
 		this.config = config;
-		this.rulesSet = null;
+		this.setRuleSet(this.generateRuleSet(rule));
 
 		//The default is to start the CA in the middle of row zero.
 		this.initializationAlgorithm = (width) => {
 			return Math.floor(width / 2);
 		};
+	}
+
+	/**
+	 *
+	 * @param {number} rule - An integer in the range [1,255].
+	 * @returns number[] An integer represented as an 8 bit binary number.
+	 */
+	generateRuleSet(rule) {
+		let binaryStr = rule.toString(2);
+		let paddedStr = binaryStr.padStart(8 - binaryStr.length, '0');
+		return [...paddedStr].map((s) => parseInt(s));
 	}
 
 	generateCells(x, y) {
