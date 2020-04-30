@@ -5,7 +5,6 @@ const VerticalSpinner = require('./VerticalSpinner.js');
 const Toad = require('./Toad.js');
 const Glider = require('./Glider.js');
 const LightSpaceShip = require('./LightSpaceShip.js');
-const WolframRule184 = require('./automata/WolframRule184.js');
 const LinearCellularAutomaton = require('./automata/LinearCellularAutomaton.js');
 
 class TemplateFactory {
@@ -44,9 +43,6 @@ class TemplateFactory {
 				break;
 			case 'wr-rule-30':
 				template = new LinearCellularAutomaton(config, 30);
-				break;
-			case 'wr-rule-184':
-				template = new WolframRule184(config);
 				break;
 			case 'wr-rule-250':
 				template = new LinearCellularAutomaton(config, 250);
