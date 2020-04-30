@@ -1,9 +1,4 @@
-/*
-TODO:
-I want to separate the concept of the HTML canvas size and the grid landscape.
-The landscape should be huge. The canvas should pan across the landscape.
-Rather than a cell width/height should have projection amount to scale by. Like a zoom %.
-*/
+
 let DefaultConfig = {
 	canvas: {
 		width: 600,

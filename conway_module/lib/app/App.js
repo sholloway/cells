@@ -1,15 +1,16 @@
 /*
 Next Steps
-* Controll CSS with webpack.
-* In drawing mode always draw a yellow rect under the mouse.
+* Replace the individual Wolfram rules classes with a single class that 
+	given a base 10 number and starting condition, generates the rule.
+		Number of rows to pre-generate. This would have the affect of shifting the CA.
+		Animate the generating the rows in blocks based on the cell size.
+* Add a CSS spinner/Progress bar for generating seeder and templates.
 * Make the seed generation display before starting the simulation.
-	Toggle Button Behavior
-	Click Seed -> Draw the output of the seeder into the drawing system.
-	Click Start -> Loads the drawing surface into the SIM.
-* Toggle: Transferable Array Buffers
+* Controll CSS with webpack and clean up the CSS.
+* Optimize Worker messaging
+	* Toggle: Transferable Array Buffers
 * Make sure the entire code base is over 90% test coverage
 * Get a handle on the FPS calculation. Is it really 8 FPS? 
-* Optimize Worker messaging
 * Add page level error handling? 
   * Every cmd in a try/catch
   * A way to display errors to the user.
@@ -44,6 +45,9 @@ const {
 } = require('../ui/UIConfigurationUtilities.js');
 
 const TemplateFactory = require('./../templates/TemplateFactory.js');
+
+const DISPLAY_TRANSITION_ERR_MSG =
+	'There was an error attempting to change display modes.';
 
 /**
  * Represents the main thread of the simulation.
@@ -89,7 +93,18 @@ class Main {
 			'click',
 			this.handleDrawCanvasClicked.bind(this)
 		);
+		this.drawCanvas.addEventListener(
+			'mousemove',
+			this.handleDrawCanvasMouseMoved.bind(this)
+		);
+		//  = function(e){}
 		return this;
+	}
+
+	handleDrawCanvasMouseMoved(event) {
+		let boundary = this.drawCanvas.getBoundingClientRect();
+		let cellLocation = convertToCell(event, boundary, this.config.zoom);
+		this.stateManager.setActiveCell(cellLocation);
 	}
 
 	/**
@@ -99,6 +114,7 @@ class Main {
 	 */
 	handlePageLoad(event) {
 		sizeCanvas(this);
+		updateConfiguredLandscape(this.config);
 		let now = this.getWindow().performance.now();
 		this.stateManager.start(now);
 	}
@@ -160,7 +176,7 @@ class Main {
 	}
 
 	setTopology() {
-		this.config.landscape.topology = getElementById('topology').value
+		this.config.landscape.topology = getElementById('topology').value;
 		this.stateManager.setTopology();
 	}
 
@@ -205,9 +221,7 @@ class Main {
 			this.displayManager
 				.setDisplayMode(this.stateManager.getDisplayPreference())
 				.catch((reason) => {
-					console.error(
-						'There was an error attempting to change display modes.'
-					);
+					console.error(DISPLAY_TRANSITION_ERR_MSG);
 					console.error(reason);
 				})
 				.then(() => {
@@ -229,7 +243,7 @@ class Main {
 		this.displayManager
 			.setDisplayMode(this.stateManager.getDisplayPreference())
 			.catch((reason) => {
-				console.error('There was an error attempting to change display modes.');
+				console.error(DISPLAY_TRANSITION_ERR_MSG);
 				console.error(reason);
 			})
 			.then(() => {
@@ -345,7 +359,7 @@ class Main {
 			);
 
 		if (message.simulationStopped) {
-			document && document.exitFullscreen();
+			document && document.fullscreenElement && document.exitFullscreen();
 			this.resetSimulation();
 		}
 		return this;
@@ -375,7 +389,16 @@ class Main {
 	 * @param {string} cmdName - The command clicked in the context menu
 	 */
 	canvasContextMenuEventHandler(row, col, cmdName) {
-		let cells = TemplateFactory.generate(cmdName, row, col);
+		if (cmdName === 'start-sim') {
+			this.handleStartButtonClicked();
+			return;
+		} else if (cmdName === 'reset') {
+			this.resetSimulation();
+			this.stateManager.allowDrawing();
+			return;
+		}
+
+		let cells = TemplateFactory.generate(cmdName, row, col, this.config);
 		if (cells.length > 0) {
 			this.stateManager
 				.promiseResponse(
@@ -390,6 +413,20 @@ class Main {
 					});
 				});
 		}
+	}
+
+	launchFullScreen() {
+		return new Promise((resolve, reject) => {
+			this.displayManager
+				.setDisplayMode(true)
+				.catch((reason) => {
+					console.error(DISPLAY_TRANSITION_ERR_MSG);
+					console.error(reason);
+				})
+				.then(() => {
+					document.fullscreenElement && this.handlePageResize();
+				});
+		});
 	}
 } //End of Main Class
 

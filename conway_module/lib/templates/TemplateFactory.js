@@ -5,9 +5,10 @@ const VerticalSpinner = require('./VerticalSpinner.js');
 const Toad = require('./Toad.js');
 const Glider = require('./Glider.js');
 const LightSpaceShip = require('./LightSpaceShip.js');
+const LinearCellularAutomaton = require('./automata/LinearCellularAutomaton.js');
 
 class TemplateFactory {
-	static generate(name, x, y) {
+	static generate(name, x, y, config) {
 		let template;
 		switch (name) {
 			case 'conways-memorial':
@@ -30,6 +31,21 @@ class TemplateFactory {
 				break;
 			case 'light-ship':
 				template = new LightSpaceShip();
+				break;
+			case 'wr-rule-90':
+				template = new LinearCellularAutomaton(config, 90);
+				break;
+			case 'wr-rule-110':
+				template = new LinearCellularAutomaton(
+					config,
+					110
+				).setInitializationAlgorithm((width) => width - 1);
+				break;
+			case 'wr-rule-30':
+				template = new LinearCellularAutomaton(config, 30);
+				break;
+			case 'wr-rule-250':
+				template = new LinearCellularAutomaton(config, 250);
 				break;
 			default:
 				throw new Error('Unknown template name.');

@@ -35,6 +35,16 @@ class DrawingSceneBuilder {
 			}
 			return entity;
 		});
+		//Highlight which cell the mouse is over, if any.
+		if (config.activeCell) {
+			let activeCell = new Cell(config.activeCell.x, config.activeCell.y);
+			activeCell
+				.register(new GridCellToRenderingEntity())
+				.register(new ScaleTransformer(config.zoom))
+				.register(new StrokeStyle('#f3fc53')) //yellow
+				.register(new RectOutlineTrait());
+			entities.push(activeCell);
+		}
 		scene.push(entities);
 	}
 }
