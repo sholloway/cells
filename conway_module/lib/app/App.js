@@ -1,16 +1,16 @@
 /*
 Next Steps
+* Get a handle on the FPS calculation. Is it really 8 FPS? 
 * Replace the individual Wolfram rules classes with a single class that 
 	given a base 10 number and starting condition, generates the rule.
 		Number of rows to pre-generate. This would have the affect of shifting the CA.
 		Animate the generating the rows in blocks based on the cell size.
 * Add a CSS spinner/Progress bar for generating seeder and templates.
 * Make the seed generation display before starting the simulation.
-* Controll CSS with webpack and clean up the CSS.
+* Controll CSS with webpack and clean up the CSS?
 * Optimize Worker messaging
 	* Toggle: Transferable Array Buffers
 * Make sure the entire code base is over 90% test coverage
-* Get a handle on the FPS calculation. Is it really 8 FPS? 
 * Add page level error handling? 
   * Every cmd in a try/catch
   * A way to display errors to the user.
