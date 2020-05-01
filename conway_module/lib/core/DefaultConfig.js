@@ -1,11 +1,15 @@
-
 let DefaultConfig = {
 	canvas: {
 		width: 600,
 		height: 400,
 	},
 	game: {
-		interval: 125, //# of milliseconds to loop on.
+		/*
+		tickLength controls the target frames per second.
+		1 second = 1000 ms
+		A tickLength of 125 is 1000/125 = 8 FPS
+		A tickLength of 125 is 1000/125 = 24 FPS
+		*/
 		tickLength: 125, // Sets the simulation to run at 20Hz (Every 50ms)
 	},
 	landscape: {

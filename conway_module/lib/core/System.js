@@ -60,6 +60,7 @@ class BrowserSystem {
 		this.window = window;
 		this.state = SystemState.STOPPED;
 		this.simIterationCounter = 0;
+		this.requiredTicks = 0;
 		this.observers = new Map();
 		this.config = config;
 	}
@@ -133,18 +134,19 @@ class BrowserSystem {
 		this.stopMain = this.window.requestAnimationFrame(this.main.bind(this));
 		if (this.state == SystemState.RUNNING) {
 			var nextTick = this.lastTick + this.config.game.tickLength;
-			var numTicks = 0;
+			this.requiredTicks = 0;
 
 			// If tFrame < nextTick then 0 ticks need to be updated (0 is default for numTicks).
 			// If tFrame = nextTick then 1 tick needs to be updated (and so forth).
-			// Note: As we mention in summary, you should keep track of how large numTicks is.
-			// If it is large, then either your game was asleep, or the machine cannot keep up.
+			// If requiredTicks is large, then either the game was asleep, or the machine cannot keep up.
 			if (tFrame > nextTick) {
 				var timeSinceTick = tFrame - this.lastTick;
-				numTicks = Math.floor(timeSinceTick / this.config.game.tickLength);
+				this.requiredTicks = Math.floor(
+					timeSinceTick / this.config.game.tickLength
+				);
 			}
 
-			queueUpdates.bind(this)(numTicks);
+			queueUpdates.bind(this)(this.requiredTicks);
 			this.afterUpdates();
 			this.lastRender = tFrame;
 		}
