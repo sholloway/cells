@@ -6,7 +6,7 @@ module.exports = {
 		filename: 'conways-game.js',
 		path: path.resolve(__dirname, 'public','dist'),
 		library: 'Conways'
-	}
+	},
 	// module: {
 	// 	rules: [
 	// 		{

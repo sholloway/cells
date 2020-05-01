@@ -1,8 +1,8 @@
 const chai = require('chai');
 const expect = chai.expect;
 const sinon = require('sinon');
-const HTMLCanvasRenderer = require('./../../lib/renderer/HTMLCanvasRenderer.js');
-const SceneManager = require('./../../lib/core/SceneManager.js');
+const HTMLCanvasRenderer = require('../../lib/renderer/HTMLCanvasRenderer.js');
+const SceneManager = require('../../lib/core/SceneManager.js');
 
 describe('HTMLCanvasRenderer', function () {
 	it('should render all entities in a scene', function () {
