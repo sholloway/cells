@@ -11,8 +11,7 @@ node_modules
 npm-debug.log
 
 # Webpack Outputs
-*/dist
-*/public/dist
+dist
 
 # Generated stuff
 *.dot

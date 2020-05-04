@@ -5,8 +5,9 @@ module.exports = merge(common, {
 	mode: 'development',
 	devtool: 'inline-source-map',
 	devServer: {
-		contentBase: './public',
+		contentBase: './dist',
 		compress: true,
-		port: 8080
-	}
+		port: 8080,
+		writeToDisk: true,
+	},
 });
