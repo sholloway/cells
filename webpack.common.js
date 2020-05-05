@@ -1,7 +1,9 @@
 const path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-var HtmlWebpackPlugin = require('html-webpack-plugin');
-var MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const TerserJSPlugin = require('terser-webpack-plugin');
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 
 module.exports = {
 	entry: './src/lib/index.js',
@@ -10,24 +12,35 @@ module.exports = {
 		path: path.resolve(__dirname, 'dist'),
 		library: 'Conways',
 	},
+	optimization: {
+		minimizer: [new TerserJSPlugin({}), new OptimizeCSSAssetsPlugin({})],
+	},
 	plugins: [
 		new CleanWebpackPlugin(),
-		new MiniCssExtractPlugin({ filename: 'styles.css' }),
 		new HtmlWebpackPlugin({
 			template: './src/html/index.html',
 			favicon: 'src/images/favicon.ico',
 			inject: false,
+			minify: {
+				removeComments: true,
+				collapseWhitespace: true,
+			},
+		}),
+		new MiniCssExtractPlugin({
+			// filename: 'styles.css'
+			filename: '[name].css',
+			chunkFilename: '[id].css',
 		}),
 	],
 	module: {
 		rules: [
 			{ test: /\.css$/, use: [MiniCssExtractPlugin.loader, 'css-loader'] },
-
-			// {
-			// 	test: /\.worker\.js$/,
-			// 	exclude: /node_modules/,
-			// 	use: { loader: 'worker-loader' }
-			// }
 		],
+	},
+	devServer: {
+		contentBase: './dist',
+		compress: true,
+		port: 8080,
+		writeToDisk: true,
 	},
 };

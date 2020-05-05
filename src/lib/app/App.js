@@ -1,6 +1,5 @@
 /*
 Next Steps
-* Fix favicon
 * Fix fullscreen mode on Safari. -- Different branch.
 * Fix the grid toggle.
 * Make sure the entire code base is over 90% test coverage
