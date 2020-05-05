@@ -15,12 +15,14 @@ module.exports = {
 		new MiniCssExtractPlugin({ filename: 'styles.css' }),
 		new HtmlWebpackPlugin({
 			template: './src/html/index.html',
+			favicon: 'src/images/favicon.ico',
 			inject: false,
 		}),
 	],
 	module: {
 		rules: [
 			{ test: /\.css$/, use: [MiniCssExtractPlugin.loader, 'css-loader'] },
+
 			// {
 			// 	test: /\.worker\.js$/,
 			// 	exclude: /node_modules/,
