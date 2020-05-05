@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Conway's Game of Life</title>
+		<meta charset="utf-8" />
+		<%= htmlWebpackPlugin.tags.headTags %>
+		<link
+			href="https://fonts.googleapis.com/css?family=Roboto"
+			rel="stylesheet"
+		/>
+		<link
+			href="https://fonts.googleapis.com/icon?family=Material+Icons"
+			rel="stylesheet"
+		/>
+	</head>
+	<body>
+		<!-- prettier-ignore -->
+		<%= require('html-loader!./ui.html') %> 
+		<%= htmlWebpackPlugin.tags.bodyTags%>
+		<script type="application/javascript">
+			const getElementById = Conways.DomUtilities.getElementById;
+			const main = Conways.Game.buildInstance(
+				getElementById('grid_canvas'),
+				getElementById('sim_canvas'),
+				getElementById('draw_canvas')
+			)
+				.registerEventHandlers(window)
+				.initialize();
+		</script>
+	</body>
+</html>

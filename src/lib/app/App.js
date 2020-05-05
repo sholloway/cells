@@ -1,8 +1,6 @@
 /*
 Next Steps
-* Remove the conway_module directory. Flatten the code base.
-* Make webpack clean the dist library.
-* Get webpack.prod.js working to enable hosting. Don't host the dev version.
+* Fix fullscreen mode on Safari. -- Different branch.
 * Fix the grid toggle.
 * Make sure the entire code base is over 90% test coverage
 * Search for all NOTE and TODO comments.

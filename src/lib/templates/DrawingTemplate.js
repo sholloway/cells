@@ -1,4 +1,4 @@
-const { Cell } = require('../entity-system/entities.js');
+const { Cell } = require('../entity-system/Entities.js');
 
 class DrawingTemplate {
 	constructor() {}
