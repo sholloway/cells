@@ -213,8 +213,11 @@ class Main {
 	handleStartButtonClicked() {
 		return new Promise((resolve, reject) => {
 			this.transitionToThePauseButton();
-			this.displayManager
-				.setDisplayMode(this.stateManager.getDisplayPreference())
+			Promise.resolve(
+				this.displayManager.setDisplayMode(
+					this.stateManager.getDisplayPreference()
+				)
+			)
 				.catch((reason) => {
 					console.error(DISPLAY_TRANSITION_ERR_MSG);
 					console.error(reason);
@@ -235,8 +238,11 @@ class Main {
 
 	handleResumeButtonClicked(isInDrawingMode) {
 		this.transitionToThePauseButton();
-		this.displayManager
-			.setDisplayMode(this.stateManager.getDisplayPreference())
+		Promise.resolve(
+			this.displayManager.setDisplayMode(
+				this.stateManager.getDisplayPreference()
+			)
+		)
 			.catch((reason) => {
 				console.error(DISPLAY_TRANSITION_ERR_MSG);
 				console.error(reason);
@@ -412,14 +418,15 @@ class Main {
 
 	launchFullScreen() {
 		return new Promise((resolve, reject) => {
-			this.displayManager
-				.setDisplayMode(true)
+			Promise.resolve(this.displayManager.setDisplayMode(true))
 				.catch((reason) => {
 					console.error(DISPLAY_TRANSITION_ERR_MSG);
 					console.error(reason);
+					reject();
 				})
 				.then(() => {
 					document.fullscreenElement && this.handlePageResize();
+					resolve();
 				});
 		});
 	}
