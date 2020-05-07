@@ -114,7 +114,6 @@ class DrawingStateManager {
 	 * @param {number} y - The Y coordinate on the simulation's grid.
 	 */
 	toggleCell(x, y) {
-		let totalTime = 'toggleCell total time';
 		let node = this.currentTree.search(new Cell(x, y));
 		if (node.isNullNode) {
 			//The node doesn't exist. Add it.
