@@ -316,9 +316,11 @@ class Main {
 	 * Command all registered workers to set their cell size.
 	 */
 	changedCellSize() {
+		this.config.zoom = getCellSize();
+		//Inform the drawing system and Life Simulation of the change.
 		this.stateManager.broadcast({
 			command: WorkerCommands.LifeSystemCommands.SET_CELL_SIZE,
-			cellSize: getCellSize(),
+			cellSize: this.config.zoom,
 		});
 		this.handleGridBackgroundClicked();
 	}
