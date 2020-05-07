@@ -324,23 +324,24 @@ class GridPattern extends Trait {
 
 	process(context) {
 		//Draw vertical lines
+		context.rendererContext.beginPath();
 		for (let x = 0; x < context.entity.width; x += context.entity.cell.width) {
-			context.rendererContext.beginPath();
 			context.rendererContext.moveTo(x, 0);
 			context.rendererContext.lineTo(x, context.entity.height);
-			context.rendererContext.stroke();
 		}
 
+		//Draw horizontal lines
 		for (
 			let y = 0;
 			y < context.entity.height;
 			y += context.entity.cell.height
 		) {
-			context.rendererContext.beginPath();
 			context.rendererContext.moveTo(0, y);
 			context.rendererContext.lineTo(context.entity.width, y);
-			context.rendererContext.stroke();
 		}
+
+		//Render all lines at once.
+		context.rendererContext.stroke();
 	}
 }
 

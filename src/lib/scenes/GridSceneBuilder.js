@@ -7,7 +7,7 @@ class GridSceneBuilder {
 			let entity;
 			if (obj.className === 'GridEntity') {
 				entity = GridEntity.buildInstance(obj);
-				entity.register(new GridPattern()).register(new DarkThinLines());
+				entity.register(new DarkThinLines()).register(new GridPattern());
 			} else {
 				entity = new Entity();
 			}
