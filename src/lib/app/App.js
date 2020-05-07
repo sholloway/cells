@@ -1,23 +1,3 @@
-/*
-Next Steps
-* Fix fullscreen mode on Safari. -- Different branch.
-* Fix the grid toggle.
-* Make sure the entire code base is over 90% test coverage
-* Search for all NOTE and TODO comments.
-* Add a CSS spinner/Progress bar for generating seeder and templates.
-* Make the seed generation display before starting the simulation.
-* Controll CSS with webpack and clean up the CSS?
-* Optimize Worker messaging
-	* Toggle: Transferable Array Buffers
-* Add page level error handling? 
-  * Every cmd in a try/catch
-  * A way to display errors to the user.
-  * Still want trace info going to the console.
-* Organize the JSDoc modules.
-* Add markdown to prettier.
-* Host this.
-*/
-
 const Layers = require('./AppLayers.js');
 const AppBuilder = require('./AppBuilder.js');
 const {
