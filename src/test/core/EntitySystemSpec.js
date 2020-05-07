@@ -281,10 +281,10 @@ describe('The Entity System', function () {
 		};
 
 		trait.process(context);
-		expect(context.rendererContext.beginPath.callCount).to.equal(15);
+		expect(context.rendererContext.beginPath.callCount).to.equal(1);
 		expect(context.rendererContext.moveTo.callCount).to.equal(15);
 		expect(context.rendererContext.lineTo.callCount).to.equal(15);
-		expect(context.rendererContext.stroke.callCount).to.equal(15);
+		expect(context.rendererContext.stroke.callCount).to.equal(1);
 	});
 
 	it('should ProcessBoxAsRect', function () {
