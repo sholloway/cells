@@ -150,6 +150,10 @@ class Main {
 		}
 	}
 
+	setCellShapeOption() {
+		this.config.cell.shape = getElementById('cell_shape').value;
+	}
+
 	setTopology() {
 		this.config.landscape.topology = getElementById('topology').value;
 		this.stateManager.setTopology();

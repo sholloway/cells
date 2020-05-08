@@ -1,13 +1,10 @@
-const { Box, Cell, EntityBatch } = require('../entity-system/Entities.js');
+const { Cell, EntityBatch } = require('../entity-system/Entities.js');
 const {
 	BatchDrawingBoxes,
 	BatchDrawingCells,
-	ColorByContents,
-	FilledRectTrait,
 	FillStyle,
 	GridCellToRenderingEntity,
 	OutlineStyle,
-	ProcessBoxAsRect,
 	RectOutlineTrait,
 	ScaleTransformer,
 	StrokeStyle,
@@ -21,7 +18,7 @@ class DrawingSceneBuilder {
 			cellsBatch
 				.register(new OutlineStyle(2, '#0d47a1'))
 				.register(new FillStyle('#263238'))
-				.register(new BatchDrawingCells(config.zoom))
+				.register(new BatchDrawingCells(config.zoom, 10, 'square'))
 				.add(objs.filter((o) => o.className === 'Cell'));
 			scene.push(cellsBatch);
 

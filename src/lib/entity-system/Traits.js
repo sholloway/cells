@@ -342,14 +342,29 @@ class GridPattern extends Trait {
 }
 
 class BatchDrawingCells extends Trait {
-	constructor(scalingFactor) {
+	constructor(scalingFactor, strokeThreashold, shape) {
 		super();
 		this.scalingFactor = scalingFactor;
+		this.strokeThreashold = strokeThreashold;
+		this.shape = shape;
 	}
 
 	process(context) {
-		context.rendererContext.beginPath();
+		switch (this.shape) {
+			case 'circle':
+				this.drawCircles(context);
+				break;
+			case 'square':
+				this.drawSquares(context);
+				break;
+			default:
+				throw new Error('Unsupported shape: ' + this.shape);
+		}
+	}
+
+	drawSquares(context) {
 		let cell;
+		context.rendererContext.beginPath();
 		for (let index = 0; index < context.entity.entities.length; index++) {
 			cell = context.entity.entities[index];
 			//scale and add a rect to the path.
@@ -363,7 +378,39 @@ class BatchDrawingCells extends Trait {
 			}
 		}
 		context.rendererContext.fill();
-		context.rendererContext.stroke();
+		if (this.scalingFactor >= this.strokeThreashold) {
+			context.rendererContext.stroke();
+		}
+	}
+
+	drawCircles(context) {
+		let offset = this.scalingFactor / 2;
+
+		//find center
+		//this.x, this.y, this.width, this.height
+		// let cx = context.rendering.entity.x + context.rendering.entity.width / 2;
+		// let cy = context.rendering.entity.y + context.rendering.entity.height / 2;
+		// let radius = context.rendering.entity.width / 2;
+		let cell;
+		for (let index = 0; index < context.entity.entities.length; index++) {
+			cell = context.entity.entities[index];
+			//scale and add a rect to the path.
+			if (cell && cell.location) {
+				context.rendererContext.beginPath();
+				context.rendererContext.arc(
+					cell.location.row * this.scalingFactor + offset,
+					cell.location.col * this.scalingFactor + offset,
+					offset,
+					0,
+					TWO_PI,
+					true
+				);
+				context.rendererContext.fill();
+				if (this.scalingFactor >= this.strokeThreashold) {
+					context.rendererContext.stroke();
+				}
+			}
+		}
 	}
 }
 

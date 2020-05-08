@@ -3,6 +3,9 @@ let DefaultConfig = {
 		width: 600,
 		height: 400,
 	},
+	cell: {
+		shape: 'circle',
+	},
 	game: {
 		/*
 		tickLength controls the target frames per second.
