@@ -151,14 +151,10 @@ class ScaleTransformer extends Trait {
 				'ScaleTransformer attempted to process an entity that did not have context.rendering or context.rendering.entity defined.'
 			);
 		}
-		context.rendering.entity.x =
-			context.rendering.entity.x * this.scalingFactor;
-		context.rendering.entity.y =
-			context.rendering.entity.y * this.scalingFactor;
-		context.rendering.entity.width =
-			context.rendering.entity.width * this.scalingFactor;
-		context.rendering.entity.height =
-			context.rendering.entity.height * this.scalingFactor;
+		context.rendering.entity.x *= this.scalingFactor;
+		context.rendering.entity.y *= this.scalingFactor;
+		context.rendering.entity.width *= this.scalingFactor;
+		context.rendering.entity.height *= this.scalingFactor;
 	}
 }
 
@@ -345,6 +341,67 @@ class GridPattern extends Trait {
 	}
 }
 
+class BatchDrawingCells extends Trait {
+	constructor(scalingFactor) {
+		super();
+		this.scalingFactor = scalingFactor;
+	}
+
+	process(context) {
+		context.rendererContext.beginPath();
+		let cell;
+		for (let index = 0; index < context.entity.entities.length; index++) {
+			cell = context.entity.entities[index];
+			//scale and add a rect to the path.
+			if (cell && cell.location) {
+				context.rendererContext.rect(
+					cell.location.row * this.scalingFactor,
+					cell.location.col * this.scalingFactor,
+					cell.width * this.scalingFactor,
+					cell.height * this.scalingFactor
+				);
+			}
+		}
+		context.rendererContext.fill();
+		context.rendererContext.stroke();
+	}
+}
+
+class BatchDrawingBoxes extends Trait {
+	constructor(scalingFactor) {
+		super();
+		this.scalingFactor = scalingFactor;
+	}
+
+	process(context) {
+		context.rendererContext.beginPath();
+		let box;
+		for (let index = 0; index < context.entity.entities.length; index++) {
+			box = context.entity.entities[index];
+			context.rendererContext.rect(
+				box.x * this.scalingFactor,
+				box.y * this.scalingFactor,
+				(box.xx - box.x) * this.scalingFactor,
+				(box.yy - box.y) * this.scalingFactor
+			);
+		}
+		context.rendererContext.stroke();
+	}
+}
+
+class OutlineStyle extends Trait {
+	constructor(lineWidth, strokeStyle) {
+		super();
+		this.lineWidth = lineWidth;
+		this.strokeStyle = strokeStyle;
+	}
+
+	process(context) {
+		context.rendererContext.lineWidth = this.lineWidth;
+		context.rendererContext.strokeStyle = this.strokeStyle;
+	}
+}
+
 /**
  * Clears an area of a context defined by x,y, width, height.
  */
@@ -364,6 +421,8 @@ class ClearArea extends Trait {
 }
 
 module.exports = {
+	BatchDrawingBoxes,
+	BatchDrawingCells,
 	CircleTrait,
 	ClearArea,
 	ColorByAgeTrait,
@@ -374,6 +433,7 @@ module.exports = {
 	FillStyle,
 	GridCellToRenderingEntity,
 	GridPattern,
+	OutlineStyle,
 	ProcessBoxAsRect,
 	RectOutlineTrait,
 	ScaleTransformer,
