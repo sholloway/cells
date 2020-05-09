@@ -39,7 +39,7 @@ class TemplateFactory {
 				template = new LinearCellularAutomaton(
 					config,
 					110
-				).setInitializationAlgorithm((width) => width - 1);
+				).setInitializationAlgorithm((width) => width);
 				break;
 			case 'wr-rule-30':
 				template = new LinearCellularAutomaton(config, 30);

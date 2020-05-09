@@ -69,6 +69,22 @@ class Entity {
 	}
 }
 
+class EntityBatch extends Entity {
+	constructor() {
+		super();
+		this.entities = [];
+	}
+
+	add(entity) {
+		if (entity && Array.isArray(entity) && entity.length > 0) {
+			this.entities = this.entities.concat(entity);
+		} else {
+			entity && this.entities.push(entity);
+		}
+		return this;
+	}
+}
+
 /**
  * Represents a single unit on an abstract 2D grid.
  *
@@ -214,5 +230,6 @@ module.exports = {
 	Box,
 	Cell,
 	Entity,
+	EntityBatch,
 	GridEntity,
 };
