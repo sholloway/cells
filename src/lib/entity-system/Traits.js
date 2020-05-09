@@ -384,32 +384,21 @@ class BatchDrawingCells extends Trait {
 	}
 
 	drawCircles(context) {
-		let offset = this.scalingFactor / 2;
-
-		//find center
-		//this.x, this.y, this.width, this.height
-		// let cx = context.rendering.entity.x + context.rendering.entity.width / 2;
-		// let cy = context.rendering.entity.y + context.rendering.entity.height / 2;
-		// let radius = context.rendering.entity.width / 2;
+		let radius = this.scalingFactor / 2;
 		let cell;
+		context.rendererContext.beginPath();
 		for (let index = 0; index < context.entity.entities.length; index++) {
 			cell = context.entity.entities[index];
-			//scale and add a rect to the path.
 			if (cell && cell.location) {
-				context.rendererContext.beginPath();
-				context.rendererContext.arc(
-					cell.location.row * this.scalingFactor + offset,
-					cell.location.col * this.scalingFactor + offset,
-					offset,
-					0,
-					TWO_PI,
-					true
-				);
-				context.rendererContext.fill();
-				if (this.scalingFactor >= this.strokeThreashold) {
-					context.rendererContext.stroke();
-				}
+				let cx = cell.location.row * this.scalingFactor + radius;
+				let cy = cell.location.col * this.scalingFactor + radius;
+				context.rendererContext.moveTo(cx + radius, cy);
+				context.rendererContext.arc(cx, cy, radius, 0, TWO_PI, true);
 			}
+		}
+		context.rendererContext.fill();
+		if (this.scalingFactor >= this.strokeThreashold) {
+			context.rendererContext.stroke();
 		}
 	}
 }
