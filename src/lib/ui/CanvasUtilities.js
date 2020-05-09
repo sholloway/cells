@@ -49,7 +49,7 @@ function sizeCanvas(game) {
 	game.simCanvas.setAttribute('height', game.config.canvas.height);
 	game.drawCanvas.setAttribute('height', game.config.canvas.height);
 
-	game.config.canvas.width = document.body.clientWidth;
+	game.config.canvas.width = isFullscreen() ? window.innerWidth : document.body.clientWidth;
 	canvasContainerDiv.style.width = `${game.config.canvas.width}px`;
 	game.gridCanvas.setAttribute('width', game.config.canvas.width);
 	game.simCanvas.setAttribute('width', game.config.canvas.width);
