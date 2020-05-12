@@ -101,7 +101,13 @@ describe('The App', function () {
 		it('changedCellSize should broadcast to workers', function () {
 			app.config = { zoom: 0 };
 			sinon.stub(app, 'handleGridBackgroundClicked');
-			app.changedCellSize();
+			let event = {
+				srcElement: {
+					valueAsNumber: 20,
+				},
+			};
+
+			app.changedCellSize(event);
 			expect(app.stateManager.broadcast.calledOnce).to.be.true;
 			expect(app.handleGridBackgroundClicked.calledOnce).to.be.true;
 		});
