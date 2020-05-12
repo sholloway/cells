@@ -96,6 +96,15 @@ class DrawingSystemWorkerController extends AbstractWorkerController {
 					'Could not send the drawing system cells.'
 				);
 				break;
+			case DrawingSystemCommands.DRAW_TEMPLATE:
+				this.processCmd(
+					msg,
+					msg.command,
+					() => true,
+					(msg) => this.drawingSystem.drawTemplate(msg.templateName, msg.row, msg.col, msg.config),
+					'Could not send the drawing system cells.'
+				);
+				break;
 			default:
 				throw new Error(
 					`Unsupported command ${msg.command} was received in DrawingSystem Worker.`

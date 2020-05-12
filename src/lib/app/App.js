@@ -385,21 +385,13 @@ class Main {
 			return;
 		}
 
-		let cells = TemplateFactory.generate(cmdName, row, col, this.config);
-		if (cells.length > 0) {
-			this.stateManager
-				.promiseResponse(
-					Layers.DRAWING,
-					WorkerCommands.DrawingSystemCommands.SEND_CELLS
-				)
-				.then((response) => {
-					Cell.mergeObjsWithCells(cells, response.cells);
-					this.stateManager.sendWorkerMessage(Layers.DRAWING, {
-						command: WorkerCommands.DrawingSystemCommands.SET_CELLS,
-						cells: cells,
-					});
-				});
-		}
+		this.stateManager.sendWorkerMessage(Layers.DRAWING, {
+			command: WorkerCommands.DrawingSystemCommands.DRAW_TEMPLATE,
+			templateName: cmdName,
+			row: row,
+			col: col,
+			config: this.config,
+		});
 	}
 
 	launchFullScreen() {
