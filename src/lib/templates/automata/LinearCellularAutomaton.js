@@ -82,10 +82,21 @@ class LinearCellularAutomaton extends DrawingTemplate {
 	}
 
 	findArrayValue(array, index) {
-		if (index < 0 || index > array.length - 1) {
-			return 0;
+		// Hard Dead Border
+		// if (index < 0 || index > array.length - 1) {
+		// 	return 0;
+		// }
+
+		//Wrap the border
+		let value;
+		if (index < 0) {
+			value = array[array.length - 1];
+		} else if (index > array.length - 1) {
+			value = index[0];
+		} else {
+			value = array[index];
 		}
-		return array[index];
+		return value;
 	}
 
 	evaluateRules(neighborhood) {
