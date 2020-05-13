@@ -6,6 +6,7 @@ const Toad = require('./Toad.js');
 const Glider = require('./Glider.js');
 const LightSpaceShip = require('./LightSpaceShip.js');
 const LinearCellularAutomaton = require('./automata/LinearCellularAutomaton.js');
+const RandomDiceRoll = require('./RandomDiceRoll.js');
 
 class TemplateFactory {
 	static generate(name, x, y, config) {
@@ -46,6 +47,9 @@ class TemplateFactory {
 				break;
 			case 'wr-rule-250':
 				template = new LinearCellularAutomaton(config, 250);
+				break;
+			case 'dice-roll':
+				template = new RandomDiceRoll(config);
 				break;
 			default:
 				throw new Error('Unknown template name.');
