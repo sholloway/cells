@@ -1,15 +1,28 @@
 const DrawingTemplate = require('../DrawingTemplate.js');
 
+const INVALID_RULE_MSG = 'Can only process rules in the in range [0,255].';
 class LinearCellularAutomaton extends DrawingTemplate {
 	constructor(config, rule = 0) {
 		super();
 		this.config = config;
-		this.setRuleSet(this.generateRuleSet(rule));
+		this.enforceRuleSet(rule)
+			.setRuleSet(this.generateRuleSet(rule))
+			.establishInitializationAlgorithm();
+	}
 
-		//The default is to start the CA in the middle of row zero.
+	establishInitializationAlgorithm() {
 		this.initializationAlgorithm = (width) => {
+			//The default is to start the CA in the middle of row zero.
 			return Math.floor(width / 2);
 		};
+		return this;
+	}
+
+	enforceRuleSet(rule) {
+		if (rule < 0 || rule > 255) {
+			throw new Error(INVALID_RULE_MSG);
+		}
+		return this;
 	}
 
 	/**
@@ -19,13 +32,12 @@ class LinearCellularAutomaton extends DrawingTemplate {
 	 */
 	generateRuleSet(rule) {
 		let binaryStr = rule.toString(2);
-		let paddedStr = binaryStr.padStart(8 - binaryStr.length, '0');
+		let paddedStr = binaryStr.padStart(8, '0');
 		return [...paddedStr].map((s) => parseInt(s));
 	}
 
 	generateCells(x, y) {
-		let cells = this.makeCellsFrom2DArray(this.pattern());
-		return cells;
+		return this.makeCellsFrom2DArray(this.pattern());
 	}
 
 	pattern() {
@@ -70,10 +82,21 @@ class LinearCellularAutomaton extends DrawingTemplate {
 	}
 
 	findArrayValue(array, index) {
-		if (index < 0 || index > array.length - 1) {
-			return 0;
+		// Hard Dead Border
+		// if (index < 0 || index > array.length - 1) {
+		// 	return 0;
+		// }
+
+		//Wrap the border
+		let value;
+		if (index < 0) {
+			value = array[array.length - 1];
+		} else if (index > array.length - 1) {
+			value = index[0];
+		} else {
+			value = array[index];
 		}
-		return array[index];
+		return value;
 	}
 
 	evaluateRules(neighborhood) {
@@ -92,6 +115,10 @@ class LinearCellularAutomaton extends DrawingTemplate {
 	setRuleSet(ruleSet) {
 		this.rulesSet = ruleSet.reverse();
 		return this;
+	}
+
+	getRulesSetStr() {
+		return this.rulesSet.reverse().join('');
 	}
 }
 

@@ -1,6 +1,7 @@
 const DrawingStateManager = require('./DrawingStateManager.js');
 const SceneManager = require('./SceneManager.js');
-
+const TemplateFactory = require('./../templates/TemplateFactory.js');
+const { Cell } = require('./../entity-system/Entities.js');
 /**
  * The possible states the drawing system can be in.
  * @private
@@ -126,6 +127,12 @@ class DrawingSystem {
 	reset() {
 		this.scene.clear();
 		this.getStateManager().clear();
+	}
+
+	drawTemplate(templateName, row, col, config) {
+		let newCells = TemplateFactory.generate(templateName, row, col, config);
+		Cell.mergeObjsWithCells(newCells, this.getCells());
+		this.setCells(newCells);
 	}
 }
 
