@@ -2,6 +2,7 @@ const SceneManager = require('../core/SceneManager');
 const HTMLCanvasRenderer = require('../renderer/HTMLCanvasRenderer.js');
 const WorkerSystem = require('../core/WorkerSystem.js');
 const WorkerCommands = require('../workers/WorkerCommands.js');
+const { SeederModels } = require('./../core/SeederFactory.js');
 
 const Layers = require('./AppLayers.js');
 const { getElementById } = require('../dom/DomUtilities.js');
@@ -374,7 +375,7 @@ class AppStateManager {
 			Layers.SIM,
 			WorkerCommands.LifeSystemCommands.SET_SEEDER,
 			{
-				seedSetting: getElementById('seed').value,
+				seedSetting: SeederModels.DRAWING,
 				config: this.config,
 				cells: drawingCells,
 			}

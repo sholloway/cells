@@ -134,22 +134,6 @@ class Main {
 		}
 	}
 
-	/**
-	 * Sets the simulation's seeder based on the UI.
-	 */
-	setSeedingOption() {
-		switch (getElementById('seed').value) {
-			case 'draw':
-				this.resetSimulation();
-				this.stateManager.allowDrawing();
-				break;
-			default:
-				this.stateManager.preventDrawing();
-				this.resetSimulation();
-				break;
-		}
-	}
-
 	setCellShapeOption() {
 		this.config.cell.shape = getElementById('cell_shape').value;
 	}
@@ -167,8 +151,7 @@ class Main {
 		this.transitionToTheStartButton()
 			.resetAliveCellsComponent()
 			.resetSimGenerationCountComponent();
-
-		return this.stateManager.resetSimulation();
+		return this.stateManager.allowDrawing().resetSimulation();
 	}
 
 	/**
@@ -176,17 +159,17 @@ class Main {
 	 */
 	toggleSimulation() {
 		let button = getElementById('play_pause_button');
-		let isInDrawingMode = getElementById('seed').value === 'draw';
+		// let isInDrawingMode = getElementById('seed').value === 'draw';
 		let promise;
 		switch (button.innerText) {
 			case 'Start':
 				promise = this.handleStartButtonClicked();
 				break;
 			case 'Pause':
-				promise = this.handlePauseButtonClicked(isInDrawingMode);
+				promise = this.handlePauseButtonClicked();
 				break;
 			case 'Resume':
-				promise = this.handleResumeButtonClicked(isInDrawingMode);
+				promise = this.handleResumeButtonClicked();
 				break;
 			default:
 				throw new Error('Unknown button state.');
@@ -217,10 +200,10 @@ class Main {
 	handlePauseButtonClicked(isInDrawingMode) {
 		this.transitionToTheResumeButton();
 		this.stateManager.stopSimulation();
-		isInDrawingMode && this.stateManager.pauseSimulationInDrawingMode();
+		this.stateManager.pauseSimulationInDrawingMode();
 	}
 
-	handleResumeButtonClicked(isInDrawingMode) {
+	handleResumeButtonClicked() {
 		this.transitionToThePauseButton();
 		Promise.resolve(
 			this.displayManager.setDisplayMode(
@@ -234,9 +217,7 @@ class Main {
 			.then(() => {
 				document.fullscreenElement && this.handlePageResize();
 				this.stateManager.preventDrawing();
-				isInDrawingMode
-					? this.stateManager.startSimulation()
-					: this.stateManager.resumeSimulation();
+				this.stateManager.startSimulation();
 			});
 	}
 
@@ -387,7 +368,6 @@ class Main {
 			return;
 		} else if (cmdName === 'reset') {
 			this.resetSimulation();
-			this.stateManager.allowDrawing();
 			return;
 		}
 
