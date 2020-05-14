@@ -24,7 +24,6 @@ class RandomDiceRoll extends DrawingTemplate {
 		return grid;
 	}
 
-  //TODO: I need to identify how Math.random is seeded.
 	/**
 	 * A cell can have 8 neighbors. Rolling the dice randomly selects a number
 	 * in the range [0,8].
