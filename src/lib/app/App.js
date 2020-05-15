@@ -138,11 +138,6 @@ class Main {
 		this.config.cell.shape = getElementById('cell_shape').value;
 	}
 
-	setTopology() {
-		this.config.landscape.topology = getElementById('topology').value;
-		this.stateManager.setTopology();
-	}
-
 	/**
 	 * Resets all web workers and the UI.
 	 */
