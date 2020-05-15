@@ -224,18 +224,20 @@ describe('AppStateManager', function () {
 	});
 
 	it('should startSimulation', function () {
+		stateManager.processCycleMessage = sinon.stub();
 		stateManager.workerSystem.promiseResponse = sinon.stub().resolves({});
-		stateManager.resetDrawingSystem = sinon.stub().resolves();
 		stateManager.setSeederOnLifeSystem = sinon.stub().resolves();
 		stateManager.startWorker = sinon.stub();
+		stateManager.clearRender = sinon.stub();
 
 		return Promise.resolve(stateManager.startSimulation()).then(() => {
 			expect(stateManager.workerSystem.promiseResponse.calledOnce).to.be.true;
-			expect(stateManager.resetDrawingSystem.calledOnce).to.be.true;
+			expect(stateManager.processCycleMessage.calledOnce).to.be.true;
 			expect(configUtils.updateConfiguredZoom.calledOnce).to.be.true;
 			expect(configUtils.updateConfiguredLandscape.calledOnce).to.be.true;
 			expect(stateManager.setSeederOnLifeSystem.calledOnce).to.be.true;
 			expect(stateManager.startWorker.calledOnce).to.be.true;
+			expect(stateManager.clearRender.calledOnce).to.be.true;
 		});
 	});
 
@@ -264,20 +266,6 @@ describe('AppStateManager', function () {
 				expect(stateManager.clearRender.calledOnce).to.be.true;
 			}
 		);
-	});
-
-	it('should reject resetting the drawing system when cells are not provided', function () {
-		stateManager.sendWorkerMessage = sinon.stub().returns(stateManager);
-		stateManager.clearRender = sinon.stub().returns(stateManager);
-		return Promise.resolve(stateManager.resetDrawingSystem({}))
-			.then(() => {
-				expect.fail('The promise should have been rejected.');
-			})
-			.catch((reason) => {
-				expect(reason).to.equal('Cells were not provided.');
-				expect(stateManager.sendWorkerMessage.calledOnce).to.be.true;
-				expect(stateManager.clearRender.calledOnce).to.be.true;
-			});
 	});
 
 	it('should setSeederOnLifeSystem', function () {
