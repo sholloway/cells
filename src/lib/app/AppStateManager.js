@@ -2,6 +2,7 @@ const SceneManager = require('../core/SceneManager');
 const HTMLCanvasRenderer = require('../renderer/HTMLCanvasRenderer.js');
 const WorkerSystem = require('../core/WorkerSystem.js');
 const WorkerCommands = require('../workers/WorkerCommands.js');
+const { SeederModels } = require('./../core/SeederFactory.js');
 
 const Layers = require('./AppLayers.js');
 const { getElementById } = require('../dom/DomUtilities.js');
@@ -305,19 +306,25 @@ class AppStateManager {
 	startSimulation() {
 		return this.workerSystem
 			.promiseResponse(
+				//First get the Cells from the Drawing Worker
 				Layers.DRAWING,
 				WorkerCommands.DrawingSystemCommands.SEND_CELLS
 			)
 			.then((response) => {
-				return this.resetDrawingSystem(response);
-			})
-			.then((drawingCells) => {
+				this.processCycleMessage(Layers.SIM, {
+					//2nd Render the drawing cells the Sim so there is no flicker.
+					command: 'PROCESS_CYCLE',
+					stack: response.cells,
+				});
+				//3rd Configure the Life Sim.
 				updateConfiguredZoom(this.config);
 				updateConfiguredLandscape(this.config);
-				return this.setSeederOnLifeSystem(drawingCells);
+				return this.setSeederOnLifeSystem(response.cells);
 			})
 			.then(() => {
+				//4th Start the Life Sim
 				this.startWorker(Layers.SIM);
+				this.clearRender(Layers.DRAWING);
 			})
 			.catch((reason) => {
 				console.error('AppStateManager.startSimulation(): There was an error.');
@@ -357,9 +364,9 @@ class AppStateManager {
 	 * @returns {Promise} Promise to invoke the drawing system worker.
 	 */
 	resetDrawingSystem(msg) {
-		return new Promise((resolve, reject) => {
+		return new Promise((resolve) => {
 			this.sendWorkerMessage(Layers.DRAWING).clearRender(Layers.DRAWING);
-			msg.cells ? resolve(msg.cells) : reject(MISSING_CELLS);
+			resolve();
 		});
 	}
 
@@ -374,7 +381,7 @@ class AppStateManager {
 			Layers.SIM,
 			WorkerCommands.LifeSystemCommands.SET_SEEDER,
 			{
-				seedSetting: getElementById('seed').value,
+				seedSetting: SeederModels.DRAWING,
 				config: this.config,
 				cells: drawingCells,
 			}

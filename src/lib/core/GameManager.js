@@ -134,10 +134,6 @@ class GameManager {
 		);
 		this.currentTree.index(aliveCells);
 		this.nextTree.index();
-
-		//NOTE: Adding two lines for debugging TODO DEBUG
-		// this.scene.clear();
-		// this.scene.push(aliveCells);
 	}
 
 	/**

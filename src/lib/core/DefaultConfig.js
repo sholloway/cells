@@ -14,6 +14,10 @@ let DefaultConfig = {
 		A tickLength of 125 is 1000/125 = 24 FPS
 		*/
 		tickLength: 125, // Sets the simulation to run at 20Hz (Every 50ms)
+		rules:{
+			birth: [3],
+			survive: [2,3]
+		}
 	},
 	landscape: {
 		//used by quad tree implementation.

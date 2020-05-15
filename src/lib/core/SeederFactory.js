@@ -96,80 +96,12 @@ class StaticCellsSeeder extends Seeder {
 	}
 }
 
-const { makeNoise2D } = require('open-simplex-noise');
-const noise2D = makeNoise2D(Date.now());
-
-/**
- * Seeds a simulation with perlin noise.
- * @extends Seeder
- */
-class PerlinNoiseSeeder extends Seeder {
-	constructor() {
-		super();
-	}
-
-	seed(width, height) {
-		let birthChance;
-		for (let x = 0; x < width; x++) {
-			for (let y = 0; y < height; y++) {
-				try {
-					birthChance = noise2D(x, y) * 0.5 + 0.5;
-					if (birthChance <= 0.5) {
-						this.cells.push(new Cell(x, y, 1));
-					}
-				} catch (e) {
-					console.error(e);
-				}
-			}
-		}
-		console.log(this.cells.length);
-		return this.cells;
-	}
-}
-
-const WorleyNoise = require('worley-noise');
-
-/**
- * Seeds a simulation with perlin noise.
- * @extends Seeder
- */
-class WorleyNoiseSeeder extends Seeder {
-	constructor() {
-		super();
-		this.noise = new WorleyNoise({
-			numPoints: 50,
-			/*seed: 42,*/
-			/*dim: 3,*/
-		});
-	}
-
-	seed(width, height) {
-		const noiseData = this.noise.renderImage(width, { normalize: true });
-		let birthChance;
-		for (let x = 0; x < width; x++) {
-			for (let y = 0; y < height; y++) {
-				try {
-					birthChance = noiseData[y * width + x];
-					if (birthChance <= 0.8) {
-						this.cells.push(new Cell(x, y, 1));
-					}
-				} catch (e) {
-					console.error(e);
-				}
-			}
-		}
-		return this.cells;
-	}
-}
-
 /**
  * The set of supported seeder models.
  */
 SeederModels = {
 	DRAWING: 'draw',
 	RANDOM: 'random',
-	PERLIN: 'perlin',
-	WORLEY: 'worley',
 };
 
 /**
@@ -189,12 +121,6 @@ class SeederFactory {
 				break;
 			case SeederModels.DRAWING:
 				seeder = new StaticCellsSeeder();
-				break;
-			case SeederModels.PERLIN:
-				seeder = new PerlinNoiseSeeder();
-				break;
-			case SeederModels.WORLEY:
-				seeder = new WorleyNoiseSeeder();
 				break;
 			default:
 				throw new Error(`Unknown seeder model name: ${modelName}`);

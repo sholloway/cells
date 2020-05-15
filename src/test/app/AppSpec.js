@@ -79,25 +79,6 @@ describe('The App', function () {
 		app.stateManager = stateManager;
 	});
 	describe('The Public Interface', function () {
-		it('should setSeedingOption', function () {
-			sinon.stub(app, 'resetSimulation').returns(app);
-
-			getElementResult.value = 'draw';
-			app.setSeedingOption();
-
-			//test for draw
-			expect(app.resetSimulation.calledOnce).to.be.true;
-			expect(app.stateManager.allowDrawing.calledOnce).to.be.true;
-			expect(app.stateManager.preventDrawing.calledOnce).to.be.false;
-
-			//test for random
-			getElementResult.value = 'random';
-			app.setSeedingOption();
-
-			expect(app.resetSimulation.calledTwice).to.be.true;
-			expect(app.stateManager.preventDrawing.calledOnce).to.be.true;
-		});
-
 		it('changedCellSize should broadcast to workers', function () {
 			app.config = { zoom: 0 };
 			sinon.stub(app, 'handleGridBackgroundClicked');
@@ -148,6 +129,7 @@ describe('The App', function () {
 			sinon.stub(app, 'transitionToTheStartButton').returns(app);
 			sinon.stub(app, 'resetAliveCellsComponent').returns(app);
 			sinon.stub(app, 'resetSimGenerationCountComponent').returns(app);
+			app.stateManager.allowDrawing.returns(app.stateManager);
 
 			app.resetSimulation();
 
