@@ -6,8 +6,8 @@
 	<div id="control_bar">
 		<div class="container row">
 			<shape-picker event="cell-shape-changed"></shape-picker>
-
-			<label for="cell_size">Cell Size</label>
+			<cell-size-control event="cell-size-changed"></cell-size-control>
+			<!-- <label for="cell_size">Cell Size</label>
 			<input
 				id="cell_size"
 				type="number"
@@ -16,7 +16,7 @@
 				value="20"
 				step="1"
 				onchange="main.changedCellSize(event);"
-			/>
+			/> -->
 			<start-button state="IDLE"></start-button>
 			<event-button id="reset_button" event="sim-reset-requested"
 				>Reset</event-button

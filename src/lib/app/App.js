@@ -109,6 +109,11 @@ class Main {
 			'cell-shape-changed',
 			this.setCellShapeOption.bind(this)
 		);
+
+		querySelector('cell-size-control').addEventListener(
+			'cell-size-changed',
+			this.changedCellSize.bind(this)
+		);
 		return this;
 	}
 
@@ -144,7 +149,6 @@ class Main {
 	 */
 	handlePageResize(event) {
 		sizeCanvas(this);
-		updateConfiguredZoom(this.config);
 		updateConfiguredLandscape(this.config);
 		this.handleGridBackgroundClicked();
 	}
@@ -261,12 +265,11 @@ class Main {
 	 * @private
 	 */
 	requestToDrawGrid() {
-		let cellSize = getCellSize();
 		this.stateManager.sendWorkerMessage(Layers.GRID, {
 			command: WorkerCommands.LifeCycle.PROCESS_CYCLE,
 			parameters: {
-				cellWidth: cellSize,
-				cellHeight: cellSize,
+				cellWidth: this.config.zoom,
+				cellHeight: this.config.zoom,
 				gridWidth: this.config.canvas.width,
 				gridHeight: this.config.canvas.height,
 			},
@@ -287,13 +290,8 @@ class Main {
 	 * Command all registered workers to set their cell size.
 	 */
 	changedCellSize(event) {
-		let value = event.srcElement.valueAsNumber;
-		if (Number.isNaN(value)) {
-			value = this.config.zoom; //use the pervious value.
-			setElementValue('cell_size', value);
-		} else {
-			this.config.zoom = value;
-		}
+		let value = event.detail.cellSize;
+		this.config.zoom = value;
 		//Inform the drawing system and Life Simulation of the change.
 		this.stateManager.broadcast({
 			command: WorkerCommands.LifeSystemCommands.SET_CELL_SIZE,

@@ -54,7 +54,7 @@ class AppStateManager {
 		this.drawingCellsCount = cellsCount;
 	}
 
-	getDrawingCellsCount(){
+	getDrawingCellsCount() {
 		return this.drawingCellsCount;
 	}
 
@@ -332,7 +332,7 @@ class AppStateManager {
 					stack: response.cells,
 				});
 				//3rd Configure the Life Sim.
-				updateConfiguredZoom(this.config);
+				// updateConfiguredZoom(this.config);
 				updateConfiguredLandscape(this.config);
 				return this.setSeederOnLifeSystem(response.cells);
 			})
