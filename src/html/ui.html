@@ -22,9 +22,9 @@
 				onchange="main.changedCellSize(event);"
 			/>
 			<start-button state="IDLE"></start-button>
-			<button id="reset_button" type="button" onclick="main.resetSimulation();">
-				Reset
-			</button>
+			<event-button id="reset_button" event="sim-reset-requested"
+				>Reset</event-button
+			>
 		</div>
 		<div class="container row">
 			<input
@@ -49,13 +49,8 @@
 				onclick="main.handleFullScreenClicked();"
 			/>
 			<label for="display_fullscreen">Fullscreen</label>
-			<button
-				id="fullscreen_button"
-				type="button"
-				onclick="main.launchFullScreen();"
-			>
-				Fullscreen
-			</button>
+			<!-- prettier-ignore -->
+			<event-button id="fullscreen_button" event="fullscreen-requested">Fullscreen</event-button>
 		</div>
 	</div>
 	<div id="canvas_container" oncontextmenu="main.displayContextMenu(event);">

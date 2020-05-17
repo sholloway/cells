@@ -94,6 +94,16 @@ class Main {
 			'sim-event-resume-requested',
 			this.handleResumeButtonClicked.bind(this)
 		);
+
+		getElementById('reset_button').addEventListener(
+			'sim-reset-requested',
+			this.resetSimulation.bind(this)
+		);
+
+		getElementById('fullscreen_button').addEventListener(
+			'fullscreen-requested',
+			this.launchFullScreen.bind(this)
+		);
 		return this;
 	}
 
