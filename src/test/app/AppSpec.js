@@ -112,7 +112,9 @@ describe('The App', function () {
 		});
 
 		it('toggleDisplayStorageStructure() should broadcast the display storage setting', function () {
-			app.toggleDisplayStorageStructure();
+			app.toggleDisplayStorageStructure({
+				detail: { checked: true },
+			});
 			expect(app.stateManager.broadcast.calledOnce).to.be.true;
 		});
 

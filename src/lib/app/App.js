@@ -114,6 +114,12 @@ class Main {
 			'cell-size-changed',
 			this.changedCellSize.bind(this)
 		);
+
+		getElementById('display_quadtree').addEventListener(
+			'dispay-tree-toggle',
+			this.toggleDisplayStorageStructure.bind(this)
+		);
+
 		return this;
 	}
 
@@ -279,10 +285,10 @@ class Main {
 	/**
 	 * Command all registered workers to set their display storage setting.
 	 */
-	toggleDisplayStorageStructure() {
+	toggleDisplayStorageStructure(event) {
 		this.stateManager.broadcast({
 			command: WorkerCommands.LifeSystemCommands.DISPLAY_STORAGE,
-			displayStorage: getElementById('display_storage').checked,
+			displayStorage: event.detail.checked,
 		});
 	}
 
