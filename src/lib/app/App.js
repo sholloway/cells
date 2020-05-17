@@ -104,6 +104,11 @@ class Main {
 			'fullscreen-requested',
 			this.launchFullScreen.bind(this)
 		);
+
+		querySelector('shape-picker').addEventListener(
+			'cell-shape-changed',
+			this.setCellShapeOption.bind(this)
+		);
 		return this;
 	}
 
@@ -165,8 +170,9 @@ class Main {
 		}
 	}
 
-	setCellShapeOption() {
-		this.config.cell.shape = getElementById('cell_shape').value;
+	setCellShapeOption(event) {
+		// this.config.cell.shape = getElementById('cell_shape').value;
+		this.config.cell.shape = event.detail.shape;
 	}
 
 	/**

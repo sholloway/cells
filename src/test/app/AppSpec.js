@@ -19,7 +19,9 @@ let domUtils = {
 		return getElementResult;
 	},
 	setElementValue: (id, value) => (setElementResult.value = value),
-	querySelector: () => {},
+	querySelector: () => {
+		return { addEventListener: sinon.stub() };
+	},
 };
 
 const canvasUtilities = {
