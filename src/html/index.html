@@ -18,11 +18,11 @@
 		<%= require('html-loader!./ui.html') %> 
 		<%= htmlWebpackPlugin.tags.bodyTags%>
 		<script type="application/javascript">
-			const getElementById = Conways.DomUtilities.getElementById;
 			const main = Conways.Game.buildInstance(
-				getElementById('grid_canvas'),
-				getElementById('sim_canvas'),
-				getElementById('draw_canvas')
+				document.getElementById('grid_canvas'),
+				document.getElementById('sim_canvas'),
+				document.getElementById('draw_canvas'),
+				document.querySelector('start-button')
 			)
 				.registerEventHandlers(window)
 				.initialize();

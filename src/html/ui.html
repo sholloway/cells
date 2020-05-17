@@ -21,13 +21,7 @@
 				step="1"
 				onchange="main.changedCellSize(event);"
 			/>
-			<button
-				id="play_pause_button"
-				type="button"
-				onclick="main.toggleSimulation();"
-			>
-				Start
-			</button>
+			<start-button state="IDLE"></start-button>
 			<button id="reset_button" type="button" onclick="main.resetSimulation();">
 				Reset
 			</button>

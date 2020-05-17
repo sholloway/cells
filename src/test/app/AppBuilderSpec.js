@@ -48,11 +48,12 @@ describe('AppBuilder', function () {
 	});
 
 	it('should setupProperties', function () {
-		AppBuilder.setupProperties('a', 'b', 'c', app);
+		AppBuilder.setupProperties('a', 'b', 'c', 'd', app);
 		expect(app.config).to.not.be.undefined;
 		expect(app.gridCanvas).to.equal('a');
 		expect(app.simCanvas).to.equal('b');
 		expect(app.drawCanvas).to.equal('c');
+		expect(app.startButton).to.equal('d');
 		expect(app.stateManager).to.not.be.undefined;
 		expect(app.stateManager.observers.size).to.equal(1);
 

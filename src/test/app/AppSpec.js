@@ -93,38 +93,6 @@ describe('The App', function () {
 			expect(app.handleGridBackgroundClicked.calledOnce).to.be.true;
 		});
 
-		it('should toggleSimulation from Start', function () {
-			getElementResult.innerText = 'Start';
-			app.handleStartButtonClicked = sinon.stub().resolves();
-
-			return Promise.resolve(app.toggleSimulation()).then(() => {
-				expect(app.handleStartButtonClicked.calledOnce).to.be.true;
-			});
-		});
-
-		it('should toggleSimulation from pause', function () {
-			getElementResult.innerText = 'Pause';
-			app.handlePauseButtonClicked = sinon.stub().resolves();
-
-			return Promise.resolve(app.toggleSimulation()).then(() => {
-				expect(app.handlePauseButtonClicked.calledOnce).to.be.true;
-			});
-		});
-
-		it('should toggleSimulation from resume', function () {
-			getElementResult.innerText = 'Resume';
-			app.handleResumeButtonClicked = sinon.stub().resolves();
-
-			return Promise.resolve(app.toggleSimulation()).then(() => {
-				expect(app.handleResumeButtonClicked.calledOnce).to.be.true;
-			});
-		});
-
-		it('should toggleSimulation from unknown', function () {
-			getElementResult.innerText = 'unkown';
-			expect(app.toggleSimulation).to.throw(Error, 'Unknown button state.');
-		}); //Make this throw an error.
-
 		it('should resetSimulation', function () {
 			sinon.stub(app, 'transitionToTheStartButton').returns(app);
 			sinon.stub(app, 'resetAliveCellsComponent').returns(app);
@@ -161,9 +129,11 @@ describe('The App', function () {
 
 		it('should register event handlers', function () {
 			app.drawCanvas = { addEventListener: sinon.stub() };
+			app.startButton = { addEventListener: sinon.stub() };
 			app.registerEventHandlers(window);
 			expect(window.addEventListener.calledTwice).to.be.true;
 			expect(app.drawCanvas.addEventListener.calledTwice).to.be.true;
+			expect(app.startButton.addEventListener.calledThrice).to.be.true;
 		});
 
 		it('initializing the app should start the worker system', function () {
@@ -232,23 +202,6 @@ describe('The App', function () {
 
 			expect(app.drawCanvas.getBoundingClientRect.calledOnce).to.be.false;
 			expect(app.stateManager.sendWorkerMessage.calledOnce).to.be.false;
-		});
-	});
-
-	describe('The Start/Resume/Pause Button', function () {
-		it('should transitionToTheStartButton', function () {
-			app.transitionToTheStartButton();
-			expect(getElementResult.innerText).to.equal('Start');
-		});
-
-		it('should transitionToTheResumeButton', function () {
-			app.transitionToTheResumeButton();
-			expect(getElementResult.innerText).to.equal('Resume');
-		});
-
-		it('should transitionToThePauseButton', function () {
-			app.transitionToThePauseButton();
-			expect(getElementResult.innerText).to.equal('Pause');
 		});
 	});
 

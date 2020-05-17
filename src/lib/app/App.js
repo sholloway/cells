@@ -38,9 +38,16 @@ class Main {
 		gridCanvas,
 		simCanvas,
 		drawCanvas,
+		startButton,
 		instance = new Main()
 	) {
-		return AppBuilder.buildApp(gridCanvas, simCanvas, drawCanvas, instance);
+		return AppBuilder.buildApp(
+			gridCanvas,
+			simCanvas,
+			drawCanvas,
+			startButton,
+			instance
+		);
 	}
 
 	/**
@@ -72,7 +79,21 @@ class Main {
 			'mousemove',
 			this.handleDrawCanvasMouseMoved.bind(this)
 		);
-		//  = function(e){}
+
+		this.startButton.addEventListener(
+			'sim-event-start-requested',
+			this.handleStartButtonClicked.bind(this)
+		);
+
+		this.startButton.addEventListener(
+			'sim-event-pause-requested',
+			this.handlePauseButtonClicked.bind(this)
+		);
+
+		this.startButton.addEventListener(
+			'sim-event-resume-requested',
+			this.handleResumeButtonClicked.bind(this)
+		);
 		return this;
 	}
 
@@ -149,32 +170,8 @@ class Main {
 		return this.stateManager.allowDrawing().resetSimulation();
 	}
 
-	/**
-	 * Starts and stops the simulation.
-	 */
-	toggleSimulation() {
-		let button = getElementById('play_pause_button');
-		// let isInDrawingMode = getElementById('seed').value === 'draw';
-		let promise;
-		switch (button.innerText) {
-			case 'Start':
-				promise = this.handleStartButtonClicked();
-				break;
-			case 'Pause':
-				promise = this.handlePauseButtonClicked();
-				break;
-			case 'Resume':
-				promise = this.handleResumeButtonClicked();
-				break;
-			default:
-				throw new Error('Unknown button state.');
-		}
-		return promise;
-	}
-
 	handleStartButtonClicked() {
 		return new Promise((resolve, reject) => {
-			this.transitionToThePauseButton();
 			Promise.resolve(
 				this.displayManager.setDisplayMode(
 					this.stateManager.getDisplayPreference()
@@ -193,13 +190,11 @@ class Main {
 	}
 
 	handlePauseButtonClicked(isInDrawingMode) {
-		this.transitionToTheResumeButton();
 		this.stateManager.stopSimulation();
 		this.stateManager.pauseSimulationInDrawingMode();
 	}
 
 	handleResumeButtonClicked() {
-		this.transitionToThePauseButton();
 		Promise.resolve(
 			this.displayManager.setDisplayMode(
 				this.stateManager.getDisplayPreference()
@@ -222,27 +217,7 @@ class Main {
 	 * @returns {Main} Returns the instance of the main thread being modified.
 	 */
 	transitionToTheStartButton() {
-		getElementById('play_pause_button').innerText = 'Start';
-		return this;
-	}
-
-	/**
-	 * Changes the current state of the simulation button.
-	 * @private
-	 * @returns {Main} Returns the instance of the main thread being modified.
-	 */
-	transitionToTheResumeButton() {
-		getElementById('play_pause_button').innerText = 'Resume';
-		return this;
-	}
-
-	/**
-	 * Changes the current state of the simulation button.
-	 * @private
-	 * @returns {Main} Returns the instance of the main thread being modified.
-	 */
-	transitionToThePauseButton() {
-		getElementById('play_pause_button').innerText = 'Pause';
+		this.startButton.state = 'IDLE';
 		return this;
 	}
 
@@ -327,11 +302,35 @@ class Main {
 				message.numberOfSimulationIterations
 			);
 
+		if (message.origin && message.origin == Layers.DRAWING && message.stack) {
+			this.manageStartButtonEnablement(
+				this.stateManager.getDrawingCellsCount(),
+				message.stack.length
+			);
+			this.stateManager.setDrawingCellsCount(message.stack.length);
+		}
+
 		if (message.simulationStopped) {
 			document && document.fullscreenElement && document.exitFullscreen();
 			this.resetSimulation();
 		}
 		return this;
+	}
+
+	/** 
+		Enables or disables the start button based on if the drawing contains
+		any cells. 
+
+   	Rules: 
+    	- When the drawing cell count drops to zero, disable Start Button.
+    	- When the drawing cell count increases past zero enable the start button.
+	*/
+	manageStartButtonEnablement(currentDrawingCellsCount, nextDrawingCellsCount) {
+		if (currentDrawingCellsCount == 0 && nextDrawingCellsCount > 0) {
+			this.startButton.enabled = true;
+		} else if (currentDrawingCellsCount > 0 && nextDrawingCellsCount == 0) {
+			this.startButton.enabled = false;
+		}
 	}
 
 	handleFullScreenClicked() {
