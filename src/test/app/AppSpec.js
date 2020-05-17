@@ -7,6 +7,7 @@ let getElementResult = {
 	value: '',
 	innerText: '',
 	checked: false,
+	addEventListener: sinon.stub(),
 };
 
 let setElementResult = {
