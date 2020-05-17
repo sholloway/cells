@@ -86,8 +86,8 @@ describe('The App', function () {
 			app.config = { zoom: 0 };
 			sinon.stub(app, 'handleGridBackgroundClicked');
 			let event = {
-				srcElement: {
-					valueAsNumber: 20,
+				detail: {
+					cellSize: 20,
 				},
 			};
 
@@ -226,7 +226,6 @@ describe('The App', function () {
 			},
 		};
 		app.requestToDrawGrid();
-		expect(uiConfigUtils.getCellSize.calledOnce).to.be.true;
 		expect(app.stateManager.sendWorkerMessage.calledOnce).to.be.true;
 	});
 

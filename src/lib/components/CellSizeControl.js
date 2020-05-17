@@ -4,7 +4,7 @@ class CellSizeControl extends LitElement {
 	constructor() {
 		super();
 		this.eventBubbles = true;
-		this.currentCellSize = 20;
+		this.currentCellSize = this.value;
 	}
 
 	/**
@@ -14,6 +14,9 @@ class CellSizeControl extends LitElement {
 	static get properties() {
 		return {
 			event: { type: String },
+			min: { type: Number },
+			max: { type: Number },
+			value: { type: Number },
 		};
 	}
 
@@ -36,9 +39,9 @@ class CellSizeControl extends LitElement {
 				Cell Size
 				<input
 					type="range"
-					min="5"
-					max="100"
-					value="20"
+					min=${this.min}
+					max=${this.max}
+					value=${this.value}
 					step="1"
 					@change="${this.handleChange}"
 				/>

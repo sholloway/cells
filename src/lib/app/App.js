@@ -290,8 +290,7 @@ class Main {
 	 * Command all registered workers to set their cell size.
 	 */
 	changedCellSize(event) {
-		let value = event.detail.cellSize;
-		this.config.zoom = value;
+		this.config.zoom = event.detail.cellSize;
 		//Inform the drawing system and Life Simulation of the change.
 		this.stateManager.broadcast({
 			command: WorkerCommands.LifeSystemCommands.SET_CELL_SIZE,
