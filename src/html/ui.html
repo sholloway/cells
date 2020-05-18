@@ -18,25 +18,21 @@
 			>
 		</div>
 		<div class="container row">
-			<!-- prettier-ignore -->
-			<event-checkbox id="display_quadtree" event="dispay-tree-toggle">Display Quadtree</event-checkbox>
+			<event-checkbox id="display_quadtree" event="dispay-tree-toggle">
+				Display Quadtree
+			</event-checkbox>
 
-			<input
-				type="checkbox"
-				id="display_grid_background"
-				name="display_grid_background"
-				onclick="main.handleGridBackgroundClicked();"
-			/>
-			<label for="display_grid_background">Display Grid</label>
-			<input
-				type="checkbox"
-				id="display_fullscreen"
-				name="display_fullscreen"
-				onclick="main.handleFullScreenClicked();"
-			/>
-			<label for="display_fullscreen">Fullscreen</label>
-			<!-- prettier-ignore -->
-			<event-button id="fullscreen_button" event="fullscreen-requested">Fullscreen</event-button>
+			<event-checkbox id="display_grid" event="dispay-grid-toggle">
+				Display Grid
+			</event-checkbox>
+
+			<event-checkbox id="display_fullscreen" event="enable-fullscreen-toggle">
+				Fullscreen
+			</event-checkbox>
+
+			<event-button id="fullscreen_button" event="fullscreen-requested">
+				Fullscreen
+			</event-button>
 		</div>
 	</div>
 	<div id="canvas_container" oncontextmenu="main.displayContextMenu(event);">

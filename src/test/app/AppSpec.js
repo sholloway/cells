@@ -84,7 +84,7 @@ describe('The App', function () {
 	describe('The Public Interface', function () {
 		it('changedCellSize should broadcast to workers', function () {
 			app.config = { zoom: 0 };
-			sinon.stub(app, 'handleGridBackgroundClicked');
+			sinon.stub(app, 'refreshGrid');
 			let event = {
 				detail: {
 					cellSize: 20,
@@ -93,7 +93,7 @@ describe('The App', function () {
 
 			app.changedCellSize(event);
 			expect(app.stateManager.broadcast.calledOnce).to.be.true;
-			expect(app.handleGridBackgroundClicked.calledOnce).to.be.true;
+			expect(app.refreshGrid.calledOnce).to.be.true;
 		});
 
 		it('should resetSimulation', function () {
@@ -120,14 +120,12 @@ describe('The App', function () {
 
 		it('toggle drawing the grid when handleGridBackgroundClicked is invoked', function () {
 			sinon.stub(app, 'requestToDrawGrid');
-			getElementResult.checked = true;
-			app.handleGridBackgroundClicked();
+			app.handleGridBackgroundClicked({ detail: { checked: true } });
 			expect(app.requestToDrawGrid.calledOnce).to.be.true;
 			expect(app.stateManager.clearRender.calledOnce).to.be.false;
 
 			sinon.resetHistory();
-			getElementResult.checked = false;
-			app.handleGridBackgroundClicked();
+			app.handleGridBackgroundClicked({ detail: { checked: false } });
 			expect(app.requestToDrawGrid.calledOnce).to.be.false;
 			expect(app.stateManager.clearRender.calledOnce).to.be.true;
 		});
@@ -160,10 +158,10 @@ describe('The App', function () {
 		});
 
 		it('should handlePageResize', function () {
-			sinon.stub(app, 'handleGridBackgroundClicked');
+			sinon.stub(app, 'refreshGrid');
 			app.handlePageResize();
 			expect(canvasUtilities.sizeCanvas.calledOnce).to.be.true;
-			expect(app.handleGridBackgroundClicked.calledOnce).to.be.true;
+			expect(app.refreshGrid.calledOnce).to.be.true;
 		});
 
 		it('should handleDrawCanvasClicked when drawing is allowed', function () {

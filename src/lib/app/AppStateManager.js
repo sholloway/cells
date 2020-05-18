@@ -36,6 +36,7 @@ class AppStateManager {
 		this.observers = new Map();
 		this.drawingAllowed = true;
 		this.drawingCellsCount = 0;
+		this.displayGrid = false;
 		this.fullScreenDesired = false;
 		this.renderers = new Map();
 		this.scenes = new Map();

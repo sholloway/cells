@@ -120,6 +120,16 @@ class Main {
 			this.toggleDisplayStorageStructure.bind(this)
 		);
 
+		getElementById('display_grid').addEventListener(
+			'dispay-grid-toggle',
+			this.handleGridBackgroundClicked.bind(this)
+		);
+
+		getElementById('display_fullscreen').addEventListener(
+			'enable-fullscreen-toggle',
+			this.handleFullScreenClicked.bind(this)
+		);
+
 		return this;
 	}
 
@@ -156,7 +166,7 @@ class Main {
 	handlePageResize(event) {
 		sizeCanvas(this);
 		updateConfiguredLandscape(this.config);
-		this.handleGridBackgroundClicked();
+		this.refreshGrid();
 	}
 
 	/**
@@ -260,8 +270,13 @@ class Main {
 	/**
 	 * Event handler for when the grid checkbox is clicked.
 	 */
-	handleGridBackgroundClicked() {
-		getElementById('display_grid_background').checked
+	handleGridBackgroundClicked(event) {
+		this.stateManager.displayGrid = event.detail.checked;
+		this.refreshGrid();
+	}
+
+	refreshGrid() {
+		this.stateManager.displayGrid
 			? this.requestToDrawGrid()
 			: this.stateManager.clearRender(Layers.GRID);
 	}
@@ -302,7 +317,7 @@ class Main {
 			command: WorkerCommands.LifeSystemCommands.SET_CELL_SIZE,
 			cellSize: this.config.zoom,
 		});
-		this.handleGridBackgroundClicked();
+		this.refreshGrid();
 	}
 
 	/**
@@ -352,10 +367,8 @@ class Main {
 		}
 	}
 
-	handleFullScreenClicked() {
-		this.stateManager.setDisplayPreference(
-			getElementById('display_fullscreen').checked
-		);
+	handleFullScreenClicked(event) {
+		this.stateManager.setDisplayPreference(event.detail.checked);
 	}
 
 	displayContextMenu(clickEvent) {
