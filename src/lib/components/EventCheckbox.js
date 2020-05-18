@@ -25,7 +25,12 @@ class EventCheckbox extends LitElement {
 	 * @returns {string}
 	 */
 	static get styles() {
-		return css``;
+		return css`
+			:host {
+				margin-left: 2px;
+				margin-right: 2px;
+			}
+		`;
 	}
 
 	/**

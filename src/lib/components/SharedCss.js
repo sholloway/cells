@@ -13,7 +13,7 @@ const buttons = css`
 
 	button:focus {
 		outline: none;
-		border: 2px solid lightblue;
+		border: 2px solid #039be5;
 	}
 `;
 

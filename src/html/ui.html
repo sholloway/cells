@@ -13,9 +13,16 @@
 				value="20"
 			></cell-size-control>
 			<start-button state="IDLE"></start-button>
-			<event-button id="reset_button" event="sim-reset-requested"
-				>Reset</event-button
-			>
+			<!-- prettier-ignore -->
+			<event-button id="reset_button" 
+				event="sim-reset-requested">
+				Reset
+			</event-button>
+			<!-- prettier-ignore -->
+			<event-button id="fullscreen_button" 
+				event="fullscreen-requested">
+				Fullscreen
+			</event-button>
 		</div>
 		<div class="container row">
 			<event-checkbox id="display_quadtree" event="dispay-tree-toggle">
@@ -29,10 +36,6 @@
 			<event-checkbox id="display_fullscreen" event="enable-fullscreen-toggle">
 				Fullscreen
 			</event-checkbox>
-
-			<event-button id="fullscreen_button" event="fullscreen-requested">
-				Fullscreen
-			</event-button>
 		</div>
 	</div>
 	<div id="canvas_container" oncontextmenu="main.displayContextMenu(event);">
@@ -84,10 +87,14 @@
 	</div>
 	<div id="status_bar">
 		<span>
-			<label for="alive_cells_count"># Alive Cells: </label>
-			<input id="alive_cells_count" type="text" readonly="true" value="0" />
-			<label for="sim_generation_count">Generation:</label>
-			<input id="sim_generation_count" type="text" readonly="true" value="0" />
+			<number-display
+				id="alive_cells_count"
+				label="Alive Cells"
+			></number-display>
+			<number-display
+				id="sim_generation_count"
+				label="Generation"
+			></number-display>
 		</span>
 	</div>
 </div>

@@ -27,7 +27,11 @@ class ShapePicker extends LitElement {
 				margin-right: 2px;
 			}
 			select {
-				height: 21px;
+				height: 25px;
+			}
+			select:focus {
+				outline: none !important;
+				border: 2px solid #039be5;
 			}
 		`;
 	}
