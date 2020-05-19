@@ -55,10 +55,6 @@ class Main {
 	 * @returns {Main} Returns the instance of the main thread being modified.
 	 */
 	initialize() {
-		this.canvasContextMenu.initialize(
-			querySelector('.context-menu'),
-			this.canvasContextMenuEventHandler.bind(this)
-		);
 		this.stateManager.startMainLoop();
 		return this;
 	}
@@ -130,6 +126,11 @@ class Main {
 			this.handleFullScreenClicked.bind(this)
 		);
 
+		querySelector('context-menu').addEventListener(
+			'context-menu-command',
+			this.handleContextMenuCommand.bind(this)
+		);
+
 		return this;
 	}
 
@@ -174,8 +175,9 @@ class Main {
 	 * @param {Event} clickEvent Event generated when the draw canvas is clicked.
 	 */
 	handleDrawCanvasClicked(clickEvent) {
-		if (this.canvasContextMenu.isVisibile()) {
-			this.canvasContextMenu.hideMenu();
+		let menu = querySelector('context-menu');
+		if (menu.display) {
+			menu.display = false;
 			return;
 		}
 
@@ -191,7 +193,6 @@ class Main {
 	}
 
 	setCellShapeOption(event) {
-		// this.config.cell.shape = getElementById('cell_shape').value;
 		this.config.cell.shape = event.detail.shape;
 	}
 
@@ -374,11 +375,15 @@ class Main {
 	displayContextMenu(clickEvent) {
 		clickEvent.preventDefault();
 		let boundary = this.drawCanvas.getBoundingClientRect();
-		this.canvasContextMenu.setMenuPosition(
-			clickEvent,
-			boundary,
-			this.config.zoom
-		);
+		let contextMenu = querySelector('context-menu');
+
+		contextMenu.menuPosition = {
+			clickEvent: clickEvent,
+			boundary: boundary,
+			zoom: this.config.zoom,
+		};
+
+		contextMenu.display = true;
 		return false;
 	}
 
@@ -388,20 +393,20 @@ class Main {
 	 * @param {number} col - The vertical coordinate of the cell clicked.
 	 * @param {string} cmdName - The command clicked in the context menu
 	 */
-	canvasContextMenuEventHandler(row, col, cmdName) {
-		if (cmdName === 'start-sim') {
+	handleContextMenuCommand(event) {
+		if (event.detail.command === 'start-sim') {
 			this.handleStartButtonClicked();
 			return;
-		} else if (cmdName === 'reset') {
+		} else if (event.detail.command === 'reset') {
 			this.resetSimulation();
 			return;
 		}
 
 		this.stateManager.sendWorkerMessage(Layers.DRAWING, {
 			command: WorkerCommands.DrawingSystemCommands.DRAW_TEMPLATE,
-			templateName: cmdName,
-			row: row,
-			col: col,
+			templateName: event.detail.command,
+			row: event.detail.row,
+			col: event.detail.col,
 			config: this.config,
 		});
 	}

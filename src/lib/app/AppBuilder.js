@@ -9,7 +9,6 @@ const DrawingSceneBuilder = require('../scenes/DrawingSceneBuilder.js');
 const GridSceneBuilder = require('../scenes/GridSceneBuilder.js');
 const LifeSceneBuilder = require('../scenes/LifeSceneBuilder.js');
 const DisplayManager = require('./DisplayManager.js');
-const ContextMenu = require('../ui/ContextMenu.js');
 
 const {
 	GridSystemWorker,
@@ -52,7 +51,6 @@ class AppBuilder {
 		);
 
 		app.displayManager = new DisplayManager();
-		app.canvasContextMenu = new ContextMenu();
 
 		return app;
 	}

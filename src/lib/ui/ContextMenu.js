@@ -1,10 +1,3 @@
-const {
-	getElementById,
-	querySelector,
-	querySelectorAll,
-	setElementValue,
-} = require('../dom/DomUtilities');
-
 const { convertToCell } = require('./CanvasUtilities.js');
 
 const MenuStates = {

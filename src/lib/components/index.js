@@ -1,6 +1,9 @@
 require('./CellSizeControl.js');
+require('./ContextMenu.js');
 require('./EventButton.js');
 require('./EventCheckbox.js');
+require('./MenuItem.js');
 require('./NumberDisplay.js');
 require('./ShapePicker.js');
 require('./StartButton.js');
+require('./SubMenu.js');

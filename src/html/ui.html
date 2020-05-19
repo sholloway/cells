@@ -42,48 +42,7 @@
 		<canvas id="grid_canvas"></canvas>
 		<canvas id="sim_canvas"></canvas>
 		<canvas id="draw_canvas"></canvas>
-		<div class="context-menu">
-			<ul class="menu-options">
-				<li class="menu-option" id="start-sim">Start</li>
-				<li class="menu-option" id="reset">Reset</li>
-				<hr />
-				<li class="menu-option" id="conways-memorial">The Man</li>
-				<li class="menu-option" id="dice-roll">Dice Roll</li>
-				<hr />
-				<li class="submenu" arrow-icon="arrow_right">
-					<span>Static Objects</span>
-					<ul class="menu-options right">
-						<li class="menu-option" id="da-block">Block</li>
-					</ul>
-				</li>
-				<li class="submenu" arrow-icon="arrow_right">
-					<span>Oscillators</span>
-					<ul class="menu-options right">
-						<li class="menu-option" id="vert-spinner">V-Spinner</li>
-						<li class="menu-option" id="horiz-spinner">
-							H-Spinner
-						</li>
-						<li class="menu-option" id="toad">Toad</li>
-					</ul>
-				</li>
-				<li class="submenu" arrow-icon="arrow_right">
-					<span>Ships</span>
-					<ul class="menu-options right">
-						<li class="menu-option" id="glider">Glider</li>
-						<li class="menu-option" id="light-ship">Light Space Ship</li>
-					</ul>
-				</li>
-				<li class="submenu" arrow-icon="arrow_right">
-					<span>Wolfram</span>
-					<ul class="menu-options right">
-						<li class="menu-option" id="wr-rule-30">Rule 30</li>
-						<li class="menu-option" id="wr-rule-90">Rule 90</li>
-						<li class="menu-option" id="wr-rule-110">Rule 110</li>
-						<li class="menu-option" id="wr-rule-250">Rule 250</li>
-					</ul>
-				</li>
-			</ul>
-		</div>
+		<context-menu event='context-menu-command'></context-menu>
 	</div>
 	<div id="status_bar">
 		<number-display id="alive_cells_count" label="Alive Cells"></number-display>
