@@ -84,7 +84,13 @@ class ContextMenu extends LitElement {
 			display: { type: Boolean },
 			state: { type: String },
 			menuPosition: { type: Object },
+			updateCommandState: { type: Object },
 		};
+	}
+
+	set updateCommandState(cmdToChangeStr) {
+		let cmdToChange = JSON.parse(cmdToChangeStr);
+		this.commands.get(cmdToChange.key).activeState = cmdToChange.activeState;
 	}
 
 	get menuPosition() {

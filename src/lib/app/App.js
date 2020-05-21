@@ -420,9 +420,14 @@ class Main {
 				this.handleResumeButtonClicked();
 				break;
 			case 'reset':
-				//TODO: Need a good way to change the sim commands state based on
+				// Need a good way to change the sim commands state based on
 				// the user selecting reset and interacting with the start-button.
-				//querySelector('context-menu')
+				// Currently leveraging a property change to the component.
+				// Note: This feels like a hack...
+				querySelector('context-menu').updateCommandState = JSON.stringify({
+					key: 'runSim',
+					activeState: 'start'
+				});
 				this.resetSimulation();
 				break;
 			default:
