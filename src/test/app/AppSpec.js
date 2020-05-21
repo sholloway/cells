@@ -144,11 +144,6 @@ describe('The App', function () {
 			expect(app.stateManager.startMainLoop.calledOnce).to.be.true;
 		});
 
-		it('should initialize the context menu when intitializing the app', function () {
-			app.initialize();
-			expect(app.canvasContextMenu.initialize.calledOnce).to.be.true;
-		});
-
 		it('should handlePageLoad', function () {
 			app.window = window;
 			app.handlePageLoad();
