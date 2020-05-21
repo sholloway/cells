@@ -201,6 +201,10 @@ class Main {
 	 */
 	resetSimulation() {
 		this.stateManager.stopSimulation();
+		querySelector('context-menu').updateCommandState = JSON.stringify({
+			key: 'runSim',
+			activeState: 'start',
+		});
 		this.transitionToTheStartButton()
 			.resetAliveCellsComponent()
 			.resetSimGenerationCountComponent();
@@ -208,6 +212,10 @@ class Main {
 	}
 
 	handleStartButtonClicked() {
+		querySelector('context-menu').updateCommandState = JSON.stringify({
+			key: 'runSim',
+			activeState: 'pause',
+		});
 		return new Promise((resolve, reject) => {
 			Promise.resolve(
 				this.displayManager.setDisplayMode(
@@ -229,9 +237,17 @@ class Main {
 	handlePauseButtonClicked() {
 		this.stateManager.stopSimulation();
 		this.stateManager.pauseSimulationInDrawingMode();
+		querySelector('context-menu').updateCommandState = JSON.stringify({
+			key: 'runSim',
+			activeState: 'resume',
+		});
 	}
 
 	handleResumeButtonClicked() {
+		querySelector('context-menu').updateCommandState = JSON.stringify({
+			key: 'runSim',
+			activeState: 'pause',
+		});
 		Promise.resolve(
 			this.displayManager.setDisplayMode(
 				this.stateManager.getDisplayPreference()
@@ -420,14 +436,6 @@ class Main {
 				this.handleResumeButtonClicked();
 				break;
 			case 'reset':
-				// Need a good way to change the sim commands state based on
-				// the user selecting reset and interacting with the start-button.
-				// Currently leveraging a property change to the component.
-				// Note: This feels like a hack...
-				querySelector('context-menu').updateCommandState = JSON.stringify({
-					key: 'runSim',
-					activeState: 'start'
-				});
 				this.resetSimulation();
 				break;
 			default:
