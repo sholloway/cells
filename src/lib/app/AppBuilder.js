@@ -9,7 +9,6 @@ const DrawingSceneBuilder = require('../scenes/DrawingSceneBuilder.js');
 const GridSceneBuilder = require('../scenes/GridSceneBuilder.js');
 const LifeSceneBuilder = require('../scenes/LifeSceneBuilder.js');
 const DisplayManager = require('./DisplayManager.js');
-const ContextMenu = require('../ui/ContextMenu.js');
 
 const {
 	GridSystemWorker,
@@ -24,8 +23,8 @@ const {
 } = require('./AppMessageHandlers');
 
 class AppBuilder {
-	static buildApp(gridCanvas, simCanvas, drawCanvas, app) {
-		this.setupProperties(gridCanvas, simCanvas, drawCanvas, app);
+	static buildApp(gridCanvas, simCanvas, drawCanvas, startButton, app) {
+		this.setupProperties(gridCanvas, simCanvas, drawCanvas, startButton, app);
 		this.setupRenderers(app);
 		this.setupScenes(app);
 		return this.setupWorkers(app);
@@ -39,11 +38,12 @@ class AppBuilder {
 	 * @param {App} - The App to configure.
 	 * @returns {App} Returns the instance of the main thread being modified.
 	 */
-	static setupProperties(gridCanvas, simCanvas, drawCanvas, app) {
+	static setupProperties(gridCanvas, simCanvas, drawCanvas, startButton, app) {
 		app.config = DefaultConfig;
 		app.gridCanvas = gridCanvas;
 		app.simCanvas = simCanvas;
 		app.drawCanvas = drawCanvas;
+		app.startButton = startButton;
 		app.stateManager = new AppStateManager(app.config);
 		app.stateManager.subscribe(
 			AppStateManagerEvents.UI_CHANGES,
@@ -51,7 +51,6 @@ class AppBuilder {
 		);
 
 		app.displayManager = new DisplayManager();
-		app.canvasContextMenu = new ContextMenu();
 
 		return app;
 	}

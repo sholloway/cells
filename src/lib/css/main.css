@@ -40,11 +40,6 @@ body {
 	margin: 8px;
 }
 
-#simulation_controls {
-	padding-left: 10px;
-	margin-bottom: 10px;
-}
-
 #block {
 	height: 24px;
 	background-color: #006db3;
@@ -54,10 +49,6 @@ body {
 	border-top-width: 1px;
 	border-top-color: #3fafe8;
 	border-top-style: solid;
-}
-
-#cell_size {
-	width: 3em;
 }
 
 h1 {

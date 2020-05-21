@@ -1,7 +1,7 @@
 const { AbstractWorkerController } = require('./AbstractWorkerController.js');
 const DrawingSystem = require('./../core/DrawingSystem.js');
 const WorkerCommands = require('./WorkerCommands.js');
-const LifeCycle = WorkerCommands.LifeCycle;
+const Layers = require('./../app/AppLayers.js');
 const DrawingSystemCommands = WorkerCommands.DrawingSystemCommands;
 
 /**
@@ -101,7 +101,13 @@ class DrawingSystemWorkerController extends AbstractWorkerController {
 					msg,
 					msg.command,
 					() => true,
-					(msg) => this.drawingSystem.drawTemplate(msg.templateName, msg.row, msg.col, msg.config),
+					(msg) =>
+						this.drawingSystem.drawTemplate(
+							msg.templateName,
+							msg.row,
+							msg.col,
+							msg.config
+						),
 					'Could not send the drawing system cells.'
 				);
 				break;
@@ -123,6 +129,7 @@ class DrawingSystemWorkerController extends AbstractWorkerController {
 				id: msg.id,
 				promisedResponse: msg.promisedResponse,
 				command: msg.command,
+				origin: Layers.DRAWING,
 				stack: this.drawingSystem.getScene().getStack(),
 			});
 		}

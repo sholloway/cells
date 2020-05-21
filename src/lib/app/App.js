@@ -38,9 +38,16 @@ class Main {
 		gridCanvas,
 		simCanvas,
 		drawCanvas,
+		startButton,
 		instance = new Main()
 	) {
-		return AppBuilder.buildApp(gridCanvas, simCanvas, drawCanvas, instance);
+		return AppBuilder.buildApp(
+			gridCanvas,
+			simCanvas,
+			drawCanvas,
+			startButton,
+			instance
+		);
 	}
 
 	/**
@@ -48,10 +55,6 @@ class Main {
 	 * @returns {Main} Returns the instance of the main thread being modified.
 	 */
 	initialize() {
-		this.canvasContextMenu.initialize(
-			querySelector('.context-menu'),
-			this.canvasContextMenuEventHandler.bind(this)
-		);
 		this.stateManager.startMainLoop();
 		return this;
 	}
@@ -72,7 +75,62 @@ class Main {
 			'mousemove',
 			this.handleDrawCanvasMouseMoved.bind(this)
 		);
-		//  = function(e){}
+
+		this.startButton.addEventListener(
+			'sim-event-start-requested',
+			this.handleStartButtonClicked.bind(this)
+		);
+
+		this.startButton.addEventListener(
+			'sim-event-pause-requested',
+			this.handlePauseButtonClicked.bind(this)
+		);
+
+		this.startButton.addEventListener(
+			'sim-event-resume-requested',
+			this.handleResumeButtonClicked.bind(this)
+		);
+
+		getElementById('reset_button').addEventListener(
+			'sim-reset-requested',
+			this.resetSimulation.bind(this)
+		);
+
+		getElementById('fullscreen_button').addEventListener(
+			'fullscreen-requested',
+			this.launchFullScreen.bind(this)
+		);
+
+		querySelector('shape-picker').addEventListener(
+			'cell-shape-changed',
+			this.setCellShapeOption.bind(this)
+		);
+
+		querySelector('cell-size-control').addEventListener(
+			'cell-size-changed',
+			this.changedCellSize.bind(this)
+		);
+
+		getElementById('display_quadtree').addEventListener(
+			'dispay-tree-toggle',
+			this.toggleDisplayStorageStructure.bind(this)
+		);
+
+		getElementById('display_grid').addEventListener(
+			'dispay-grid-toggle',
+			this.handleGridBackgroundClicked.bind(this)
+		);
+
+		getElementById('display_fullscreen').addEventListener(
+			'enable-fullscreen-toggle',
+			this.handleFullScreenClicked.bind(this)
+		);
+
+		querySelector('context-menu').addEventListener(
+			'context-menu-command',
+			this.handleContextMenuCommand.bind(this)
+		);
+
 		return this;
 	}
 
@@ -108,9 +166,8 @@ class Main {
 	 */
 	handlePageResize(event) {
 		sizeCanvas(this);
-		updateConfiguredZoom(this.config);
 		updateConfiguredLandscape(this.config);
-		this.handleGridBackgroundClicked();
+		this.refreshGrid();
 	}
 
 	/**
@@ -118,8 +175,9 @@ class Main {
 	 * @param {Event} clickEvent Event generated when the draw canvas is clicked.
 	 */
 	handleDrawCanvasClicked(clickEvent) {
-		if (this.canvasContextMenu.isVisibile()) {
-			this.canvasContextMenu.hideMenu();
+		let menu = querySelector('context-menu');
+		if (menu.display) {
+			menu.display = false;
 			return;
 		}
 
@@ -134,13 +192,8 @@ class Main {
 		}
 	}
 
-	setCellShapeOption() {
-		this.config.cell.shape = getElementById('cell_shape').value;
-	}
-
-	setTopology() {
-		this.config.landscape.topology = getElementById('topology').value;
-		this.stateManager.setTopology();
+	setCellShapeOption(event) {
+		this.config.cell.shape = event.detail.shape;
 	}
 
 	/**
@@ -148,38 +201,22 @@ class Main {
 	 */
 	resetSimulation() {
 		this.stateManager.stopSimulation();
+		querySelector('context-menu').updateCommandState = JSON.stringify({
+			key: 'runSim',
+			activeState: 'start',
+		});
 		this.transitionToTheStartButton()
 			.resetAliveCellsComponent()
 			.resetSimGenerationCountComponent();
 		return this.stateManager.allowDrawing().resetSimulation();
 	}
 
-	/**
-	 * Starts and stops the simulation.
-	 */
-	toggleSimulation() {
-		let button = getElementById('play_pause_button');
-		// let isInDrawingMode = getElementById('seed').value === 'draw';
-		let promise;
-		switch (button.innerText) {
-			case 'Start':
-				promise = this.handleStartButtonClicked();
-				break;
-			case 'Pause':
-				promise = this.handlePauseButtonClicked();
-				break;
-			case 'Resume':
-				promise = this.handleResumeButtonClicked();
-				break;
-			default:
-				throw new Error('Unknown button state.');
-		}
-		return promise;
-	}
-
 	handleStartButtonClicked() {
+		querySelector('context-menu').updateCommandState = JSON.stringify({
+			key: 'runSim',
+			activeState: 'pause',
+		});
 		return new Promise((resolve, reject) => {
-			this.transitionToThePauseButton();
 			Promise.resolve(
 				this.displayManager.setDisplayMode(
 					this.stateManager.getDisplayPreference()
@@ -197,14 +234,20 @@ class Main {
 		});
 	}
 
-	handlePauseButtonClicked(isInDrawingMode) {
-		this.transitionToTheResumeButton();
+	handlePauseButtonClicked() {
 		this.stateManager.stopSimulation();
 		this.stateManager.pauseSimulationInDrawingMode();
+		querySelector('context-menu').updateCommandState = JSON.stringify({
+			key: 'runSim',
+			activeState: 'resume',
+		});
 	}
 
 	handleResumeButtonClicked() {
-		this.transitionToThePauseButton();
+		querySelector('context-menu').updateCommandState = JSON.stringify({
+			key: 'runSim',
+			activeState: 'pause',
+		});
 		Promise.resolve(
 			this.displayManager.setDisplayMode(
 				this.stateManager.getDisplayPreference()
@@ -227,27 +270,7 @@ class Main {
 	 * @returns {Main} Returns the instance of the main thread being modified.
 	 */
 	transitionToTheStartButton() {
-		getElementById('play_pause_button').innerText = 'Start';
-		return this;
-	}
-
-	/**
-	 * Changes the current state of the simulation button.
-	 * @private
-	 * @returns {Main} Returns the instance of the main thread being modified.
-	 */
-	transitionToTheResumeButton() {
-		getElementById('play_pause_button').innerText = 'Resume';
-		return this;
-	}
-
-	/**
-	 * Changes the current state of the simulation button.
-	 * @private
-	 * @returns {Main} Returns the instance of the main thread being modified.
-	 */
-	transitionToThePauseButton() {
-		getElementById('play_pause_button').innerText = 'Pause';
+		this.startButton.state = 'IDLE';
 		return this;
 	}
 
@@ -264,8 +287,13 @@ class Main {
 	/**
 	 * Event handler for when the grid checkbox is clicked.
 	 */
-	handleGridBackgroundClicked() {
-		getElementById('display_grid_background').checked
+	handleGridBackgroundClicked(event) {
+		this.stateManager.displayGrid = event.detail.checked;
+		this.refreshGrid();
+	}
+
+	refreshGrid() {
+		this.stateManager.displayGrid
 			? this.requestToDrawGrid()
 			: this.stateManager.clearRender(Layers.GRID);
 	}
@@ -275,12 +303,11 @@ class Main {
 	 * @private
 	 */
 	requestToDrawGrid() {
-		let cellSize = getCellSize();
 		this.stateManager.sendWorkerMessage(Layers.GRID, {
 			command: WorkerCommands.LifeCycle.PROCESS_CYCLE,
 			parameters: {
-				cellWidth: cellSize,
-				cellHeight: cellSize,
+				cellWidth: this.config.zoom,
+				cellHeight: this.config.zoom,
 				gridWidth: this.config.canvas.width,
 				gridHeight: this.config.canvas.height,
 			},
@@ -290,10 +317,10 @@ class Main {
 	/**
 	 * Command all registered workers to set their display storage setting.
 	 */
-	toggleDisplayStorageStructure() {
+	toggleDisplayStorageStructure(event) {
 		this.stateManager.broadcast({
 			command: WorkerCommands.LifeSystemCommands.DISPLAY_STORAGE,
-			displayStorage: getElementById('display_storage').checked,
+			displayStorage: event.detail.checked,
 		});
 	}
 
@@ -301,19 +328,13 @@ class Main {
 	 * Command all registered workers to set their cell size.
 	 */
 	changedCellSize(event) {
-		let value = event.srcElement.valueAsNumber;
-		if (Number.isNaN(value)) {
-			value = this.config.zoom; //use the pervious value.
-			setElementValue('cell_size', value);
-		} else {
-			this.config.zoom = value;
-		}
+		this.config.zoom = event.detail.cellSize;
 		//Inform the drawing system and Life Simulation of the change.
 		this.stateManager.broadcast({
 			command: WorkerCommands.LifeSystemCommands.SET_CELL_SIZE,
 			cellSize: this.config.zoom,
 		});
-		this.handleGridBackgroundClicked();
+		this.refreshGrid();
 	}
 
 	/**
@@ -332,6 +353,14 @@ class Main {
 				message.numberOfSimulationIterations
 			);
 
+		if (message.origin && message.origin == Layers.DRAWING && message.stack) {
+			this.manageStartButtonEnablement(
+				this.stateManager.getDrawingCellsCount(),
+				message.stack.length
+			);
+			this.stateManager.setDrawingCellsCount(message.stack.length);
+		}
+
 		if (message.simulationStopped) {
 			document && document.fullscreenElement && document.exitFullscreen();
 			this.resetSimulation();
@@ -339,20 +368,38 @@ class Main {
 		return this;
 	}
 
-	handleFullScreenClicked() {
-		this.stateManager.setDisplayPreference(
-			getElementById('display_fullscreen').checked
-		);
+	/** 
+		Enables or disables the start button based on if the drawing contains
+		any cells. 
+
+   	Rules: 
+    	- When the drawing cell count drops to zero, disable Start Button.
+    	- When the drawing cell count increases past zero enable the start button.
+	*/
+	manageStartButtonEnablement(currentDrawingCellsCount, nextDrawingCellsCount) {
+		if (currentDrawingCellsCount == 0 && nextDrawingCellsCount > 0) {
+			this.startButton.enabled = true;
+		} else if (currentDrawingCellsCount > 0 && nextDrawingCellsCount == 0) {
+			this.startButton.enabled = false;
+		}
+	}
+
+	handleFullScreenClicked(event) {
+		this.stateManager.setDisplayPreference(event.detail.checked);
 	}
 
 	displayContextMenu(clickEvent) {
 		clickEvent.preventDefault();
 		let boundary = this.drawCanvas.getBoundingClientRect();
-		this.canvasContextMenu.setMenuPosition(
-			clickEvent,
-			boundary,
-			this.config.zoom
-		);
+		let contextMenu = querySelector('context-menu');
+
+		contextMenu.menuPosition = {
+			clickEvent: clickEvent,
+			boundary: boundary,
+			zoom: this.config.zoom,
+		};
+
+		contextMenu.display = true;
 		return false;
 	}
 
@@ -362,22 +409,39 @@ class Main {
 	 * @param {number} col - The vertical coordinate of the cell clicked.
 	 * @param {string} cmdName - The command clicked in the context menu
 	 */
-	canvasContextMenuEventHandler(row, col, cmdName) {
-		if (cmdName === 'start-sim') {
-			this.handleStartButtonClicked();
-			return;
-		} else if (cmdName === 'reset') {
-			this.resetSimulation();
-			return;
-		}
+	handleContextMenuCommand(event) {
+		event.detail.simCommand
+			? this.processContextMenuSimCommand(event)
+			: this.stateManager.sendWorkerMessage(Layers.DRAWING, {
+					command: WorkerCommands.DrawingSystemCommands.DRAW_TEMPLATE,
+					templateName: event.detail.command,
+					row: event.detail.row,
+					col: event.detail.col,
+					config: this.config,
+			  });
+	}
 
-		this.stateManager.sendWorkerMessage(Layers.DRAWING, {
-			command: WorkerCommands.DrawingSystemCommands.DRAW_TEMPLATE,
-			templateName: cmdName,
-			row: row,
-			col: col,
-			config: this.config,
-		});
+	processContextMenuSimCommand(event) {
+		switch (event.detail.command) {
+			case 'start-sim':
+				this.startButton.state = 'RUNNING';
+				this.handleStartButtonClicked();
+				break;
+			case 'pause-sim':
+				this.startButton.state = 'PAUSED';
+				this.handlePauseButtonClicked();
+				break;
+			case 'resume-sim':
+				this.startButton.state = 'RUNNING';
+				this.handleResumeButtonClicked();
+				break;
+			case 'reset':
+				this.resetSimulation();
+				break;
+			default:
+				throw new Error('Unknown context menu command.');
+		}
+		return;
 	}
 
 	launchFullScreen() {

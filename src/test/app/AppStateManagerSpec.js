@@ -233,7 +233,6 @@ describe('AppStateManager', function () {
 		return Promise.resolve(stateManager.startSimulation()).then(() => {
 			expect(stateManager.workerSystem.promiseResponse.calledOnce).to.be.true;
 			expect(stateManager.processCycleMessage.calledOnce).to.be.true;
-			expect(configUtils.updateConfiguredZoom.calledOnce).to.be.true;
 			expect(configUtils.updateConfiguredLandscape.calledOnce).to.be.true;
 			expect(stateManager.setSeederOnLifeSystem.calledOnce).to.be.true;
 			expect(stateManager.startWorker.calledOnce).to.be.true;

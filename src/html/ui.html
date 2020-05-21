@@ -5,130 +5,50 @@
 	</div>
 	<div id="control_bar">
 		<div class="container row">
-			<label for="topology">Topology</label>
-			<select id="topology" onchange="main.setTopology()">
-				<option value="finite-plane">Finite Plane</option>
-				<!-- <option value="torus">Torus</option> -->
-			</select>
-
-			<!-- <label for="seed">Preset</label>
-			<select id="seed" onchange="main.setSeedingOption()">
-				<option value="draw">Draw</option>
-				<option value="random">Random</option>
-			</select> -->
-
-			<label for="cell_shape">Cell Shape</label>
-			<select id="cell_shape" onchange="main.setCellShapeOption()">
-				<option value="circle">Circle</option>
-				<option value="square">Square</option>
-			</select>
-
-			<label for="cell_size">Cell Size</label>
-			<input
-				id="cell_size"
-				type="number"
-				min="1"
+			<shape-picker event="cell-shape-changed"></shape-picker>
+			<cell-size-control
+				event="cell-size-changed"
+				min="5"
 				max="100"
 				value="20"
-				step="1"
-				onchange="main.changedCellSize(event);"
-			/>
-			<button
-				id="play_pause_button"
-				type="button"
-				onclick="main.toggleSimulation();"
-			>
-				Start
-			</button>
-			<button id="reset_button" type="button" onclick="main.resetSimulation();">
+			></cell-size-control>
+			<start-button state="IDLE"></start-button>
+			<!-- prettier-ignore -->
+			<event-button id="reset_button" 
+				event="sim-reset-requested">
 				Reset
-			</button>
+			</event-button>
+			<!-- prettier-ignore -->
+			<event-button id="fullscreen_button" 
+				event="fullscreen-requested">
+				Fullscreen
+			</event-button>
 		</div>
 		<div class="container row">
-			<input
-				type="checkbox"
-				id="display_storage"
-				name="display_storage"
-				onclick="main.toggleDisplayStorageStructure();"
-			/>
-			<label for="display_storage">Display Storage Structure</label>
+			<event-checkbox id="display_quadtree" event="dispay-tree-toggle">
+				Display Quadtree
+			</event-checkbox>
 
-			<input
-				type="checkbox"
-				id="display_grid_background"
-				name="display_grid_background"
-				onclick="main.handleGridBackgroundClicked();"
-			/>
-			<label for="display_grid_background">Display Grid</label>
-			<input
-				type="checkbox"
-				id="display_fullscreen"
-				name="display_fullscreen"
-				onclick="main.handleFullScreenClicked();"
-			/>
-			<label for="display_fullscreen">Fullscreen</label>
-			<button
-				id="fullscreen_button"
-				type="button"
-				onclick="main.launchFullScreen();"
-			>
+			<event-checkbox id="display_grid" event="dispay-grid-toggle">
+				Display Grid
+			</event-checkbox>
+
+			<event-checkbox id="display_fullscreen" event="enable-fullscreen-toggle">
 				Fullscreen
-			</button>
+			</event-checkbox>
 		</div>
 	</div>
 	<div id="canvas_container" oncontextmenu="main.displayContextMenu(event);">
 		<canvas id="grid_canvas"></canvas>
 		<canvas id="sim_canvas"></canvas>
 		<canvas id="draw_canvas"></canvas>
-		<div class="context-menu">
-			<ul class="menu-options">
-				<li class="menu-option" id="start-sim">Start</li>
-				<li class="menu-option" id="reset">Reset</li>
-				<hr />
-				<li class="menu-option" id="conways-memorial">The Man</li>
-				<li class="menu-option" id="dice-roll">Dice Roll</li>
-				<hr />
-				<li class="submenu" arrow-icon="arrow_right">
-					<span>Static Objects</span>
-					<ul class="menu-options right">
-						<li class="menu-option" id="da-block">Block</li>
-					</ul>
-				</li>
-				<li class="submenu" arrow-icon="arrow_right">
-					<span>Oscillators</span>
-					<ul class="menu-options right">
-						<li class="menu-option" id="vert-spinner">V-Spinner</li>
-						<li class="menu-option" id="horiz-spinner">
-							H-Spinner
-						</li>
-						<li class="menu-option" id="toad">Toad</li>
-					</ul>
-				</li>
-				<li class="submenu" arrow-icon="arrow_right">
-					<span>Ships</span>
-					<ul class="menu-options right">
-						<li class="menu-option" id="glider">Glider</li>
-						<li class="menu-option" id="light-ship">Light Space Ship</li>
-					</ul>
-				</li>
-				<li class="submenu" arrow-icon="arrow_right">
-					<span>Wolfram</span>
-					<ul class="menu-options right">
-						<li class="menu-option" id="wr-rule-30">Rule 30</li>
-						<li class="menu-option" id="wr-rule-90">Rule 90</li>
-						<li class="menu-option" id="wr-rule-110">Rule 110</li>
-						<li class="menu-option" id="wr-rule-250">Rule 250</li>
-					</ul>
-				</li>
-			</ul>
-		</div>
+		<context-menu event='context-menu-command'></context-menu>
 	</div>
 	<div id="status_bar">
-		<span>
-			<label for="alive_cells_count"># Alive Cells: </label>
-			<input id="alive_cells_count" type="text" readonly="true" value="0" />
-			<label for="sim_generation_count">Generation:</label>
-			<input id="sim_generation_count" type="text" readonly="true" value="0" />
-		</span>
+		<number-display id="alive_cells_count" label="Alive Cells"></number-display>
+		<number-display
+			id="sim_generation_count"
+			label="Generation"
+		></number-display>
 	</div>
 </div>

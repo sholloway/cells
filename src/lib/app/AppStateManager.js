@@ -35,12 +35,28 @@ class AppStateManager {
 		this.config.activeCell = { row: 0, col: 0 };
 		this.observers = new Map();
 		this.drawingAllowed = true;
+		this.drawingCellsCount = 0;
+		this.displayGrid = false;
 		this.fullScreenDesired = false;
 		this.renderers = new Map();
 		this.scenes = new Map();
 		this.sceneBuilders = new Map();
 		this.workers = new Map();
 		this.workerSystem = new WorkerSystem(this.getWindow(), config);
+	}
+
+	/**
+	 * Manages the change in state based on many drawing cells there are.
+	 * When the drawing cell count drops to zero, disable Start Button.
+	 * When the drawing cell count increases past zero enable the start button.
+	 * @param {number} cellsCount
+	 */
+	setDrawingCellsCount(cellsCount) {
+		this.drawingCellsCount = cellsCount;
+	}
+
+	getDrawingCellsCount() {
+		return this.drawingCellsCount;
 	}
 
 	setActiveCell(cellLocation) {
@@ -317,7 +333,7 @@ class AppStateManager {
 					stack: response.cells,
 				});
 				//3rd Configure the Life Sim.
-				updateConfiguredZoom(this.config);
+				// updateConfiguredZoom(this.config);
 				updateConfiguredLandscape(this.config);
 				return this.setSeederOnLifeSystem(response.cells);
 			})
