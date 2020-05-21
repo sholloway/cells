@@ -19,10 +19,22 @@ class ContextMenu extends LitElement {
 		this.activeCell = null;
 		this._menuPosition = { x: 0, y: 0 };
 
-		this.commands = [
-			{ command: 'start-sim', label: 'Start' },
-			{ command: 'reset', label: 'Reset' },
-		];
+		this.commands = new Map();
+		this.commands.set('runSim', {
+			key: 'runSim',
+			activeState: 'start',
+			states: {
+				start: { label: 'Start', next: 'pause', command: 'start-sim' },
+				pause: { label: 'Pause', next: 'resume', command: 'pause-sim' },
+				resume: { label: 'Resume', next: 'pause', command: 'resume-sim' },
+			},
+		});
+
+		this.commands.set('reset', {
+			key: 'reset',
+			activeState: 'reset',
+			states: { reset: { label: 'Reset', next: 'reset', command: 'reset' } },
+		});
 
 		this.topLevelOptions = [
 			{ command: 'conways-memorial', label: 'The Man' },
@@ -182,7 +194,9 @@ class ContextMenu extends LitElement {
 				style="left: ${this._menuPosition.x}px; top: ${this._menuPosition.y}px;"
 			>
 				<ul class="menu-options">
-					${this.commands.map((c) => this.renderMenuItem(c))}
+					${Array.from(this.commands.values()).map((c) =>
+						this.renderStatefulMenuItem(c)
+					)}
 					<hr />
 					${this.topLevelOptions.map((c) => this.renderMenuItem(c))}
 					<hr />
@@ -190,6 +204,17 @@ class ContextMenu extends LitElement {
 				</ul>
 			</div>
 		`;
+	}
+
+	renderStatefulMenuItem(item) {
+		return html`<stateful-menu-item
+			key=${item.key}
+			activeState=${item.activeState}
+			next=${item.states[item.activeState].next}
+			label=${item.states[item.activeState].label}
+			command=${item.states[item.activeState].command}
+			@menu-item-clicked="${this.handleCommandClicked}"
+		></stateful-menu-item>`;
 	}
 
 	renderMenuItem(item) {
@@ -227,6 +252,25 @@ class ContextMenu extends LitElement {
 				},
 			})
 		);
+		this.display = false;
+	}
+
+	handleCommandClicked(event) {
+		event.stopPropagation();
+		this.dispatchEvent(
+			new CustomEvent(this.event, {
+				bubbles: this.eventBubbles,
+				composed: this.eventBubbles,
+				cancelable: true,
+				detail: {
+					row: this.activeCell.x,
+					col: this.activeCell.y,
+					command: event.detail.command,
+					simCommand: true,
+				},
+			})
+		);
+		this.commands.get(event.detail.key).activeState = event.detail.next;
 		this.display = false;
 	}
 }

@@ -226,7 +226,7 @@ class Main {
 		});
 	}
 
-	handlePauseButtonClicked(isInDrawingMode) {
+	handlePauseButtonClicked() {
 		this.stateManager.stopSimulation();
 		this.stateManager.pauseSimulationInDrawingMode();
 	}
@@ -394,21 +394,41 @@ class Main {
 	 * @param {string} cmdName - The command clicked in the context menu
 	 */
 	handleContextMenuCommand(event) {
-		if (event.detail.command === 'start-sim') {
-			this.handleStartButtonClicked();
-			return;
-		} else if (event.detail.command === 'reset') {
-			this.resetSimulation();
-			return;
-		}
+		event.detail.simCommand
+			? this.processContextMenuSimCommand(event)
+			: this.stateManager.sendWorkerMessage(Layers.DRAWING, {
+					command: WorkerCommands.DrawingSystemCommands.DRAW_TEMPLATE,
+					templateName: event.detail.command,
+					row: event.detail.row,
+					col: event.detail.col,
+					config: this.config,
+			  });
+	}
 
-		this.stateManager.sendWorkerMessage(Layers.DRAWING, {
-			command: WorkerCommands.DrawingSystemCommands.DRAW_TEMPLATE,
-			templateName: event.detail.command,
-			row: event.detail.row,
-			col: event.detail.col,
-			config: this.config,
-		});
+	processContextMenuSimCommand(event) {
+		switch (event.detail.command) {
+			case 'start-sim':
+				this.startButton.state = 'RUNNING';
+				this.handleStartButtonClicked();
+				break;
+			case 'pause-sim':
+				this.startButton.state = 'PAUSED';
+				this.handlePauseButtonClicked();
+				break;
+			case 'resume-sim':
+				this.startButton.state = 'RUNNING';
+				this.handleResumeButtonClicked();
+				break;
+			case 'reset':
+				//TODO: Need a good way to change the sim commands state based on
+				// the user selecting reset and interacting with the start-button.
+				//querySelector('context-menu')
+				this.resetSimulation();
+				break;
+			default:
+				throw new Error('Unknown context menu command.');
+		}
+		return;
 	}
 
 	launchFullScreen() {

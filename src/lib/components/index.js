@@ -5,5 +5,6 @@ require('./EventCheckbox.js');
 require('./MenuItem.js');
 require('./NumberDisplay.js');
 require('./ShapePicker.js');
+require('./StatefulMenuItem.js');
 require('./StartButton.js');
 require('./SubMenu.js');
