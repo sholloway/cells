@@ -1,3 +1,4 @@
+require('./AppComponent.js');
 require('./CellSizeControl.js');
 require('./ContextMenu.js');
 require('./EventButton.js');

@@ -14,9 +14,7 @@ const Workers = require('../workers/WorkerNames.js');
 const { convertToCell, sizeCanvas } = require('../ui/CanvasUtilities.js');
 
 const {
-	updateConfiguredZoom,
 	updateConfiguredLandscape,
-	getCellSize,
 } = require('../ui/UIConfigurationUtilities.js');
 
 const TemplateFactory = require('../templates/TemplateFactory.js');
@@ -67,6 +65,7 @@ class Main {
 	registerEventHandlers(window) {
 		window.addEventListener('load', this.handlePageLoad.bind(this));
 		window.addEventListener('resize', this.handlePageResize.bind(this));
+
 		this.drawCanvas.addEventListener(
 			'click',
 			this.handleDrawCanvasClicked.bind(this)
