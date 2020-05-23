@@ -70,6 +70,7 @@ class Main {
 			'click',
 			this.handleDrawCanvasClicked.bind(this)
 		);
+
 		this.drawCanvas.addEventListener(
 			'mousemove',
 			this.handleDrawCanvasMouseMoved.bind(this)

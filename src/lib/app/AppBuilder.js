@@ -23,27 +23,19 @@ const {
 } = require('./AppMessageHandlers');
 
 class AppBuilder {
-	static buildApp(gridCanvas, simCanvas, drawCanvas, startButton, app) {
-		this.setupProperties(gridCanvas, simCanvas, drawCanvas, startButton, app);
-		this.setupRenderers(app);
+	static buildApp(app) {
+		this.setupProperties(app);
 		this.setupScenes(app);
 		return this.setupWorkers(app);
 	}
 
 	/**
 	 * Initialize all properties for the main thread.
-	 * @param {HTMLCanvasElement} gridCanvas - The HTML canvas to use for rendering the grid.
-	 * @param {HTMLCanvasElement} simCanvas - The HTML canvas to use for rendering the simulation.
-	 * @param {HTMLCanvasElement} drawCanvas - The HTML canvas to use for drawing.
 	 * @param {App} - The App to configure.
 	 * @returns {App} Returns the instance of the main thread being modified.
 	 */
-	static setupProperties(gridCanvas, simCanvas, drawCanvas, startButton, app) {
+	static setupProperties(app) {
 		app.config = DefaultConfig;
-		app.gridCanvas = gridCanvas;
-		app.simCanvas = simCanvas;
-		app.drawCanvas = drawCanvas;
-		app.startButton = startButton;
 		app.stateManager = new AppStateManager(app.config);
 		app.stateManager.subscribe(
 			AppStateManagerEvents.UI_CHANGES,
@@ -61,9 +53,9 @@ class AppBuilder {
 	 */
 	static setupRenderers(app) {
 		app.stateManager
-			.registerRenderer(Layers.GRID, app.gridCanvas.getContext('2d'))
-			.registerRenderer(Layers.DRAWING, app.drawCanvas.getContext('2d'))
-			.registerRenderer(Layers.SIM, app.simCanvas.getContext('2d'));
+			.registerRenderer(Layers.GRID, app.getCanvasContext('grid_canvas'))
+			.registerRenderer(Layers.DRAWING, app.getCanvasContext('draw_canvas'))
+			.registerRenderer(Layers.SIM, app.getCanvasContext('sim_canvas'));
 		return app;
 	}
 
