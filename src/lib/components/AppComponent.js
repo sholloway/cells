@@ -89,7 +89,6 @@ class AppComponent extends LitElement {
 	 * Life Cycle Method: Draws the component when a property has changed
 	 */
 	render() {
-		console.log('top level rendered');
 		return html`
 			<div class="container col">
 				<div id="block"></div>
@@ -285,7 +284,7 @@ class AppComponent extends LitElement {
 		message.aliveCellsCount && this.setAliveCellsCount(message.aliveCellsCount);
 
 		message.numberOfSimulationIterations &&
-		this.setSimGenerationCountComponent(message.numberOfSimulationIterations);
+			this.setSimGenerationCountComponent(message.numberOfSimulationIterations);
 
 		if (message.origin && message.origin == Layers.DRAWING && message.stack) {
 			this.manageStartButtonEnablement(
@@ -323,7 +322,9 @@ class AppComponent extends LitElement {
 	 */
 	resetSimulation() {
 		this.stateManager.stopSimulation();
-		this.shadowRoot.querySelector('context-menu').updateCommandState = JSON.stringify({
+		this.shadowRoot.querySelector(
+			'context-menu'
+		).updateCommandState = JSON.stringify({
 			key: 'runSim',
 			activeState: 'start',
 		});
@@ -351,7 +352,9 @@ class AppComponent extends LitElement {
 	}
 
 	setSimGenerationCountComponent(count) {
-		this.shadowRoot.getElementById('sim_generation_count').setAttribute('value', count);
+		this.shadowRoot
+			.getElementById('sim_generation_count')
+			.setAttribute('value', count);
 		return this;
 	}
 
