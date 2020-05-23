@@ -30,30 +30,23 @@ describe('AppBuilder', function () {
 
 	it('buildApp() should setup the game', function () {
 		sinon.stub(AppBuilder, 'setupProperties');
-		sinon.stub(AppBuilder, 'setupRenderers');
 		sinon.stub(AppBuilder, 'setupScenes');
 		sinon.stub(AppBuilder, 'setupWorkers');
 
 		AppBuilder.buildApp();
 
 		expect(AppBuilder.setupProperties.calledOnce).to.be.true;
-		expect(AppBuilder.setupRenderers.calledOnce).to.be.true;
 		expect(AppBuilder.setupScenes.calledOnce).to.be.true;
 		expect(AppBuilder.setupWorkers.calledOnce).to.be.true;
 
 		AppBuilder.setupProperties.restore();
-		AppBuilder.setupRenderers.restore();
 		AppBuilder.setupScenes.restore();
 		AppBuilder.setupWorkers.restore();
 	});
 
 	it('should setupProperties', function () {
-		AppBuilder.setupProperties('a', 'b', 'c', 'd', app);
+		AppBuilder.setupProperties(app);
 		expect(app.config).to.not.be.undefined;
-		expect(app.gridCanvas).to.equal('a');
-		expect(app.simCanvas).to.equal('b');
-		expect(app.drawCanvas).to.equal('c');
-		expect(app.startButton).to.equal('d');
 		expect(app.stateManager).to.not.be.undefined;
 		expect(app.stateManager.observers.size).to.equal(1);
 
@@ -62,10 +55,12 @@ describe('AppBuilder', function () {
 	});
 
 	it('should setupRenderers', function () {
+		app.getCanvasContext = sinon.stub();
 		app.stateManager = { registerRenderer: () => {} };
 		sinon.stub(app.stateManager, 'registerRenderer').returns(app.stateManager);
 		AppBuilder.setupRenderers(app);
 		expect(app.stateManager.registerRenderer.callCount).to.equal(3);
+		expect(app.getCanvasContext.callCount).to.equal(3);
 	});
 
 	it('should setupScenes', function () {
