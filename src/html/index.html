@@ -14,18 +14,7 @@
 		/>
 	</head>
 	<body>
-		<!-- prettier-ignore -->
-		<%= require('html-loader!./ui.html') %> 
+		<conways-game></conways-game>
 		<%= htmlWebpackPlugin.tags.bodyTags%>
-		<script type="application/javascript">
-			const main = Conways.Game.buildInstance(
-				document.getElementById('grid_canvas'),
-				document.getElementById('sim_canvas'),
-				document.getElementById('draw_canvas'),
-				document.querySelector('start-button')
-			)
-				.registerEventHandlers(window)
-				.initialize();
-		</script>
 	</body>
 </html>

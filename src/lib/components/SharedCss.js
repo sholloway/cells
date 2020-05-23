@@ -17,6 +17,23 @@ const buttons = css`
 	}
 `;
 
+const grid = css`
+	.container {
+		display: flex;
+		background-color: #e1e2e1;
+	}
+
+	.col {
+		flex-direction: column;
+	}
+
+	.row {
+		flex-direction: row;
+		padding-top: 10px;
+	}
+`;
+
 module.exports = {
 	buttons,
+	grid
 };

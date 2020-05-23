@@ -5,6 +5,7 @@
 */coverage
 coverage
 .nyc_output
+.DS_Store
 
 #Node.js Stuff
 node_modules
