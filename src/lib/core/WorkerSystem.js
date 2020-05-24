@@ -11,6 +11,10 @@ const WorkerCommands = require('../workers/WorkerCommands.js').LifeCycle;
 
 const { nanoid } = require('nanoid');
 
+const PROCESS_CYCLE_MSG = {
+	command: WorkerCommands.PROCESS_CYCLE,
+};
+
 /**
  * Challenges
  * Need to associate multiple web workers that have already been intialized.
@@ -26,7 +30,7 @@ const { nanoid } = require('nanoid');
 class WorkerSystem extends BrowserSystem {
 	constructor(window, config) {
 		super(window, config);
-		this.workers = new Map(); //Pattern: name|worker instance
+		this.workers = new Map(); //Pattern: name|{thread: worker instance, dirty: Boolean}
 		this.promisedMessages = new Map();
 	}
 
@@ -36,9 +40,18 @@ class WorkerSystem extends BrowserSystem {
 	 * @param {WebWorker} worker - the worker to ping for update.
 	 */
 	registerWorker(name, worker) {
-		this.workers.set(name, worker);
+		this.workers.set(name, { thread: worker, dirty: true });
 		worker.onerror = this.workerErrorHandler.bind(this);
 		return this;
+	}
+
+	setWorkerDirtyFlag(workerName, flag) {
+		if (!this.workers.has(workerName)) {
+			throw new Error(
+				`Attempted to set the dirty flag on an unregisterd web worker. ${workerName}`
+			);
+		}
+		this.workers.get(workerName).dirty = flag;
 	}
 
 	workerErrorHandler(error) {
@@ -56,14 +69,14 @@ class WorkerSystem extends BrowserSystem {
 	 * @private
 	 */
 	update(frame) {
-		this.broadcast({
-			command: WorkerCommands.PROCESS_CYCLE,
+		this.workers.forEach((worker, name) => {
+			worker.dirty && worker.thread.postMessage(PROCESS_CYCLE_MSG);
 		});
 	}
 
 	broadcast(msg) {
 		this.workers.forEach((worker, name) => {
-			worker.postMessage(msg);
+			worker.thread.postMessage(msg);
 		});
 	}
 
@@ -84,7 +97,7 @@ class WorkerSystem extends BrowserSystem {
 				resolve: resolve,
 				reject: reject,
 			});
-			this.workers.get(workerName).postMessage(message);
+			this.workers.get(workerName).thread.postMessage(message);
 		});
 	}
 
