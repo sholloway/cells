@@ -85,6 +85,9 @@ class EntityBatch extends Entity {
 	}
 }
 
+const CELL_WIDTH = 1;
+const CELL_HEIGHT = 1;
+
 /**
  * Represents a single unit on an abstract 2D grid.
  *
@@ -97,17 +100,15 @@ class Cell extends Entity {
 	 * Create a new cell.
 	 * @param {number} row - The horizontal location of the cell on a grid.
 	 * @param {number} col - The vertical location of the cell on a grid.
-	 * @param {number} age - The number of simulation iterations the cell has been alive.
-	 * @param {CellState} state - The state of the cell.
 	 */
-	constructor(row, col, age = 0, state = CellStates.ALIVE) {
+	constructor(row, col) {
 		super();
 		this.className = 'Cell';
 		this.location = { row: row, col: col };
-		this.age = age;
-		this.width = 1;
-		this.height = 1;
-		this.state = state;
+	}
+
+	getState() {
+		return CellStates.ALIVE; //We're only dealing with alive cells.
 	}
 
 	/**
@@ -128,26 +129,19 @@ class Cell extends Entity {
 	}
 
 	/**
-	 * Getter for the cell's state.
-	 */
-	getState() {
-		return this.state;
-	}
-
-	/**
 	 * Create a deep copy of the cell.
 	 * @returns {Cell}
 	 */
 	clone() {
-		return new Cell(this.location.row, this.location.col, this.age, this.state);
+		return new Cell(this.location.row, this.location.col);
 	}
 
 	rightBoundary() {
-		return this.location.row + this.width;
+		return this.location.row + CELL_WIDTH;
 	}
 
 	lowerBoundary() {
-		return this.location.col + this.height;
+		return this.location.col + CELL_HEIGHT;
 	}
 
 	static buildInstance(params) {
@@ -168,6 +162,16 @@ class Cell extends Entity {
 				cells.push(this.buildInstance(obj));
 			}
 		});
+	}
+}
+
+class DeadCell extends Cell {
+	constructor(row, col) {
+		super(row, col);
+	}
+
+	getState() {
+		return CellStates.DEAD;
 	}
 }
 
@@ -229,7 +233,10 @@ class Box extends Entity {
 module.exports = {
 	Box,
 	Cell,
+	DeadCell,
 	Entity,
 	EntityBatch,
 	GridEntity,
+	CELL_HEIGHT,
+	CELL_WIDTH,
 };

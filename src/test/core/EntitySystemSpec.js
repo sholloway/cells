@@ -23,6 +23,8 @@ const {
 	Box,
 	Entity,
 	GridEntity,
+	CELL_HEIGHT,
+	CELL_WIDTH
 } = require('./../../lib/entity-system/Entities.js');
 
 describe('The Entity System', function () {
@@ -249,16 +251,14 @@ describe('The Entity System', function () {
 				location: {
 					row: 1,
 					col: 2,
-				},
-				width: 5,
-				height: 6,
+				}
 			},
 		};
 		trait.process(context);
 		expect(context.rendering.entity.x).to.equal(1);
 		expect(context.rendering.entity.y).to.equal(2);
-		expect(context.rendering.entity.width).to.equal(5);
-		expect(context.rendering.entity.height).to.equal(6);
+		expect(context.rendering.entity.width).to.equal(CELL_WIDTH);
+		expect(context.rendering.entity.height).to.equal(CELL_HEIGHT);
 	});
 
 	it('should GridPattern', function () {

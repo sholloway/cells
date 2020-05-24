@@ -1,3 +1,4 @@
+const {CELL_HEIGHT, CELL_WIDTH} = require('./Entities.js');
 /**
  * Selects a color based on the provided age.
  * @param {number} age
@@ -124,8 +125,8 @@ class GridCellToRenderingEntity extends Trait {
 		context.rendering.entity.y = context.entity.location.col;
 
 		//Define width & height
-		context.rendering.entity.width = context.entity.width;
-		context.rendering.entity.height = context.entity.height;
+		context.rendering.entity.width = CELL_WIDTH;
+		context.rendering.entity.height = CELL_HEIGHT;
 	}
 }
 
@@ -372,8 +373,8 @@ class BatchDrawingCells extends Trait {
 				context.rendererContext.rect(
 					cell.location.row * this.scalingFactor,
 					cell.location.col * this.scalingFactor,
-					cell.width * this.scalingFactor,
-					cell.height * this.scalingFactor
+					CELL_WIDTH * this.scalingFactor,
+					CELL_HEIGHT * this.scalingFactor
 				);
 			}
 		}

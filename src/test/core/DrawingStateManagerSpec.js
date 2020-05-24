@@ -37,8 +37,8 @@ describe('DrawingStateManager', function () {
 		dsm.toggleCell(3, 0);
 		expect(dsm.getCells().length).to.equal(4);
 		expect(dsm.getCells()).to.include.deep.members([
-			new Cell(0, 0, 1),
-			new Cell(2, 0, 1),
+			new Cell(0, 0),
+			new Cell(2, 0),
 		]);
 	});
 
@@ -48,16 +48,16 @@ describe('DrawingStateManager', function () {
 		dsm.toggleCell(1, 0);
 		dsm.toggleCell(2, 0);
 		expect(dsm.getCells()).to.include.deep.members([
-			new Cell(0, 0, 1),
-			new Cell(2, 0, 1),
-			new Cell(1, 0, 1),
+			new Cell(0, 0),
+			new Cell(2, 0),
+			new Cell(1, 0),
 		]);
 
 		//remove a cell
 		dsm.toggleCell(1, 0);
 		expect(dsm.getCells())
-			.to.include.deep.members([new Cell(0, 0, 1), new Cell(2, 0, 1)])
-			.but.not.include.deep.members([new Cell(1, 0, 1)]);
+			.to.include.deep.members([new Cell(0, 0), new Cell(2, 0)])
+			.but.not.include.deep.members([new Cell(1, 0)]);
 	});
 
 	it('should prepare all alive cells for rendering', function () {

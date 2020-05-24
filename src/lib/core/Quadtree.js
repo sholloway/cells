@@ -4,13 +4,13 @@
  */
 
 const CellStates = require('../entity-system/CellStates.js');
-const { Cell } = require('../entity-system/Entities');
+const { Cell, CELL_HEIGHT, CELL_WIDTH, DeadCell } = require('../entity-system/Entities');
 
 /**
- * Singleton instance of a dead cell.
- * */
-const DeadCell = new Cell(Infinity, Infinity, 0, CellStates.DEAD);
-Object.freeze(DeadCell);
+* Singleton instance of a dead cell.
+* */
+const DEAD_CELL = new DeadCell(Infinity, Infinity);
+Object.freeze(DEAD_CELL);
 
 /**
  * A node in the pointer based quad tree.
@@ -106,8 +106,8 @@ class QTNode {
 		return (
 			this.containsPoint(cell.location.row, cell.location.col) &&
 			this.containsPoint(
-				cell.location.row + cell.width,
-				cell.location.col + cell.height
+				cell.location.row + CELL_WIDTH,
+				cell.location.col + CELL_HEIGHT
 			)
 		);
 	}
@@ -606,7 +606,7 @@ class QuadTree {
 			let indexedCell = this.leaves[foundLeafNode.index];
 			return indexedCell;
 		} else {
-			return DeadCell;
+			return DEAD_CELL;
 		}
 	}
 
@@ -695,8 +695,7 @@ function scaleCells(cells, scalingFactor) {
 		(cell) =>
 			new Cell(
 				cell.location.row * scalingFactor,
-				cell.location.col * scalingFactor,
-				cell.age
+				cell.location.col * scalingFactor
 			)
 	);
 }
@@ -738,9 +737,7 @@ function cloneCells(cells) {
 }
 
 module.exports = {
-	Cell,
 	cloneCells,
-	DeadCell,
 	findAliveNeighbors,
 	QTNode,
 	QuadTree,

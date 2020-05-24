@@ -164,7 +164,7 @@ class GameManager {
 					foundCell.getState()
 				);
 				if (nextCellState == CellStates.ALIVE) {
-					nextAliveCells.push(new Cell(row, col, foundCell.age + 1));
+					nextAliveCells.push(new Cell(row, col));
 				}
 			}
 		}
@@ -196,7 +196,6 @@ class GameManager {
 		//1. Traverse every possible cell on the landscape, building up a list of new alive cells.
 		let aliveNeighborsCount,
 			nextCellState,
-			foundCell,
 			x,
 			y,
 			xx,
@@ -230,12 +229,7 @@ class GameManager {
 					currentCellState
 				);
 				if (nextCellState == CellStates.ALIVE) {
-					//Find current cell if it was included in the searched range.
-					let foundCell = aliveCells.find((cell) => {
-						return cell.location.row == row && cell.location.col == col;
-					});
-					let currentAge = foundCell ? foundCell.age : 0;
-					nextAliveCells.push(new Cell(row, col, currentAge + 1));
+					nextAliveCells.push(new Cell(row, col));
 				}
 			}
 		}
