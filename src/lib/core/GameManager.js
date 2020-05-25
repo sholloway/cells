@@ -194,14 +194,8 @@ class GameManager {
 	*/
 	evaluateCellsFaster(scene, evaluator = defaultCellEvaluator()) {
 		//1. Traverse every possible cell on the landscape, building up a list of new alive cells.
-		let aliveNeighborsCount,
-			nextCellState,
-			x,
-			y,
-			xx,
-			yy,
-			aliveCells,
-			currentCellState;
+		// prettier-ignore
+		let aliveNeighborsCount, nextCellState, x, y, xx, yy, aliveCells, currentCellState;
 		let nextAliveCells = [];
 		for (let row = 0; row < this.config.landscape.width; row++) {
 			for (let col = 0; col < this.config.landscape.height; col++) {
@@ -247,8 +241,14 @@ class GameManager {
 	 * Replace the current tree with the next state tree and re-initializes the next tree to be empty.
 	 */
 	activateNext() {
-		this.currentTree = QuadTree.clone(this.nextTree);
-		this.nextTree.clear().index();
+		//BUG: I thought I replaced this with a pointer.
+		// this.currentTree = QuadTree.clone(this.nextTree);
+		// this.nextTree.clear().index();
+		this.currentTree.clear(); //I wonder if we could speed this up by doing it as a promise?
+		this.currentTree = null;
+		this.currentTree = this.nextTree;
+		this.nextTree = QuadTree.empty();
+		this.nextTree.index();
 	}
 
 	/**
