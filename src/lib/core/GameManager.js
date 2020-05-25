@@ -206,25 +206,27 @@ class GameManager {
 
 				//Assume the cell is dead.
 				currentCellState = CellStates.DEAD;
-
-				//Count neighbors (O(n)) n max of 9
-				aliveNeighborsCount = aliveCells.reduce((count, cell) => {
-					if (!(cell.location.row == row && cell.location.col == col)) {
-						count++;
-					} else {
-						//If we stumble upon the current cell, then it is alive.
+				aliveNeighborsCount = aliveCells.length;
+				for (let i = 0; i < aliveCells.length; i++) {
+					if (
+						aliveCells[i].location.row == row &&
+						aliveCells[i].location.col == col
+					) {
 						currentCellState = CellStates.ALIVE;
+						aliveNeighborsCount--;
+						break;
 					}
-					return count;
-				}, 0);
+				}
 
-				nextCellState = evaluator.evaluate(
-					aliveNeighborsCount,
-					currentCellState
-				);
-				
-				if (nextCellState == CellStates.ALIVE) {
-					nextAliveCells.push(new Cell(row, col));
+				//Inlining evaluation for performance tuning.
+				if (currentCellState == CellStates.DEAD) {
+					if (aliveNeighborsCount == 3) {
+						nextAliveCells.push(new Cell(row, col)); //Cell is born.
+					}
+				} else {
+					if (aliveNeighborsCount == 2 || aliveNeighborsCount == 3) {
+						nextAliveCells.push(new Cell(row, col)); //Cell survives.
+					}
 				}
 			}
 		}
