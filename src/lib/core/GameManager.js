@@ -222,6 +222,7 @@ class GameManager {
 					aliveNeighborsCount,
 					currentCellState
 				);
+				
 				if (nextCellState == CellStates.ALIVE) {
 					nextAliveCells.push(new Cell(row, col));
 				}

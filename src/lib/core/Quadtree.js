@@ -4,11 +4,16 @@
  */
 
 const CellStates = require('../entity-system/CellStates.js');
-const { Cell, CELL_HEIGHT, CELL_WIDTH, DeadCell } = require('../entity-system/Entities');
+const {
+	Cell,
+	CELL_HEIGHT,
+	CELL_WIDTH,
+	DeadCell,
+} = require('../entity-system/Entities');
 
 /**
-* Singleton instance of a dead cell.
-* */
+ * Singleton instance of a dead cell.
+ * */
 const DEAD_CELL = new DeadCell(Infinity, Infinity);
 Object.freeze(DEAD_CELL);
 
@@ -471,7 +476,7 @@ class QuadTree {
 		return this.root;
 	}
 
-	/** The second index method. Leverages an stack and looping.
+	/** The second index method. Leverages a stack and looping.
 	 * Build the spatial data structure based on a provided array of cells.
 	 * @param {Cell[]} liveCells
 	 * @returns {QTNode} Returns the root of the tree.
@@ -619,7 +624,7 @@ class QuadTree {
 	 * @param {QTNode} currentNode - The node to perform the range on. Defaults to the root of the tree.
 	 * @returns {Cell[]} The array of alive cells found. Returns an empty array if none are found.
 	 */
-	findAliveInArea(x, y, xx, yy, currentNode = this.root) {
+	recursive_findAliveInArea(x, y, xx, yy, currentNode = this.root) {
 		if (typeof currentNode === 'undefined' || currentNode === null) {
 			throw new Error('Cannot perform a range query on an empty node.');
 		}
@@ -642,7 +647,42 @@ class QuadTree {
 		}
 		return foundCells;
 	}
-}
+
+	/**
+	 * Optimized range query that leverages a stack and looping.
+	 * Finds all alive cells in the rectangle defined by bounds of the points (x,y), (xx,yy).
+	 * @param {number} x
+	 * @param {number} y
+	 * @param {number} xx
+	 * @param {number} yy
+	 * @returns {Cell[]} The array of alive cells found. Returns an empty array if none are found.
+	 */
+	findAliveInArea(x, y, xx, yy) {
+		let stack = [];
+		let foundCells = [];
+		stack.push(this.root);
+
+		let currentNode;
+		while (stack.length) {
+			currentNode = stack.pop();
+			if (currentNode.intersectsAABB(x, y, xx, yy)) {
+				if (currentNode.subdivided) {
+					stack.push(currentNode.upperLeft);
+					stack.push(currentNode.upperRight);
+					stack.push(currentNode.lowerLeft);
+					stack.push(currentNode.lowerRight);
+				} else {
+					let cell = this.leaves[currentNode.index];
+					if (cell && cell.isInsideRect(x, y, xx, yy)) {
+						foundCells.push(cell);
+					}
+				}
+			}
+		}
+
+		return foundCells;
+	}
+} //Ends QuadTree
 
 /**
  * Selects which child node the provided cell is in.
