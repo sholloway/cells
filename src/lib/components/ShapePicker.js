@@ -41,8 +41,8 @@ class ShapePicker extends LitElement {
 			<label>
 				Cell Shape
 				<select @change="${this.handleChange}">
-					<option value="circle">Circle</option>
 					<option value="square">Square</option>
+					<option value="circle">Circle</option>
 				</select>
 			</label>
 		`;
