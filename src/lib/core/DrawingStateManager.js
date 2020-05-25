@@ -117,7 +117,7 @@ class DrawingStateManager {
 		let node = this.currentTree.search(new Cell(x, y));
 		if (node.isNullNode) {
 			//The node doesn't exist. Add it.
-			this.cells.push(new Cell(x, y, 1));
+			this.cells.push(new Cell(x, y));
 			this.nextTree.clear();
 			this.nextTree.index(this.cells);
 		} else {

@@ -164,7 +164,7 @@ class GameManager {
 					foundCell.getState()
 				);
 				if (nextCellState == CellStates.ALIVE) {
-					nextAliveCells.push(new Cell(row, col, foundCell.age + 1));
+					nextAliveCells.push(new Cell(row, col));
 				}
 			}
 		}
@@ -194,15 +194,8 @@ class GameManager {
 	*/
 	evaluateCellsFaster(scene, evaluator = defaultCellEvaluator()) {
 		//1. Traverse every possible cell on the landscape, building up a list of new alive cells.
-		let aliveNeighborsCount,
-			nextCellState,
-			foundCell,
-			x,
-			y,
-			xx,
-			yy,
-			aliveCells,
-			currentCellState;
+		// prettier-ignore
+		let aliveNeighborsCount, nextCellState, x, y, xx, yy, aliveCells, currentCellState;
 		let nextAliveCells = [];
 		for (let row = 0; row < this.config.landscape.width; row++) {
 			for (let col = 0; col < this.config.landscape.height; col++) {
@@ -213,29 +206,27 @@ class GameManager {
 
 				//Assume the cell is dead.
 				currentCellState = CellStates.DEAD;
-
-				//Count neighbors (O(n)) n max of 9
-				aliveNeighborsCount = aliveCells.reduce((count, cell) => {
-					if (!(cell.location.row == row && cell.location.col == col)) {
-						count++;
-					} else {
-						//If we stumble upon the current cell, then it is alive.
+				aliveNeighborsCount = aliveCells.length;
+				for (let i = 0; i < aliveCells.length; i++) {
+					if (
+						aliveCells[i].location.row == row &&
+						aliveCells[i].location.col == col
+					) {
 						currentCellState = CellStates.ALIVE;
+						aliveNeighborsCount--;
+						break;
 					}
-					return count;
-				}, 0);
+				}
 
-				nextCellState = evaluator.evaluate(
-					aliveNeighborsCount,
-					currentCellState
-				);
-				if (nextCellState == CellStates.ALIVE) {
-					//Find current cell if it was included in the searched range.
-					let foundCell = aliveCells.find((cell) => {
-						return cell.location.row == row && cell.location.col == col;
-					});
-					let currentAge = foundCell ? foundCell.age : 0;
-					nextAliveCells.push(new Cell(row, col, currentAge + 1));
+				//Inlining evaluation for performance tuning.
+				if (currentCellState == CellStates.DEAD) {
+					if (aliveNeighborsCount == 3) {
+						nextAliveCells.push(new Cell(row, col)); //Cell is born.
+					}
+				} else {
+					if (aliveNeighborsCount == 2 || aliveNeighborsCount == 3) {
+						nextAliveCells.push(new Cell(row, col)); //Cell survives.
+					}
 				}
 			}
 		}
@@ -253,8 +244,14 @@ class GameManager {
 	 * Replace the current tree with the next state tree and re-initializes the next tree to be empty.
 	 */
 	activateNext() {
-		this.currentTree = QuadTree.clone(this.nextTree);
-		this.nextTree.clear().index();
+		//BUG: I thought I replaced this with a pointer.
+		// this.currentTree = QuadTree.clone(this.nextTree);
+		// this.nextTree.clear().index();
+		this.currentTree.clear(); //I wonder if we could speed this up by doing it as a promise?
+		this.currentTree = null;
+		this.currentTree = this.nextTree;
+		this.nextTree = QuadTree.empty();
+		this.nextTree.index();
 	}
 
 	/**

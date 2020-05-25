@@ -20,6 +20,7 @@ const {
 	handleMessageFromGridWorker,
 	handleMsgFromDrawingWorker,
 	handleMessageFromLifeWorker,
+	setThreadFlagToClean,
 } = require('./AppMessageHandlers');
 
 class AppBuilder {
@@ -40,6 +41,11 @@ class AppBuilder {
 		app.stateManager.subscribe(
 			AppStateManagerEvents.UI_CHANGES,
 			app.updateUI.bind(app)
+		);
+
+		app.stateManager.subscribe(
+			AppStateManagerEvents.UI_CHANGES,
+			setThreadFlagToClean.bind(app.stateManager)
 		);
 
 		app.displayManager = new DisplayManager();

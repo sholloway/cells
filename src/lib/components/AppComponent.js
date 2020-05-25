@@ -250,6 +250,7 @@ class AppComponent extends LitElement {
 		this.sizeCanvas();
 		updateConfiguredLandscape(this.config);
 		this.refreshGrid();
+		this.setflagAsDirty(Layers.DRAWING);
 	}
 
 	refreshGrid() {
@@ -382,6 +383,7 @@ class AppComponent extends LitElement {
 				.getElementById('draw_canvas')
 				.getBoundingClientRect();
 			let cellLocation = convertToCell(clickEvent, boundary, this.config.zoom);
+			this.setflagAsDirty(Layers.DRAWING);
 			this.stateManager.sendWorkerMessage(Layers.DRAWING, {
 				command: WorkerCommands.DrawingSystemCommands.TOGGLE_CELL,
 				cx: cellLocation.x,
@@ -449,6 +451,7 @@ class AppComponent extends LitElement {
 			key: 'runSim',
 			activeState: 'resume',
 		});
+		this.setflagAsDirty(Layers.DRAWING);
 	}
 
 	handleResumeButtonClicked() {
@@ -538,13 +541,23 @@ class AppComponent extends LitElement {
 	handleContextMenuCommand(event) {
 		event.detail.simCommand
 			? this.processContextMenuSimCommand(event)
-			: this.stateManager.sendWorkerMessage(Layers.DRAWING, {
-					command: WorkerCommands.DrawingSystemCommands.DRAW_TEMPLATE,
-					templateName: event.detail.command,
-					row: event.detail.row,
-					col: event.detail.col,
-					config: this.config,
-			  });
+			: this.generateTemplate(event);
+	}
+
+	generateTemplate(event) {
+		this.stateManager.sendWorkerMessage(Layers.DRAWING, {
+			command: WorkerCommands.DrawingSystemCommands.DRAW_TEMPLATE,
+			templateName: event.detail.command,
+			row: event.detail.row,
+			col: event.detail.col,
+			config: this.config,
+		});
+		this.setflagAsDirty(Layers.DRAWING);
+	}
+
+	setflagAsDirty(workerName) {
+		this.stateManager.workerSystem.setWorkerDirtyFlag(workerName, true);
+		return this;
 	}
 
 	processContextMenuSimCommand(event) {

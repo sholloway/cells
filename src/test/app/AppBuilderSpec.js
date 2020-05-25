@@ -7,6 +7,7 @@ const messagehandlers = {
 	handleMessageFromGridWorker: sinon.stub(),
 	handleMsgFromDrawingWorker: sinon.stub(),
 	handleMessageFromLifeWorker: sinon.stub(),
+	setThreadFlagToClean: sinon.stub(),
 };
 
 rewiremock(() => require('./../../lib/workers/WorkersLoader.js')).with({});

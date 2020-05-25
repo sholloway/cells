@@ -4,13 +4,18 @@
  */
 
 const CellStates = require('../entity-system/CellStates.js');
-const { Cell } = require('../entity-system/Entities');
+const {
+	Cell,
+	CELL_HEIGHT,
+	CELL_WIDTH,
+	DeadCell,
+} = require('../entity-system/Entities');
 
 /**
  * Singleton instance of a dead cell.
  * */
-const DeadCell = new Cell(Infinity, Infinity, 0, CellStates.DEAD);
-Object.freeze(DeadCell);
+const DEAD_CELL = new DeadCell(Infinity, Infinity);
+Object.freeze(DEAD_CELL);
 
 /**
  * A node in the pointer based quad tree.
@@ -106,8 +111,8 @@ class QTNode {
 		return (
 			this.containsPoint(cell.location.row, cell.location.col) &&
 			this.containsPoint(
-				cell.location.row + cell.width,
-				cell.location.col + cell.height
+				cell.location.row + CELL_WIDTH,
+				cell.location.col + CELL_HEIGHT
 			)
 		);
 	}
@@ -471,7 +476,7 @@ class QuadTree {
 		return this.root;
 	}
 
-	/** The second index method. Leverages an stack and looping.
+	/** The second index method. Leverages a stack and looping.
 	 * Build the spatial data structure based on a provided array of cells.
 	 * @param {Cell[]} liveCells
 	 * @returns {QTNode} Returns the root of the tree.
@@ -606,7 +611,7 @@ class QuadTree {
 			let indexedCell = this.leaves[foundLeafNode.index];
 			return indexedCell;
 		} else {
-			return DeadCell;
+			return DEAD_CELL;
 		}
 	}
 
@@ -619,7 +624,7 @@ class QuadTree {
 	 * @param {QTNode} currentNode - The node to perform the range on. Defaults to the root of the tree.
 	 * @returns {Cell[]} The array of alive cells found. Returns an empty array if none are found.
 	 */
-	findAliveInArea(x, y, xx, yy, currentNode = this.root) {
+	recursive_findAliveInArea(x, y, xx, yy, currentNode = this.root) {
 		if (typeof currentNode === 'undefined' || currentNode === null) {
 			throw new Error('Cannot perform a range query on an empty node.');
 		}
@@ -642,7 +647,42 @@ class QuadTree {
 		}
 		return foundCells;
 	}
-}
+
+	/**
+	 * Optimized range query that leverages a stack and looping.
+	 * Finds all alive cells in the rectangle defined by bounds of the points (x,y), (xx,yy).
+	 * @param {number} x
+	 * @param {number} y
+	 * @param {number} xx
+	 * @param {number} yy
+	 * @returns {Cell[]} The array of alive cells found. Returns an empty array if none are found.
+	 */
+	findAliveInArea(x, y, xx, yy) {
+		let stack = [];
+		let foundCells = [];
+		stack.push(this.root);
+
+		let currentNode;
+		while (stack.length) {
+			currentNode = stack.pop();
+			if (currentNode.intersectsAABB(x, y, xx, yy)) {
+				if (currentNode.subdivided) {
+					stack.push(currentNode.upperLeft);
+					stack.push(currentNode.upperRight);
+					stack.push(currentNode.lowerLeft);
+					stack.push(currentNode.lowerRight);
+				} else {
+					let cell = this.leaves[currentNode.index];
+					if (cell && cell.isInsideRect(x, y, xx, yy)) {
+						foundCells.push(cell);
+					}
+				}
+			}
+		}
+
+		return foundCells;
+	}
+} //Ends QuadTree
 
 /**
  * Selects which child node the provided cell is in.
@@ -695,8 +735,7 @@ function scaleCells(cells, scalingFactor) {
 		(cell) =>
 			new Cell(
 				cell.location.row * scalingFactor,
-				cell.location.col * scalingFactor,
-				cell.age
+				cell.location.col * scalingFactor
 			)
 	);
 }
@@ -738,9 +777,7 @@ function cloneCells(cells) {
 }
 
 module.exports = {
-	Cell,
 	cloneCells,
-	DeadCell,
 	findAliveNeighbors,
 	QTNode,
 	QuadTree,

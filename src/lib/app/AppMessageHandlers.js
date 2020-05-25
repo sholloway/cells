@@ -39,8 +39,15 @@ function handleMessageFromLifeWorker(envelope) {
 	}
 }
 
+function setThreadFlagToClean(message) {
+	if (message.origin && message.origin == Layers.DRAWING) {
+		this.workerSystem.setWorkerDirtyFlag(message.origin, false);
+	}
+}
+
 module.exports = {
 	handleMessageFromGridWorker,
 	handleMsgFromDrawingWorker,
 	handleMessageFromLifeWorker,
+	setThreadFlagToClean,
 };
