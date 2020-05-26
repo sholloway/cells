@@ -106,14 +106,35 @@ class LifeSystemWorkerController extends AbstractWorkerController {
 			let aliveCellsCount = this.lifeSystem.aliveCellsCount();
 			let isSimulationDone = aliveCellsCount == 0;
 			isSimulationDone && this.stop();
-			this.sendMessageToClient({
+			let response = {
 				command: msg.command,
-				stack: this.lifeSystem.getScene().getStack(),
+				// stack: this.lifeSystem.getScene().getStack(),
+				stack: this.packScene(this.lifeSystem.getScene().getStack()),
 				aliveCellsCount: aliveCellsCount,
 				numberOfSimulationIterations: this.lifeSystem.numberOfSimulationIterations(),
 				simulationStopped: isSimulationDone,
-			});
+			};
+			this.sendMessageToClient(response, [response.stack.buffer]);
 		}
+	}
+
+	/*
+	Packs the active scene as a Uint16Array. 
+	- Number range is [0,65535]
+	- Each number is 2 bytes.
+
+	https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays
+	*/
+	packScene(stack){
+		const BYTES_PER_NUMBER = 2;
+		const FIELDS_PER_CELL = 2;
+		let buffer = new ArrayBuffer(BYTES_PER_NUMBER * FIELDS_PER_CELL * stack.length);
+		let dataView = new Uint16Array(buffer);
+		for (let current = 0; current < stack.length; current++){
+			dataView[FIELDS_PER_CELL * current] = stack[current].row;
+			dataView[FIELDS_PER_CELL * current + 1] = stack[current].col;
+		}
+		return dataView
 	}
 
 	/**

@@ -298,6 +298,8 @@ class AppStateManager {
 		}
 	}
 
+	// processOptimizedMessage
+
 	/**
 	 * Enables the drawing mode.
 	 * @returns {AppStateManager} Returns the instance of the main thread being modified.

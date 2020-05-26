@@ -1,7 +1,8 @@
-const { Box, Cell, EntityBatch } = require('../entity-system/Entities.js');
+const { Box, Cell, CellsBatchArrayBuffer, EntityBatch } = require('../entity-system/Entities.js');
 const {
 	BatchDrawingBoxes,
 	BatchDrawingCells,
+	BatchDrawingCellsFromBuffer,
 	CircleTrait,
 	ColorByAgeTrait,
 	ColorByContents,
@@ -14,7 +15,7 @@ const {
 } = require('../entity-system/Traits.js');
 
 class LifeSceneBuilder {
-	static buildScene_old(scene, config, objs) {
+	static buildScene_original(scene, config, objs) {
 		let entities = objs.map((obj) => {
 			let entity;
 			if (obj.className === 'Box') {
@@ -39,7 +40,7 @@ class LifeSceneBuilder {
 		scene.push(entities);
 	}
 
-	static buildScene(scene, config, objs) {
+	static buildScene_optimizedEntity(scene, config, objs) {
 		if (objs && objs.length > 0) {
 			//Draw the cells
 			let cellsBatch = new EntityBatch();
@@ -57,6 +58,17 @@ class LifeSceneBuilder {
 				.register(new BatchDrawingBoxes(config.zoom))
 				.add(objs.filter((o) => o.className === 'Box'));
 			scene.push(boxesBatch);
+		}
+	}
+
+	static buildScene(scene, config, stack){
+		if (stack && stack instanceof Uint16Array){
+			let batch = new CellsBatchArrayBuffer(stack);
+			batch
+				.register(new OutlineStyle(2, '#0d47a1'))
+				.register(new FillStyle('#263238'))
+				.register(new BatchDrawingCellsFromBuffer(config.zoom, 10, config.cell.shape));
+			scene.push(batch);
 		}
 	}
 }

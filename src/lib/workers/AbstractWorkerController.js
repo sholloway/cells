@@ -108,8 +108,8 @@ class AbstractWorkerController {
 	 * Sends a message to the web worker's client (main thread).
 	 * @param {*} msg The message to send.
 	 */
-	sendMessageToClient(msg) {
-		this.worker.postMessage(msg);
+	sendMessageToClient(msg, transferList) {
+		this.worker.postMessage(msg, transferList);
 	}
 }
 

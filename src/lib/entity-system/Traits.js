@@ -407,6 +407,39 @@ class BatchDrawingCells extends Trait {
 	}
 }
 
+class BatchDrawingCellsFromBuffer extends Trait {
+	constructor(scalingFactor, strokeThreashold, shape) {
+		super();
+		this.scalingFactor = scalingFactor;
+		this.strokeThreashold = strokeThreashold;
+		this.shape = shape;
+	}
+
+	process(context) {
+		let row, col;
+		context.rendererContext.beginPath();
+		for (let index = 0; index < context.entity.buffer.length; index += 2) {
+			row = context.entity.buffer[index];
+			col = context.entity.buffer[index + 1];
+			//scale and add a rect to the path.
+			if (row && col) {
+				context.rendererContext.rect(
+					row * this.scalingFactor,
+					col * this.scalingFactor,
+					CELL_WIDTH * this.scalingFactor,
+					CELL_HEIGHT * this.scalingFactor
+				);
+			}
+		}
+		context.rendererContext.fill();
+
+		//Drawing strokes takes time. Only do it for when we're zoomed out.
+		if (this.scalingFactor > this.strokeThreashold) {
+			context.rendererContext.stroke();
+		}
+	}
+}
+
 class BatchDrawingBoxes extends Trait {
 	constructor(scalingFactor) {
 		super();
@@ -463,6 +496,7 @@ class ClearArea extends Trait {
 module.exports = {
 	BatchDrawingBoxes,
 	BatchDrawingCells,
+	BatchDrawingCellsFromBuffer,
 	CircleTrait,
 	ClearArea,
 	ColorByAgeTrait,

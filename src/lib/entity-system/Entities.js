@@ -85,6 +85,13 @@ class EntityBatch extends Entity {
 	}
 }
 
+class CellsBatchArrayBuffer extends Entity {
+	constructor(buffer) {
+		super();
+		this.buffer = buffer;
+	}
+}
+
 const CELL_WIDTH = 1;
 const CELL_HEIGHT = 1;
 
@@ -105,7 +112,7 @@ class Cell extends Entity {
 		super();
 		this.className = 'Cell';
 		this.row = row;
-		this.col =  col;
+		this.col = col;
 	}
 
 	getState() {
@@ -121,12 +128,7 @@ class Cell extends Entity {
 	 * @returns {boolean}
 	 */
 	isInsideRect(x, y, xx, yy) {
-		return (
-			x <= this.row &&
-			this.row <= xx &&
-			y <= this.col &&
-			this.col <= yy
-		);
+		return x <= this.row && this.row <= xx && y <= this.col && this.col <= yy;
 	}
 
 	/**
@@ -154,11 +156,7 @@ class Cell extends Entity {
 			//Don't include any boxes.
 			if (
 				obj.className === 'Cell' &&
-				!cells.some(
-					(c) =>
-						c.row == obj.row &&
-						c.col == obj.col
-				)
+				!cells.some((c) => c.row == obj.row && c.col == obj.col)
 			) {
 				cells.push(this.buildInstance(obj));
 			}
@@ -234,6 +232,7 @@ class Box extends Entity {
 module.exports = {
 	Box,
 	Cell,
+	CellsBatchArrayBuffer,
 	DeadCell,
 	Entity,
 	EntityBatch,
