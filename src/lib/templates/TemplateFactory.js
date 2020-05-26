@@ -20,7 +20,11 @@ class TemplateFactory {
 		let tokens = commandName.split('-');
 		let caRuleName = tokens[tokens.length - 1];
 		let ruleNumber = Number.parseInt(caRuleName);
-		return new LinearCellularAutomaton(config, ruleNumber);
+		return new LinearCellularAutomaton(
+			config,
+			ruleNumber,
+			config.elementaryCAs.useRandomStart
+		);
 	}
 
 	static generateRegisteredTemplate(commandName, config) {

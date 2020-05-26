@@ -38,6 +38,7 @@ class AppStateManager {
 		this.drawingCellsCount = 0;
 		this.displayGrid = false;
 		this.fullScreenDesired = false;
+		this.useRandomStart = false;
 		this.renderers = new Map();
 		this.scenes = new Map();
 		this.sceneBuilders = new Map();
@@ -438,6 +439,14 @@ class AppStateManager {
 
 	setDisplayPreference(pref) {
 		this.fullScreenDesired = pref;
+	}
+
+	setRandomStartPreference(pref) {
+		this.useRandomStart = pref;
+	}
+
+	getRandomStartPreference() {
+		return this.useRandomStart;
 	}
 
 	getDisplayPreference() {

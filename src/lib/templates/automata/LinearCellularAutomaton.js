@@ -2,9 +2,10 @@ const DrawingTemplate = require('../DrawingTemplate.js');
 
 const INVALID_RULE_MSG = 'Can only process rules in the in range [0,255].';
 class LinearCellularAutomaton extends DrawingTemplate {
-	constructor(config, rule = 0) {
+	constructor(config, rule = 0, useRandomStart = false) {
 		super();
 		this.config = config;
+		this.useRandomStart = useRandomStart; //TODO: This is also in the config param. Remove it.
 		this.enforceRuleSet(rule)
 			.setRuleSet(this.generateRuleSet(rule))
 			.establishInitializationAlgorithm();
@@ -43,14 +44,10 @@ class LinearCellularAutomaton extends DrawingTemplate {
 	pattern() {
 		let height = Math.floor(this.config.landscape.height);
 		let width = Math.floor(this.config.landscape.width);
-
-		let startingPoint = this.findStartingIndex(width);
-
 		let ca = Array(height);
-
-		//The first row is initialized to zero except for its starting point.
-		ca[0] = Array(width).fill(0);
-		ca[0][startingPoint] = 1;
+		ca[0] = this.useRandomStart
+			? this.randomStartingPoint(width)
+			: this.traditionalStartingPoint(width);
 
 		//Generate the next row based on the current row.
 		let neighborhood;
@@ -62,6 +59,30 @@ class LinearCellularAutomaton extends DrawingTemplate {
 			}
 		}
 		return ca;
+	}
+
+	/**
+	 * Generate the traditional starting point for elementary CAs.
+	 * All zeros except for the center.
+	 * @returns {Number[]}
+	 */
+	traditionalStartingPoint(width) {
+		let startingPoint = this.findStartingIndex(width);
+		//The first row is initialized to zero except for its starting point.
+		let initialRow = Array(width).fill(0);
+		initialRow[startingPoint] = 1;
+		return initialRow;
+	}
+
+	randomStartingPoint(width) {
+		return Array(width).fill(0).map((i) => this.rollDice());
+	}
+
+	//floor(random() * (max - min + 1)) + min
+	//floor(random() * (1 - 0 + 1)) + 0
+	//floor(random() * (2))
+	rollDice() {
+		return Math.floor(Math.random() * 2);
 	}
 
 	setInitializationAlgorithm(algorithm) {

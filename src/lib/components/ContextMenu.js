@@ -61,7 +61,7 @@ class ContextMenu extends LitElement {
 			},
 		];
 
-		this.elementryCAs = [
+		this.elementaryCAs = [
 			{
 				label: 'Complex',
 				items: [
@@ -99,6 +99,7 @@ class ContextMenu extends LitElement {
 					{ command: 'wr-rule-79', label: '79' },
 					{ command: 'wr-rule-99', label: '99' },
 					{ command: 'wr-rule-105', label: '105' },
+					{ command: 'wr-rule-106', label: '106' },
 					{ command: 'wr-rule-109', label: '109' },
 				],
 			},
@@ -214,7 +215,7 @@ class ContextMenu extends LitElement {
 		this.primatives.forEach((menu) => {
 			menu.direction = direction;
 		});
-		this.elementryCAs.forEach((menu) => {
+		this.elementaryCAs.forEach((menu) => {
 			menu.direction = direction;
 		});
 	}
@@ -272,7 +273,7 @@ class ContextMenu extends LitElement {
 					<hr />
 					${this.primatives.map((sm) => this.renderSubMenu(sm))}
 					<hr />
-					${this.elementryCAs.map((sm) => this.renderSubMenu(sm))}
+					${this.elementaryCAs.map((sm) => this.renderSubMenu(sm))}
 				</ul>
 			</div>
 		`;
