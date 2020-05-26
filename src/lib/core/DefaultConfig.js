@@ -4,7 +4,7 @@ let DefaultConfig = {
 		height: 400,
 	},
 	cell: {
-		shape: 'circle',
+		shape: 'square',
 	},
 	game: {
 		/*
