@@ -2,7 +2,7 @@ const {
 	AppStateManager,
 	AppStateManagerEvents,
 } = require('./AppStateManager.js');
-const DefaultConfig = require('../core/DefaultConfig.js');
+const DefaultConfig = require('../configs/DefaultConfig.js');
 const Layers = require('./AppLayers.js');
 
 const DrawingSceneBuilder = require('../scenes/DrawingSceneBuilder.js');
