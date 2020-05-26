@@ -109,11 +109,8 @@ class QTNode {
 		//Since both the cell and bounding box are aligned to the same axes
 		//we can just check the min and max points.
 		return (
-			this.containsPoint(cell.location.row, cell.location.col) &&
-			this.containsPoint(
-				cell.location.row + CELL_WIDTH,
-				cell.location.col + CELL_HEIGHT
-			)
+			this.containsPoint(cell.row, cell.col) &&
+			this.containsPoint(cell.row + CELL_WIDTH, cell.col + CELL_HEIGHT)
 		);
 	}
 
@@ -288,15 +285,15 @@ function emptyAABB() {
  * @returns {object} An AABB defined by two points.
  */
 function buildAxisAlignedBoundingBox(cells) {
-	let rowMin = cells[0].location.row;
-	let rowMax = cells[0].location.row;
-	let colMin = cells[0].location.col;
-	let colMax = cells[0].location.col;
+	let rowMin = cells[0].row;
+	let rowMax = cells[0].row;
+	let colMin = cells[0].col;
+	let colMax = cells[0].col;
 	cells.forEach((cell) => {
-		rowMin = Math.min(rowMin, cell.location.row);
-		rowMax = Math.max(rowMax, cell.location.row);
-		colMin = Math.min(colMin, cell.location.col);
-		colMax = Math.max(colMax, cell.location.col);
+		rowMin = Math.min(rowMin, cell.row);
+		rowMax = Math.max(rowMax, cell.row);
+		colMin = Math.min(colMin, cell.col);
+		colMax = Math.max(colMax, cell.col);
 	});
 	// The max is increased by one in both axis to
 	// account for including the farthest cell rather
@@ -732,11 +729,7 @@ function uniformScale(node, factor) {
  */
 function scaleCells(cells, scalingFactor) {
 	return cells.map(
-		(cell) =>
-			new Cell(
-				cell.location.row * scalingFactor,
-				cell.location.col * scalingFactor
-			)
+		(cell) => new Cell(cell.row * scalingFactor, cell.col * scalingFactor)
 	);
 }
 
@@ -755,7 +748,7 @@ function findAliveNeighbors(tree, row, col) {
 	};
 	let aliveCells = tree.findAliveInArea(range.x, range.y, range.xx, range.yy);
 	let aliveCount = aliveCells.reduce((count, cell) => {
-		if (!(cell.location.row == row && cell.location.col == col)) {
+		if (!(cell.row == row && cell.col == col)) {
 			count++;
 		}
 		return count;
@@ -771,7 +764,7 @@ function findAliveNeighbors(tree, row, col) {
 function cloneCells(cells) {
 	let clones = [];
 	cells.forEach((cell) => {
-		clones.push(new Cell(cell.location.row, cell.location.col, 1));
+		clones.push(new Cell(cell.row, cell.col, 1));
 	});
 	return clones;
 }

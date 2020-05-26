@@ -12,8 +12,8 @@ class DrawingTemplate {
 		};
 
 		cells.forEach((c) => {
-			c.location.row += shift.x;
-			c.location.col += shift.y;
+			c.row += shift.x;
+			c.col += shift.y;
 		});
 		return cells;
 	}

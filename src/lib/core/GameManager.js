@@ -209,8 +209,8 @@ class GameManager {
 				aliveNeighborsCount = aliveCells.length;
 				for (let i = 0; i < aliveCells.length; i++) {
 					if (
-						aliveCells[i].location.row == row &&
-						aliveCells[i].location.col == col
+						aliveCells[i].row == row &&
+						aliveCells[i].col == col
 					) {
 						currentCellState = CellStates.ALIVE;
 						aliveNeighborsCount--;

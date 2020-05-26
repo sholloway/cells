@@ -104,7 +104,8 @@ class Cell extends Entity {
 	constructor(row, col) {
 		super();
 		this.className = 'Cell';
-		this.location = { row: row, col: col };
+		this.row = row;
+		this.col =  col;
 	}
 
 	getState() {
@@ -121,10 +122,10 @@ class Cell extends Entity {
 	 */
 	isInsideRect(x, y, xx, yy) {
 		return (
-			x <= this.location.row &&
-			this.location.row <= xx &&
-			y <= this.location.col &&
-			this.location.col <= yy
+			x <= this.row &&
+			this.row <= xx &&
+			y <= this.col &&
+			this.col <= yy
 		);
 	}
 
@@ -133,15 +134,15 @@ class Cell extends Entity {
 	 * @returns {Cell}
 	 */
 	clone() {
-		return new Cell(this.location.row, this.location.col);
+		return new Cell(this.row, this.col);
 	}
 
 	rightBoundary() {
-		return this.location.row + CELL_WIDTH;
+		return this.row + CELL_WIDTH;
 	}
 
 	lowerBoundary() {
-		return this.location.col + CELL_HEIGHT;
+		return this.col + CELL_HEIGHT;
 	}
 
 	static buildInstance(params) {
@@ -155,8 +156,8 @@ class Cell extends Entity {
 				obj.className === 'Cell' &&
 				!cells.some(
 					(c) =>
-						c.location.row == obj.location.row &&
-						c.location.col == obj.location.col
+						c.row == obj.row &&
+						c.col == obj.col
 				)
 			) {
 				cells.push(this.buildInstance(obj));

@@ -24,7 +24,7 @@ const {
 	Entity,
 	GridEntity,
 	CELL_HEIGHT,
-	CELL_WIDTH
+	CELL_WIDTH,
 } = require('./../../lib/entity-system/Entities.js');
 
 describe('The Entity System', function () {
@@ -248,10 +248,8 @@ describe('The Entity System', function () {
 		let trait = new GridCellToRenderingEntity();
 		let context = {
 			entity: {
-				location: {
-					row: 1,
-					col: 2,
-				}
+				row: 1,
+				col: 2,
 			},
 		};
 		trait.process(context);
