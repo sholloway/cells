@@ -358,7 +358,7 @@ class QuadTree {
 	 * @returns {QuadTree} The instance of the tree being operated on.
 	 */
 	clear() {
-		recursiveDelete(this.root);
+		//	recursiveDelete(this.root);
 		this.root = null;
 		this.leaves = [];
 		this.idCount = 0;

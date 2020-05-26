@@ -244,10 +244,7 @@ class GameManager {
 	 * Replace the current tree with the next state tree and re-initializes the next tree to be empty.
 	 */
 	activateNext() {
-		//BUG: I thought I replaced this with a pointer.
-		// this.currentTree = QuadTree.clone(this.nextTree);
-		// this.nextTree.clear().index();
-		this.currentTree.clear(); //I wonder if we could speed this up by doing it as a promise?
+		this.currentTree.clear(); 
 		this.currentTree = null;
 		this.currentTree = this.nextTree;
 		this.nextTree = QuadTree.empty();
