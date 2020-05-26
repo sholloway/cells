@@ -9,9 +9,27 @@ const LinearCellularAutomaton = require('./automata/LinearCellularAutomaton.js')
 const RandomDiceRoll = require('./RandomDiceRoll.js');
 
 class TemplateFactory {
-	static generate(name, x, y, config) {
+	static generate(commandName, x, y, config) {
+		let template = commandName.startsWith('wr-rule-')
+			? this.generateElementaryCA(commandName, config)
+			: this.generateRegisteredTemplate(commandName, config);
+		return template.generateCells(x, y);
+	}
+
+	static generateElementaryCA(commandName, config) {
+		let tokens = commandName.split('-');
+		let caRuleName = tokens[tokens.length - 1];
+		let ruleNumber = Number.parseInt(caRuleName);
+		return new LinearCellularAutomaton(
+			config,
+			ruleNumber,
+			config.elementaryCAs.useRandomStart
+		);
+	}
+
+	static generateRegisteredTemplate(commandName, config) {
 		let template;
-		switch (name) {
+		switch (commandName) {
 			case 'conways-memorial':
 				template = new ConwayMemorial();
 				break;
@@ -33,29 +51,19 @@ class TemplateFactory {
 			case 'light-ship':
 				template = new LightSpaceShip();
 				break;
-			case 'wr-rule-90':
-				template = new LinearCellularAutomaton(config, 90);
-				break;
 			case 'wr-rule-110':
 				template = new LinearCellularAutomaton(
 					config,
 					110
 				).setInitializationAlgorithm((width) => width);
 				break;
-			case 'wr-rule-30':
-				template = new LinearCellularAutomaton(config, 30);
-				break;
-			case 'wr-rule-250':
-				template = new LinearCellularAutomaton(config, 250);
-				break;
 			case 'dice-roll':
 				template = new RandomDiceRoll(config);
 				break;
 			default:
 				throw new Error('Unknown template name.');
-				break;
 		}
-		return template.generateCells(x, y);
+		return template;
 	}
 }
 

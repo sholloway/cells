@@ -153,6 +153,14 @@ class AppComponent extends LitElement {
 						>
 							Fullscreen
 						</event-checkbox>
+
+						<event-checkbox
+							id="random_start"
+							event="random-start-toggle"
+							@random-start-toggle=${this.handleRandomStartClicked}
+						>
+							Random Start
+						</event-checkbox>
 					</div>
 				</div>
 				<div id="canvas_container" @contextmenu="${this.displayContextMenu}">
@@ -532,6 +540,10 @@ class AppComponent extends LitElement {
 		this.stateManager.setDisplayPreference(event.detail.checked);
 	}
 
+	handleRandomStartClicked(event) {
+		this.stateManager.setRandomStartPreference(event.detail.checked);
+	}
+
 	/**
 	 * Handles processing the context menu item clicked.
 	 * @param {number} row - The horizontal coordinate of the cell clicked.
@@ -545,6 +557,7 @@ class AppComponent extends LitElement {
 	}
 
 	generateTemplate(event) {
+		this.config.elementaryCAs.useRandomStart = this.stateManager.getRandomStartPreference();
 		this.stateManager.sendWorkerMessage(Layers.DRAWING, {
 			command: WorkerCommands.DrawingSystemCommands.DRAW_TEMPLATE,
 			templateName: event.detail.command,

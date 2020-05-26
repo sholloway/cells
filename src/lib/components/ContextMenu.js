@@ -1,6 +1,7 @@
 const { LitElement, html, css, nothing } = require('lit-element');
 
 const { convertToCell } = require('./../ui/CanvasUtilities.js');
+const {Commands, Submenus} = require('./../configs/Submenus.js');
 
 const MenuStates = {
 	SHOW: 'SHOW',
@@ -14,63 +15,16 @@ class ContextMenu extends LitElement {
 		this.display = false;
 		this.state = MenuStates.HIDE;
 
-		this.menuHeight = 316;
+		this.menuHeight = 407;
 		this.menuWidth = 160;
 		this.activeCell = null;
 		this._menuPosition = { x: 0, y: 0 };
 
 		this.commands = new Map();
-		this.commands.set('runSim', {
-			key: 'runSim',
-			activeState: 'start',
-			states: {
-				start: { label: 'Start', next: 'pause', command: 'start-sim' },
-				pause: { label: 'Pause', next: 'resume', command: 'pause-sim' },
-				resume: { label: 'Resume', next: 'pause', command: 'resume-sim' },
-			},
-		});
-
-		this.commands.set('reset', {
-			key: 'reset',
-			activeState: 'reset',
-			states: { reset: { label: 'Reset', next: 'reset', command: 'reset' } },
-		});
-
-		this.topLevelOptions = [
-			{ command: 'conways-memorial', label: 'The Man' },
-			{ command: 'dice-roll', label: 'Dice Roll' },
-		];
-
-		this.submenus = [
-			{
-				label: 'Static Objects',
-				items: [{ command: 'da-block', label: 'Block' }],
-			},
-			{
-				label: 'Oscillators',
-				items: [
-					{ command: 'vert-spinner', label: 'V-Spinner' },
-					{ command: 'horiz-spinner', label: 'H-Spinner' },
-					{ command: 'toad', label: 'Toad' },
-				],
-			},
-			{
-				label: 'Ships',
-				items: [
-					{ command: 'glider', label: 'Glider' },
-					{ command: 'light-ship', label: 'Light Space Ship' },
-				],
-			},
-			{
-				label: 'Wolfram',
-				items: [
-					{ command: 'wr-rule-30', label: 'wr-rule-30' },
-					{ command: 'wr-rule-90', label: 'wr-rule-90' },
-					{ command: 'wr-rule-110', label: 'wr-rule-110' },
-					{ command: 'wr-rule-250', label: 'wr-rule-250' },
-				],
-			},
-		];
+		this.commands.set('runSim', Commands.runSimulation);
+		this.commands.set('reset', Commands.reset);
+		this.primatives = Submenus.primatives
+		this.elementaryCAs = Submenus.elementaryCAs
 	}
 
 	/**
@@ -150,7 +104,10 @@ class ContextMenu extends LitElement {
 
 	positionSubMenus(situation) {
 		let direction = situation.willSubMenuFit ? 'right' : 'left';
-		this.submenus.forEach((menu) => {
+		this.primatives.forEach((menu) => {
+			menu.direction = direction;
+		});
+		this.elementaryCAs.forEach((menu) => {
 			menu.direction = direction;
 		});
 	}
@@ -204,9 +161,11 @@ class ContextMenu extends LitElement {
 						this.renderStatefulMenuItem(c)
 					)}
 					<hr />
-					${this.topLevelOptions.map((c) => this.renderMenuItem(c))}
+					${Submenus.topLevelOptions.map((c) => this.renderMenuItem(c))}
 					<hr />
-					${this.submenus.map((sm) => this.renderSubMenu(sm))}
+					${this.primatives.map((sm) => this.renderSubMenu(sm))}
+					<hr />
+					${this.elementaryCAs.map((sm) => this.renderSubMenu(sm))}
 				</ul>
 			</div>
 		`;
