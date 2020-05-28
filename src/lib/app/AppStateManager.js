@@ -247,9 +247,9 @@ class AppStateManager {
 	 * @param {Entity[]} stack - An array of entities to render.
 	 * @returns {AppStateManager} The instance.
 	 */
-	buildScene(name, stack) {
+	buildScene(name, stack, message) {
 		if (this.sceneBuilders.has(name) && this.scenes.has(name)) {
-			this.sceneBuilders.get(name)(this.getScene(name), this.config, stack);
+			this.sceneBuilders.get(name)(this.getScene(name), this.config, stack, message);
 		}
 		return this;
 	}
@@ -290,7 +290,7 @@ class AppStateManager {
 	processCycleMessage(name, message) {
 		if (message && message.command === 'PROCESS_CYCLE' && message.stack) {
 			this.clearScene(name)
-				.buildScene(name, message.stack)
+				.buildScene(name, message.stack, message)
 				.render(name)
 				.updateUI(message);
 		} else {

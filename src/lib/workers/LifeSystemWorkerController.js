@@ -5,6 +5,10 @@ const { Cell } = require('./../entity-system/Entities.js');
 const { AbstractWorkerController } = require('./AbstractWorkerController.js');
 const { SeederFactory } = require('./../core/SeederFactory.js');
 
+const BYTES_PER_NUMBER = 2;
+const FIELDS_PER_CELL = 2;
+const FIELDS_PER_BOX = 4;
+
 /**
  * Controller for the Life System web worker.
  * @extends AbstractWorkerController
@@ -106,11 +110,16 @@ class LifeSystemWorkerController extends AbstractWorkerController {
 			let aliveCellsCount = this.lifeSystem.aliveCellsCount();
 			let isSimulationDone = aliveCellsCount == 0;
 			isSimulationDone && this.stop();
+			let sceneStack = this.lifeSystem.getScene().getStack();
+			let storageStack = this.lifeSystem.getStorageScene().getStack();
 			let response = {
 				command: msg.command,
-				// stack: this.lifeSystem.getScene().getStack(),
-				stack: this.packScene(this.lifeSystem.getScene().getStack()),
+				stack: this.packScene(sceneStack, storageStack),
 				aliveCellsCount: aliveCellsCount,
+				numberOfCells: sceneStack.length,
+				cellFieldsCount: FIELDS_PER_CELL,
+				numberOfStorageBoxes: storageStack.length,
+				boxFieldCount: FIELDS_PER_BOX,
 				numberOfSimulationIterations: this.lifeSystem.numberOfSimulationIterations(),
 				simulationStopped: isSimulationDone,
 			};
@@ -125,16 +134,35 @@ class LifeSystemWorkerController extends AbstractWorkerController {
 
 	https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays
 	*/
-	packScene(stack){
-		const BYTES_PER_NUMBER = 2;
-		const FIELDS_PER_CELL = 2;
-		let buffer = new ArrayBuffer(BYTES_PER_NUMBER * FIELDS_PER_CELL * stack.length);
+	packScene(sceneStack, storageStack) {
+		// prettier-ignore
+		let sceneStackByteLength = BYTES_PER_NUMBER * FIELDS_PER_CELL * sceneStack.length;
+		// prettier-ignore
+		let storageStackByteLength = BYTES_PER_NUMBER * FIELDS_PER_BOX * storageStack.length;
+		let bufferLength = sceneStackByteLength + storageStackByteLength;
+
+		let buffer = new ArrayBuffer(bufferLength);
 		let dataView = new Uint16Array(buffer);
-		for (let current = 0; current < stack.length; current++){
-			dataView[FIELDS_PER_CELL * current] = stack[current].row;
-			dataView[FIELDS_PER_CELL * current + 1] = stack[current].col;
+		let offset;
+
+		//First pack all the cells.
+		for (var current = 0; current < sceneStack.length; current++) {
+			offset = FIELDS_PER_CELL * current;
+			dataView[offset] = sceneStack[current].row;
+			dataView[offset + 1] = sceneStack[current].col;
 		}
-		return dataView
+
+		//Then pack all of the boxes (if any) after the cells.
+		offset = FIELDS_PER_CELL * sceneStack.length;
+		for (var current = 0; current < storageStack.length; current++) {
+			dataView[offset] = storageStack[current].x;
+			dataView[offset + 1] = storageStack[current].y;
+			dataView[offset + 2] = storageStack[current].xx;
+			dataView[offset + 3] = storageStack[current].yy;
+			offset += 4;
+		}
+
+		return dataView;
 	}
 
 	/**

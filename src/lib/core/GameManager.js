@@ -261,7 +261,7 @@ class GameManager {
 		}
 		let boxes = [];
 		collectBoxes(this.nextTree.root, boxes);
-		registerBoxTraits(this.config, boxes);
+		// registerBoxTraits(this.config, boxes); //No longer doing this on the worker side.
 		scene.push(boxes);
 	}
 

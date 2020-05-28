@@ -1,6 +1,12 @@
-const { Box, Cell, CellsBatchArrayBuffer, EntityBatch } = require('../entity-system/Entities.js');
+const {
+	Box,
+	Cell,
+	EntityBatch,
+	EntityBatchArrayBuffer,
+} = require('../entity-system/Entities.js');
 const {
 	BatchDrawingBoxes,
+	BatchDrawingBoxesFromBuffer,
 	BatchDrawingCells,
 	BatchDrawingCellsFromBuffer,
 	CircleTrait,
@@ -61,14 +67,35 @@ class LifeSceneBuilder {
 		}
 	}
 
-	static buildScene(scene, config, stack){
-		if (stack && stack instanceof Uint16Array){
-			let batch = new CellsBatchArrayBuffer(stack);
-			batch
+	static buildScene(scene, config, stack, message) {
+		//TODO: Remove stack as a parameter. It is redundant
+		if (stack && ArrayBuffer.isView(stack)) {
+			let cellBatch = new EntityBatchArrayBuffer(
+				stack,
+				0,
+				message.numberOfCells,
+				message.cellFieldsCount
+			);
+			cellBatch
 				.register(new OutlineStyle(2, '#0d47a1'))
 				.register(new FillStyle('#263238'))
-				.register(new BatchDrawingCellsFromBuffer(config.zoom, 10, config.cell.shape));
-			scene.push(batch);
+				.register(
+					new BatchDrawingCellsFromBuffer(config.zoom, 10, config.cell.shape)
+				);
+			scene.push(cellBatch);
+
+			if (message.numberOfStorageBoxes > 0) {
+				let boxBatch = new EntityBatchArrayBuffer(
+					stack,
+					cellBatch.bufferEnd, 
+					message.numberOfStorageBoxes,
+					message.boxFieldCount
+				);
+				boxBatch
+					.register(new OutlineStyle(2, '#0d47a1'))
+					.register(new BatchDrawingBoxesFromBuffer(config.zoom));
+				scene.push(boxBatch);
+			}
 		}
 	}
 }

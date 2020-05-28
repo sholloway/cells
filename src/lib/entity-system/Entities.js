@@ -85,10 +85,14 @@ class EntityBatch extends Entity {
 	}
 }
 
-class CellsBatchArrayBuffer extends Entity {
-	constructor(buffer) {
+class EntityBatchArrayBuffer extends Entity {
+	constructor(buffer, offset, numberOfEntities, entityFieldsCount) {
 		super();
 		this.buffer = buffer;
+		this.initialOffset = offset;
+		this.bufferEnd = offset + numberOfEntities * entityFieldsCount;
+		this.numberOfEntities = numberOfEntities;
+		this.entityFieldsCount = entityFieldsCount;
 	}
 }
 
@@ -232,10 +236,10 @@ class Box extends Entity {
 module.exports = {
 	Box,
 	Cell,
-	CellsBatchArrayBuffer,
 	DeadCell,
 	Entity,
 	EntityBatch,
+	EntityBatchArrayBuffer,
 	GridEntity,
 	CELL_HEIGHT,
 	CELL_WIDTH,

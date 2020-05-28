@@ -418,11 +418,16 @@ class BatchDrawingCellsFromBuffer extends Trait {
 	process(context) {
 		let row, col;
 		context.rendererContext.beginPath();
-		for (let index = 0; index < context.entity.buffer.length; index += 2) {
+		for (
+			let index = context.entity.initialOffset;
+			index < context.entity.bufferEnd;
+			index += context.entity.entityFieldsCount
+		) {
 			row = context.entity.buffer[index];
 			col = context.entity.buffer[index + 1];
 			//scale and add a rect to the path.
 			if (row && col) {
+				//TODO: Remove this.
 				context.rendererContext.rect(
 					row * this.scalingFactor,
 					col * this.scalingFactor,
@@ -433,10 +438,37 @@ class BatchDrawingCellsFromBuffer extends Trait {
 		}
 		context.rendererContext.fill();
 
-		//Drawing strokes takes time. Only do it for when we're zoomed out.
+		//Drawing strokes takes time. Only do it for when we're zoomed out and can actually see them.
 		if (this.scalingFactor > this.strokeThreashold) {
 			context.rendererContext.stroke();
 		}
+	}
+}
+
+class BatchDrawingBoxesFromBuffer extends Trait {
+	constructor(scalingFactor) {
+		super();
+		this.scalingFactor = scalingFactor;
+	}
+
+	process(context) {
+		let x, y, xx, yy;
+		context.rendererContext.beginPath();
+		for (
+			let index = context.entity.initialOffset;
+			index < context.entity.bufferEnd;
+			index += context.entity.entityFieldsCount
+		) {
+			x = context.entity.buffer[index] * this.scalingFactor;
+			y = context.entity.buffer[index + 1] * this.scalingFactor;
+			xx = context.entity.buffer[index + 2] * this.scalingFactor;
+			yy = context.entity.buffer[index + 3] * this.scalingFactor;
+			if (x && y && xx && yy) {
+				//TODO: Try removing the guard.
+				context.rendererContext.rect(x, y, xx - x, yy - y);
+			}
+		}
+		context.rendererContext.stroke();
 	}
 }
 
@@ -495,6 +527,7 @@ class ClearArea extends Trait {
 
 module.exports = {
 	BatchDrawingBoxes,
+	BatchDrawingBoxesFromBuffer,
 	BatchDrawingCells,
 	BatchDrawingCellsFromBuffer,
 	CircleTrait,
