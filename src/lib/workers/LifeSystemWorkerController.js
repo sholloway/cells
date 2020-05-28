@@ -2,12 +2,8 @@ const WorkerCommands = require('./WorkerCommands.js');
 const LifeSystemCmds = WorkerCommands.LifeSystemCommands;
 const LifeSystem = require('./../core/LifeSystem.js');
 const { Cell } = require('./../entity-system/Entities.js');
-const { AbstractWorkerController } = require('./AbstractWorkerController.js');
+const { AbstractWorkerController, PackingConstants } = require('./AbstractWorkerController.js');
 const { SeederFactory } = require('./../core/SeederFactory.js');
-
-const BYTES_PER_NUMBER = 2;
-const FIELDS_PER_CELL = 2;
-const FIELDS_PER_BOX = 4;
 
 /**
  * Controller for the Life System web worker.
@@ -47,7 +43,7 @@ class LifeSystemWorkerController extends AbstractWorkerController {
 					'The configuration was not provided.'
 				);
 				break;
-			case LifeSystemCmds.SEND_CELLS:
+			case LifeSystemCmds.SEND_CELLS: //TODO: Make this use transferable. Where is this used?
 				this.processCmd(
 					msg,
 					msg.command,
@@ -116,53 +112,15 @@ class LifeSystemWorkerController extends AbstractWorkerController {
 				command: msg.command,
 				stack: this.packScene(sceneStack, storageStack),
 				aliveCellsCount: aliveCellsCount,
-				numberOfCells: sceneStack.length,
-				cellFieldsCount: FIELDS_PER_CELL,
-				numberOfStorageBoxes: storageStack.length,
-				boxFieldCount: FIELDS_PER_BOX,
 				numberOfSimulationIterations: this.lifeSystem.numberOfSimulationIterations(),
+				numberOfCells: sceneStack.length,
+				cellFieldsCount: PackingConstants.FIELDS_PER_CELL,
+				numberOfStorageBoxes: storageStack.length,
+				boxFieldCount: PackingConstants.FIELDS_PER_BOX,
 				simulationStopped: isSimulationDone,
 			};
 			this.sendMessageToClient(response, [response.stack.buffer]);
 		}
-	}
-
-	/*
-	Packs the active scene as a Uint16Array. 
-	- Number range is [0,65535]
-	- Each number is 2 bytes.
-
-	https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays
-	*/
-	packScene(sceneStack, storageStack) {
-		// prettier-ignore
-		let sceneStackByteLength = BYTES_PER_NUMBER * FIELDS_PER_CELL * sceneStack.length;
-		// prettier-ignore
-		let storageStackByteLength = BYTES_PER_NUMBER * FIELDS_PER_BOX * storageStack.length;
-		let bufferLength = sceneStackByteLength + storageStackByteLength;
-
-		let buffer = new ArrayBuffer(bufferLength);
-		let dataView = new Uint16Array(buffer);
-		let offset;
-
-		//First pack all the cells.
-		for (var current = 0; current < sceneStack.length; current++) {
-			offset = FIELDS_PER_CELL * current;
-			dataView[offset] = sceneStack[current].row;
-			dataView[offset + 1] = sceneStack[current].col;
-		}
-
-		//Then pack all of the boxes (if any) after the cells.
-		offset = FIELDS_PER_CELL * sceneStack.length;
-		for (var current = 0; current < storageStack.length; current++) {
-			dataView[offset] = storageStack[current].x;
-			dataView[offset + 1] = storageStack[current].y;
-			dataView[offset + 2] = storageStack[current].xx;
-			dataView[offset + 3] = storageStack[current].yy;
-			offset += 4;
-		}
-
-		return dataView;
 	}
 
 	/**
@@ -180,15 +138,12 @@ class LifeSystemWorkerController extends AbstractWorkerController {
 			.setConfig(this.findPromisedProperty(msg, 'config'))
 			.setSeeder(seeder)
 			.initializeSimulation();
-
+		
 		msg.promisedResponse &&
 			this.sendMessageToClient({
 				id: msg.id,
 				promisedResponse: msg.promisedResponse,
 				command: msg.command,
-				stack: this.lifeSystem.getScene().getStack(),
-				aliveCellsCount: this.lifeSystem.aliveCellsCount(),
-				numberOfSimulationIterations: this.lifeSystem.numberOfSimulationIterations(),
 			});
 	}
 }

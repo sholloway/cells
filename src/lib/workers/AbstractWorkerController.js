@@ -10,6 +10,12 @@ const WorkerState = {
 	RUNNING: 3,
 };
 
+const PackingConstants = {
+	BYTES_PER_NUMBER: 2,
+	FIELDS_PER_CELL: 2,
+	FIELDS_PER_BOX: 4,
+}
+
 /**
  * Base class that defines the common capabilities of the Web Worker controllers.
  */
@@ -111,6 +117,44 @@ class AbstractWorkerController {
 	sendMessageToClient(msg, transferList) {
 		this.worker.postMessage(msg, transferList);
 	}
+
+	/*
+	Packs the active scene as a Uint16Array. 
+	- Number range is [0,65535]
+	- Each number is 2 bytes.
+
+	https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays
+	*/
+	packScene(sceneStack, storageStack) {
+		// prettier-ignore
+		let sceneStackByteLength = PackingConstants.BYTES_PER_NUMBER * PackingConstants.FIELDS_PER_CELL * sceneStack.length;
+		// prettier-ignore
+		let storageStackByteLength = PackingConstants.BYTES_PER_NUMBER * PackingConstants.FIELDS_PER_BOX * storageStack.length;
+		let bufferLength = sceneStackByteLength + storageStackByteLength;
+
+		let buffer = new ArrayBuffer(bufferLength);
+		let dataView = new Uint16Array(buffer);
+		let offset;
+
+		//First pack all the cells.
+		for (var current = 0; current < sceneStack.length; current++) {
+			offset = PackingConstants.FIELDS_PER_CELL * current;
+			dataView[offset] = sceneStack[current].row;
+			dataView[offset + 1] = sceneStack[current].col;
+		}
+
+		//Then pack all of the boxes (if any) after the cells.
+		offset = PackingConstants.FIELDS_PER_CELL * sceneStack.length;
+		for (var current = 0; current < storageStack.length; current++) {
+			dataView[offset] = storageStack[current].x;
+			dataView[offset + 1] = storageStack[current].y;
+			dataView[offset + 2] = storageStack[current].xx;
+			dataView[offset + 3] = storageStack[current].yy;
+			offset += 4;
+		}
+
+		return dataView;
+	}
 }
 
-module.exports = { AbstractWorkerController, WorkerState };
+module.exports = { AbstractWorkerController, PackingConstants, WorkerState };

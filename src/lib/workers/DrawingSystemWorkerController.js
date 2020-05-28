@@ -1,4 +1,4 @@
-const { AbstractWorkerController } = require('./AbstractWorkerController.js');
+const { AbstractWorkerController, PackingConstants } = require('./AbstractWorkerController.js');
 const DrawingSystem = require('./../core/DrawingSystem.js');
 const WorkerCommands = require('./WorkerCommands.js');
 const Layers = require('./../app/AppLayers.js');
@@ -29,7 +29,7 @@ class DrawingSystemWorkerController extends AbstractWorkerController {
 				this.processCmd(
 					msg,
 					DrawingSystemCommands.SET_CELLS,
-					(msg) => msg.cells,
+					(msg) => msg.cells, //TODO: This needs to be an array buffer.
 					(msg) => this.drawingSystem.setCells(msg.cells),
 					'The cells were not provided.'
 				);
@@ -125,13 +125,20 @@ class DrawingSystemWorkerController extends AbstractWorkerController {
 	processScene(msg) {
 		if (this.systemRunning() && this.drawingSystem.canUpdate()) {
 			this.drawingSystem.update();
-			this.sendMessageToClient({
+			let sceneStack = this.drawingSystem.getScene().getStack();
+			let storageStack = this.drawingSystem.getStorageScene().getStack();
+			let response = {
 				id: msg.id,
 				promisedResponse: msg.promisedResponse,
 				command: msg.command,
 				origin: Layers.DRAWING,
-				stack: this.drawingSystem.getScene().getStack(),
-			});
+				numberOfCells: sceneStack.length,
+				cellFieldsCount: PackingConstants.FIELDS_PER_CELL,
+				numberOfStorageBoxes: storageStack.length,
+				boxFieldCount: PackingConstants.FIELDS_PER_BOX,
+				stack: this.packScene(sceneStack, storageStack),
+			}
+			this.sendMessageToClient(response, [response.stack.buffer]);
 		}
 	}
 }

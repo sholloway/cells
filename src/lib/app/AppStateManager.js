@@ -249,7 +249,12 @@ class AppStateManager {
 	 */
 	buildScene(name, stack, message) {
 		if (this.sceneBuilders.has(name) && this.scenes.has(name)) {
-			this.sceneBuilders.get(name)(this.getScene(name), this.config, stack, message);
+			this.sceneBuilders.get(name)(
+				this.getScene(name),
+				this.config,
+				stack,
+				message
+			);
 		}
 		return this;
 	}
