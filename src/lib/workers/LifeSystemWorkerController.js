@@ -2,7 +2,10 @@ const WorkerCommands = require('./WorkerCommands.js');
 const LifeSystemCmds = WorkerCommands.LifeSystemCommands;
 const LifeSystem = require('./../core/LifeSystem.js');
 const { Cell } = require('./../entity-system/Entities.js');
-const { AbstractWorkerController, PackingConstants } = require('./AbstractWorkerController.js');
+const {
+	AbstractWorkerController,
+	PackingConstants,
+} = require('./AbstractWorkerController.js');
 const { SeederFactory } = require('./../core/SeederFactory.js');
 
 /**
@@ -129,22 +132,51 @@ class LifeSystemWorkerController extends AbstractWorkerController {
 	 * @param {*} msg - The message to process.
 	 */
 	initializeSeeder(msg) {
-		let cells = this.findPromisedProperty(msg, 'cells') || [];
-		let seeder = SeederFactory.build(
-			this.findPromisedProperty(msg, 'seedSetting')
-		).setCells(cells.map((c) => Cell.buildInstance(c)));
+		let seedSetting = this.findPromisedProperty(msg, 'seedSetting');
+		let cellsBuffer = this.findPromisedProperty(msg, 'cellsBuffer');
+		let numberOfCells = this.findPromisedProperty(msg, 'numberOfCells');
+		let cells = this.bufferToCellsArray(
+			cellsBuffer,
+			0,
+			numberOfCells,
+			PackingConstants.FIELDS_PER_CELL
+		);
+		let seeder = SeederFactory.build(seedSetting).setCells(cells);
 
 		this.lifeSystem
 			.setConfig(this.findPromisedProperty(msg, 'config'))
 			.setSeeder(seeder)
 			.initializeSimulation();
-		
+
 		msg.promisedResponse &&
 			this.sendMessageToClient({
 				id: msg.id,
 				promisedResponse: msg.promisedResponse,
 				command: msg.command,
 			});
+	}
+
+	/**
+		Convert a typed array of cells into an array of Cells.
+		@param {Uint16Array} buffer - The typed array containing cells.
+		@param {number} offset - The index on the typed array to start the conversion.
+		@param {number} numberOfCells - How many cells the typed array contains.
+		@param {number} cellsFieldsCount - How many fields each cell contains.
+		@returns {Cell[]}
+	*/
+	bufferToCellsArray(buffer, offset, numberOfCells, cellsFieldsCount) {
+		let cells = [];
+		let bufferEnd = offset + numberOfCells * cellsFieldsCount;
+		if (buffer && ArrayBuffer.isView(buffer)) {
+			for (
+				var current = offset;
+				current < bufferEnd;
+				current += cellsFieldsCount
+			) {
+				cells.push(new Cell(buffer[current], buffer[current + 1]));
+			}
+		}
+		return cells;
 	}
 }
 

@@ -125,7 +125,7 @@ class AbstractWorkerController {
 
 	https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays
 	*/
-	packScene(sceneStack, storageStack) {
+	packScene(sceneStack, storageStack=[]) {
 		// prettier-ignore
 		let sceneStackByteLength = PackingConstants.BYTES_PER_NUMBER * PackingConstants.FIELDS_PER_CELL * sceneStack.length;
 		// prettier-ignore
@@ -144,6 +144,7 @@ class AbstractWorkerController {
 		}
 
 		//Then pack all of the boxes (if any) after the cells.
+		//This shouldn't run when storageStack.length is 0.
 		offset = PackingConstants.FIELDS_PER_CELL * sceneStack.length;
 		for (var current = 0; current < storageStack.length; current++) {
 			dataView[offset] = storageStack[current].x;

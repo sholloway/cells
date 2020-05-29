@@ -1,4 +1,7 @@
-const { AbstractWorkerController, PackingConstants } = require('./AbstractWorkerController.js');
+const {
+	AbstractWorkerController,
+	PackingConstants,
+} = require('./AbstractWorkerController.js');
 const DrawingSystem = require('./../core/DrawingSystem.js');
 const WorkerCommands = require('./WorkerCommands.js');
 const Layers = require('./../app/AppLayers.js');
@@ -86,12 +89,18 @@ class DrawingSystemWorkerController extends AbstractWorkerController {
 					DrawingSystemCommands.SEND_CELLS,
 					() => true,
 					(msg) => {
-						this.sendMessageToClient({
+						let sceneStack = this.drawingSystem.getScene().getStack();
+						let response = {
 							id: msg.id,
 							promisedResponse: msg.promisedResponse,
 							command: msg.command,
-							cells: this.drawingSystem.getCells(),
-						});
+							numberOfCells: sceneStack.length,
+							cellFieldsCount: PackingConstants.FIELDS_PER_CELL,
+							numberOfStorageBoxes: 0,
+							boxFieldCount: 0,
+							stack: this.packScene(sceneStack),
+						};
+						this.sendMessageToClient(response, [response.stack.buffer]);
 					},
 					'Could not send the drawing system cells.'
 				);
@@ -137,7 +146,7 @@ class DrawingSystemWorkerController extends AbstractWorkerController {
 				numberOfStorageBoxes: storageStack.length,
 				boxFieldCount: PackingConstants.FIELDS_PER_BOX,
 				stack: this.packScene(sceneStack, storageStack),
-			}
+			};
 			this.sendMessageToClient(response, [response.stack.buffer]);
 		}
 	}

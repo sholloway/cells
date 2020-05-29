@@ -332,18 +332,21 @@ class AppStateManager {
 			.promiseResponse(
 				//First get the Cells from the Drawing Worker
 				Layers.DRAWING,
-				WorkerCommands.DrawingSystemCommands.SEND_CELLS
+				WorkerCommands.DrawingSystemCommands.SEND_CELLS //TODO: This should transfer an array buffer
 			)
 			.then((response) => {
 				this.processCycleMessage(Layers.SIM, {
-					//2nd Render the drawing cells the Sim so there is no flicker.
+					//2nd, render the drawing cells the Sim so there is no flicker.
 					command: 'PROCESS_CYCLE',
-					stack: response.cells,
+					stack: response.stack,
+					numberOfCells: response.numberOfCells,
+					cellFieldsCount: response.cellFieldsCount,
+					numberOfStorageBoxes: response.numberOfStorageBoxes,
+					boxFieldCount: response.boxFieldCount,
 				});
 				//3rd Configure the Life Sim.
-				// updateConfiguredZoom(this.config);
 				updateConfiguredLandscape(this.config);
-				return this.setSeederOnLifeSystem(response.cells);
+				return this.setSeederOnLifeSystem(response.stack, response.numberOfCells);
 			})
 			.then(() => {
 				//4th Start the Life Sim
@@ -397,18 +400,20 @@ class AppStateManager {
 	/**
 	 * Send configuration and cells to the life system worker to initialize the seeder with.
 	 * @private
-	 * @param {Cell[]} drawingCells The cells to populate the seeder with.
+	 * @param {Uint16Array} drawingCells The cells to populate the seeder with.
 	 * @returns {Promise} Promise to invoke the life system worker.
 	 */
-	setSeederOnLifeSystem(drawingCells) {
+	setSeederOnLifeSystem(drawingCells, numberOfCells) {
 		return this.workerSystem.promiseResponse(
 			Layers.SIM,
 			WorkerCommands.LifeSystemCommands.SET_SEEDER,
 			{
 				seedSetting: SeederModels.DRAWING,
 				config: this.config,
-				cells: drawingCells,
-			}
+				numberOfCells: numberOfCells,
+				cellsBuffer: drawingCells,
+			},
+			[drawingCells.buffer]
 		);
 	}
 
