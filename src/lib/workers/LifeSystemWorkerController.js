@@ -1,7 +1,7 @@
 const WorkerCommands = require('./WorkerCommands.js');
 const LifeSystemCmds = WorkerCommands.LifeSystemCommands;
 const LifeSystem = require('./../core/LifeSystem.js');
-const { Cell } = require('./../entity-system/Entities.js');
+
 const {
 	AbstractWorkerController,
 	PackingConstants,
@@ -52,12 +52,15 @@ class LifeSystemWorkerController extends AbstractWorkerController {
 					msg.command,
 					(msg) => this.findPromisedProperty(msg, 'promisedResponse'),
 					(msg) => {
-						this.sendMessageToClient({
+						let cells = this.lifeSystem.getCells();
+						let response = {
 							id: msg.id,
 							promisedResponse: msg.promisedResponse,
 							command: msg.command,
-							cells: this.lifeSystem.getCells(),
-						});
+							numberOfCells: cells.length,
+							cells: this.packScene(cells),
+						};
+						this.sendMessageToClient(response, [response.cells.buffer]);
 					},
 					'Could not send the life system cells.'
 				);
@@ -135,7 +138,7 @@ class LifeSystemWorkerController extends AbstractWorkerController {
 		let seedSetting = this.findPromisedProperty(msg, 'seedSetting');
 		let cellsBuffer = this.findPromisedProperty(msg, 'cellsBuffer');
 		let numberOfCells = this.findPromisedProperty(msg, 'numberOfCells');
-		let cells = this.bufferToCellsArray(
+		let cells = this.unpackCells(
 			cellsBuffer,
 			0,
 			numberOfCells,
@@ -154,29 +157,6 @@ class LifeSystemWorkerController extends AbstractWorkerController {
 				promisedResponse: msg.promisedResponse,
 				command: msg.command,
 			});
-	}
-
-	/**
-		Convert a typed array of cells into an array of Cells.
-		@param {Uint16Array} buffer - The typed array containing cells.
-		@param {number} offset - The index on the typed array to start the conversion.
-		@param {number} numberOfCells - How many cells the typed array contains.
-		@param {number} cellsFieldsCount - How many fields each cell contains.
-		@returns {Cell[]}
-	*/
-	bufferToCellsArray(buffer, offset, numberOfCells, cellsFieldsCount) {
-		let cells = [];
-		let bufferEnd = offset + numberOfCells * cellsFieldsCount;
-		if (buffer && ArrayBuffer.isView(buffer)) {
-			for (
-				var current = offset;
-				current < bufferEnd;
-				current += cellsFieldsCount
-			) {
-				cells.push(new Cell(buffer[current], buffer[current + 1]));
-			}
-		}
-		return cells;
 	}
 }
 

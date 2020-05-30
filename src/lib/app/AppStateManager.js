@@ -265,9 +265,9 @@ class AppStateManager {
 	 * @param {*} msg - The message to send.
 	 * @returns {AppStateManager} The instance.
 	 */
-	sendWorkerMessage(name, msg) {
+	sendWorkerMessage(name, msg, transferList) {
 		if (this.workers.has(name)) {
-			this.workers.get(name).postMessage(msg);
+			this.workers.get(name).postMessage(msg, transferList);
 		}
 		return this;
 	}
@@ -332,7 +332,7 @@ class AppStateManager {
 			.promiseResponse(
 				//First get the Cells from the Drawing Worker
 				Layers.DRAWING,
-				WorkerCommands.DrawingSystemCommands.SEND_CELLS //TODO: This should transfer an array buffer
+				WorkerCommands.DrawingSystemCommands.SEND_CELLS
 			)
 			.then((response) => {
 				this.processCycleMessage(Layers.SIM, {
@@ -346,7 +346,10 @@ class AppStateManager {
 				});
 				//3rd Configure the Life Sim.
 				updateConfiguredLandscape(this.config);
-				return this.setSeederOnLifeSystem(response.stack, response.numberOfCells);
+				return this.setSeederOnLifeSystem(
+					response.stack,
+					response.numberOfCells
+				);
 			})
 			.then(() => {
 				//4th Start the Life Sim
@@ -368,10 +371,14 @@ class AppStateManager {
 		return this.workerSystem
 			.promiseResponse(Layers.SIM, WorkerCommands.LifeSystemCommands.SEND_CELLS)
 			.then((response) => {
-				this.sendWorkerMessage(Layers.DRAWING, {
+				let drawCellsMessage = {
 					command: WorkerCommands.DrawingSystemCommands.SET_CELLS,
+					numberOfCells: response.numberOfCells,
 					cells: response.cells,
-				}).sendWorkerMessage(Layers.SIM, {
+				};
+				this.sendWorkerMessage(Layers.DRAWING, drawCellsMessage, [
+					drawCellsMessage.cells.buffer,
+				]).sendWorkerMessage(Layers.SIM, {
 					command: WorkerCommands.LifeSystemCommands.RESET,
 					config: this.config,
 				});

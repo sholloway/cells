@@ -32,9 +32,17 @@ class DrawingSystemWorkerController extends AbstractWorkerController {
 				this.processCmd(
 					msg,
 					DrawingSystemCommands.SET_CELLS,
-					(msg) => msg.cells, //TODO: This needs to be an array buffer.
-					(msg) => this.drawingSystem.setCells(msg.cells),
-					'The cells were not provided.'
+					(msg) => msg.cells && msg.numberOfCells,
+					(msg) => {
+						let cells = this.unpackCells(
+							msg.cells,
+							0,
+							msg.numberOfCells,
+							PackingConstants.FIELDS_PER_CELL
+						);
+						this.drawingSystem.setCells(cells);
+					},
+					'The cells or numberOfCells were not provided.'
 				);
 				break;
 			case DrawingSystemCommands.SET_CELL_SIZE:

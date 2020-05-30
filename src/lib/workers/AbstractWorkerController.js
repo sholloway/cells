@@ -1,5 +1,6 @@
 const WorkerCommands = require('./WorkerCommands.js');
 const LifeCycle = WorkerCommands.LifeCycle;
+const { Cell } = require('./../entity-system/Entities.js');
 
 /**
  * The possible states a web worker can be in.
@@ -14,7 +15,7 @@ const PackingConstants = {
 	BYTES_PER_NUMBER: 2,
 	FIELDS_PER_CELL: 2,
 	FIELDS_PER_BOX: 4,
-}
+};
 
 /**
  * Base class that defines the common capabilities of the Web Worker controllers.
@@ -118,6 +119,7 @@ class AbstractWorkerController {
 		this.worker.postMessage(msg, transferList);
 	}
 
+	//TODO: Put the buffer packing methods into their own class. This should be delegated.
 	/*
 	Packs the active scene as a Uint16Array. 
 	- Number range is [0,65535]
@@ -125,7 +127,7 @@ class AbstractWorkerController {
 
 	https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays
 	*/
-	packScene(sceneStack, storageStack=[]) {
+	packScene(sceneStack, storageStack = []) {
 		// prettier-ignore
 		let sceneStackByteLength = PackingConstants.BYTES_PER_NUMBER * PackingConstants.FIELDS_PER_CELL * sceneStack.length;
 		// prettier-ignore
@@ -155,6 +157,29 @@ class AbstractWorkerController {
 		}
 
 		return dataView;
+	}
+
+	/**
+		Convert a typed array of cells into an array of Cells.
+		@param {Uint16Array} buffer - The typed array containing cells.
+		@param {number} offset - The index on the typed array to start the conversion.
+		@param {number} numberOfCells - How many cells the typed array contains.
+		@param {number} cellsFieldsCount - How many fields each cell contains.
+		@returns {Cell[]}
+	*/
+	unpackCells(buffer, offset, numberOfCells, cellsFieldsCount) {
+		let cells = [];
+		let bufferEnd = offset + numberOfCells * cellsFieldsCount;
+		if (buffer && ArrayBuffer.isView(buffer)) {
+			for (
+				var current = offset;
+				current < bufferEnd;
+				current += cellsFieldsCount
+			) {
+				cells.push(new Cell(buffer[current], buffer[current + 1]));
+			}
+		}
+		return cells;
 	}
 }
 
