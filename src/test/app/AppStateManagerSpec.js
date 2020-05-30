@@ -241,7 +241,10 @@ describe('AppStateManager', function () {
 	});
 
 	it('should pauseSimulationInDrawingMode', function () {
-		stateManager.workerSystem.promiseResponse = sinon.stub().resolves({});
+		stateManager.workerSystem.promiseResponse = sinon.stub().resolves({
+			numberOfCells: 1,
+			cells: Uint16Array.from([1, 1]),
+		});
 		stateManager.sendWorkerMessage = sinon.stub().returns(stateManager);
 		stateManager.clearRender = sinon.stub().returns(stateManager);
 		stateManager.allowDrawing = sinon.stub().returns(stateManager);

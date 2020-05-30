@@ -49,7 +49,10 @@ describe('DrawingSystemWorkerController', function () {
 				controller.process({
 					command: WorkerCommands.DrawingSystemCommands.SET_CELLS,
 				})
-			).to.throw(Error, 'The cells were not provided.');
+			).to.throw(
+				Error,
+				'Cannot process the command SET_CELLS: The cells or numberOfCells were not provided.'
+			);
 		});
 
 		it('should allow setting the cells', function () {
@@ -57,7 +60,9 @@ describe('DrawingSystemWorkerController', function () {
 			expect(() =>
 				controller.process({
 					command: WorkerCommands.DrawingSystemCommands.SET_CELLS,
-					cells: [new Cell(7, 14, 41), new Cell(11, 1, 42)],
+					numberOfCells: 2,
+					cells: Uint16Array.from([7, 14, 11, 1]),
+					//cells: [new Cell(7, 14, 41), new Cell(11, 1, 42)],
 				})
 			).to.not.throw();
 			expect(controller.drawingSystem.getCells().length).to.equal(2);
