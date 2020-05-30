@@ -204,7 +204,7 @@ class GameManager {
 				currentCellState = CellStates.DEAD;
 				aliveNeighborsCount = 0;
 
-				//find current and the alive ones
+				//Find the current cell's state and the count of active cells.
 				for (let i = 0; i < cellsInArea.length; i++) {
 					if (cellsInArea[i].row == row && cellsInArea[i].col == col) {
 						currentCellState = cellsInArea[i].state;
@@ -225,6 +225,7 @@ class GameManager {
 					nextAliveCells.push(new Cell(row, col, nextCellState));
 				}
 			}
+
 		}
 
 		//2. Create a new quad tree from the list of alive cells.

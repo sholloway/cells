@@ -122,8 +122,11 @@ class LifeSystemWorkerController extends AbstractWorkerController {
 			let aliveCellsCount = this.lifeSystem.aliveCellsCount();
 			let isSimulationDone = aliveCellsCount == 0;
 			isSimulationDone && this.stop();
+			
 			let sceneStack = this.lifeSystem.getScene().getStack();
 			let storageStack = this.lifeSystem.getStorageScene().getStack();
+			sceneStack.sort((c1, c2) => c1.state - c2.state); 
+
 			let response = {
 				command: msg.command,
 				stack: this.packScene(sceneStack, storageStack),

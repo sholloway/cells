@@ -413,11 +413,21 @@ class BatchDrawingCellsFromBuffer extends Trait {
 		this.scalingFactor = scalingFactor;
 		this.strokeThreashold = strokeThreashold;
 		this.shape = shape;
+
+		//TODO: Refactor
+		this.colors = new Map();
+		this.colors.set(1, '#263238');
+		this.colors.set(2, '#77a1b5');
 	}
 
 	process(context) {
 		let row, col, stage;
 		context.rendererContext.beginPath();
+
+		let firstStage = context.entity.initialOffset + 2;
+		let currentStage = context.entity.buffer[firstStage];
+		context.rendererContext.fillStyle = this.colors.get(currentStage);
+
 		for (
 			let index = context.entity.initialOffset;
 			index < context.entity.bufferEnd;
@@ -425,9 +435,20 @@ class BatchDrawingCellsFromBuffer extends Trait {
 		) {
 			row = context.entity.buffer[index];
 			col = context.entity.buffer[index + 1];
-			// stage = context.entity.buffer[index + 2];
+			stage = context.entity.buffer[index + 2];
+
+			if (currentStage != stage) {
+				context.rendererContext.fill(); //Render the existing
+
+				context.rendererContext.beginPath();
+				currentStage = stage;
+				context.rendererContext.fillStyle = this.colors.has(currentStage)
+					? this.colors.get(currentStage)
+					: '#f52811';
+			}
+
 			//scale and add a rect to the path.
-			if (row && col ) {
+			if (row && col) {
 				context.rendererContext.rect(
 					row * this.scalingFactor,
 					col * this.scalingFactor,
