@@ -9,8 +9,6 @@ const {
 	ProcessBoxAsRect,
 	ColorByContents,
 	RectOutlineTrait,
-	DarkThinLines,
-	GridPattern,
 } = require('../entity-system/Traits.js');
 
 const CellStates = require('./../entity-system/CellStates.js');
@@ -163,7 +161,7 @@ class GameManager {
 					aliveNeighbors,
 					foundCell.getState()
 				);
-				if (nextCellState == CellStates.ALIVE) {
+				if (nextCellState === CellStates.ACTIVE) {
 					nextAliveCells.push(new Cell(row, col));
 				}
 			}
@@ -195,38 +193,36 @@ class GameManager {
 	evaluateCellsFaster(scene, evaluator = defaultCellEvaluator()) {
 		//1. Traverse every possible cell on the landscape, building up a list of new alive cells.
 		// prettier-ignore
-		let aliveNeighborsCount, nextCellState, x, y, xx, yy, aliveCells, currentCellState;
+		let aliveNeighborsCount, nextCellState, x, y, xx, yy, cellsInArea, currentCellState;
 		let nextAliveCells = [];
 		for (let row = 0; row < this.config.landscape.width; row++) {
 			for (let col = 0; col < this.config.landscape.height; col++) {
 				(x = row - 1), (y = col - 1), (xx = row + 1), (yy = col + 1);
-
-				//Note: This should never be greater than 9 cells.
-				aliveCells = this.currentTree.findAliveInArea(x, y, xx, yy);
+				cellsInArea = this.currentTree.findAliveInArea(x, y, xx, yy);
 
 				//Assume the cell is dead.
 				currentCellState = CellStates.DEAD;
-				aliveNeighborsCount = aliveCells.length;
-				for (let i = 0; i < aliveCells.length; i++) {
-					if (
-						aliveCells[i].row == row &&
-						aliveCells[i].col == col
-					) {
-						currentCellState = CellStates.ALIVE;
-						aliveNeighborsCount--;
-						break;
+				aliveNeighborsCount = 0;
+
+				//find current and the alive ones
+				for (let i = 0; i < cellsInArea.length; i++) {
+					if (cellsInArea[i].row == row && cellsInArea[i].col == col) {
+						currentCellState = cellsInArea[i].state;
+						continue; //Don't count the current cell in the neighborhood calculation.
+					}
+
+					if (cellsInArea[i].state === CellStates.ACTIVE) {
+						aliveNeighborsCount++;
 					}
 				}
 
-				//Inlining evaluation for performance tuning.
-				if (currentCellState == CellStates.DEAD) {
-					if (aliveNeighborsCount == 3) {
-						nextAliveCells.push(new Cell(row, col)); //Cell is born.
-					}
-				} else {
-					if (aliveNeighborsCount == 2 || aliveNeighborsCount == 3) {
-						nextAliveCells.push(new Cell(row, col)); //Cell survives.
-					}
+				nextCellState = evaluator.evaluate(
+					aliveNeighborsCount,
+					currentCellState
+				);
+
+				if (nextCellState !== CellStates.DEAD) {
+					nextAliveCells.push(new Cell(row, col, nextCellState));
 				}
 			}
 		}
@@ -244,7 +240,7 @@ class GameManager {
 	 * Replace the current tree with the next state tree and re-initializes the next tree to be empty.
 	 */
 	activateNext() {
-		this.currentTree.clear(); 
+		this.currentTree.clear();
 		this.currentTree = null;
 		this.currentTree = this.nextTree;
 		this.nextTree = QuadTree.empty();

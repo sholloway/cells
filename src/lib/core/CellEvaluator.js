@@ -1,5 +1,6 @@
 const CellStates = require('./../entity-system/CellStates.js');
 
+const Any = 'any';
 /**
  * Enforces the simulation (game) rules.
  */
@@ -9,37 +10,82 @@ class CellEvaluator {
 	 * @param {number[]} birthRules - The required alive neighbors for a cell to be born.
 	 * @param {number[]} survivalRules - The required alive neighbors for a cell to stay alive.
 	 */
-	constructor(birthRules = [3], survivalRules = [2, 3]) {
+	constructor(birthRules, survivalRules) {
 		this.birthRules = birthRules;
 		this.survivalRules = survivalRules;
 	}
 
-	/**
-	 * Evaluates a cell's next state.
-	 * @param {number} neighborsCount - The number of a live cells the current cell has.
-	 * @param {CellState} currentCellState - the current state of cell.
-	 * @returns {CellState} The state the cell should be set to.
-	 */
 	evaluate(neighborsCount, currentCellState) {
-		let nextCellState;
-		switch (currentCellState) {
-			case CellStates.DEAD:
-				nextCellState = this.birthRules.includes(neighborsCount)
-					? CellStates.ALIVE
-					: CellStates.DEAD;
-				break;
-			case CellStates.ALIVE:
-				nextCellState = this.survivalRules.includes(neighborsCount)
-					? CellStates.ALIVE
-					: CellStates.DEAD;
-				break;
-			default:
-				throw new Error(
-					`Cannot evaluate cell. Unknown cell state: ${currentCellState}`
-				);
+		throw new Error(
+			'CellEvaluator children must implement evaluate(neighborsCount, currentCellState)'
+		);
+	}
+}
+
+class LifeEvaluator extends CellEvaluator {
+	constructor(birthRules, survivalRules) {
+		super(birthRules, survivalRules);
+	}
+
+	evaluate(neighborsCount, currentCellState) {
+		let nextCellState = CellStates.DEAD; //Be dead by default
+		if (currentCellState == CellStates.DEAD) {
+			if (neighborsCount == 3) {
+				nextCellState = CellStates.ACTIVE; //Born
+			}
+		} else if (currentCellState == CellStates.ACTIVE) {
+			if (neighborsCount == 2 || neighborsCount == 3) {
+				nextCellState = CellStates.ACTIVE; //Survives
+			}
 		}
 		return nextCellState;
 	}
 }
 
-module.exports = CellEvaluator;
+class GenerationalCellEvaluator extends CellEvaluator {
+	/**
+	 * Creates a new evaluator.
+	 * @param {number[]} birthRules - The required alive neighbors for a cell to be born.
+	 * @param {number[]} survivalRules - The required alive neighbors for a cell to stay alive.
+	 */
+	constructor(birthRules, survivalRules, maxAge) {
+		super(birthRules, survivalRules);
+		this.maxAge = maxAge;
+	}
+
+	/**
+	 * Evaluates a cell's next state based on the generations algorithm.
+	 * Generations Algorithm
+	 *  1. Dead cells can be born if the number of Moore active neighbors are included in the birth rules.
+	 *  2. Alive cells can stay "active" if the number of Moore neighbors are included in the survive rules.
+	 * 		 Cells aren't aging while active.
+	 * 		 Cells move into the retired stage once the above rule fails.
+	 *  3. Cells increment their age until they hit the max age then they die.
+	 * @param {number} neighborsCount - The number of a live cells the current cell has.
+	 * @param {CellState} currentCellState - the current state of cell.
+	 * @returns {CellState} The state the cell should be set to.
+	 */
+	evaluate(neighborsCount, currentCellState) {
+		let nextCellState = CellStates.DEAD; //Be dead by default
+		if (currentCellState === CellStates.DEAD) {
+			if (this.birthRules.includes(neighborsCount)) {
+				nextCellState = CellStates.ACTIVE; //Be Born
+			}
+		} else if (currentCellState === CellStates.ACTIVE) {
+			if (this.survivalRules.includes(neighborsCount)) {
+				nextCellState = CellStates.ACTIVE; //Stay Active
+			} else {
+				nextCellState = 2; //Start aging...
+			}
+		} else {
+			//Aging
+			// nextCellState = (currentCellState + 1) % this.maxAge; //This will become 0 when max age is reached.
+			nextCellState =
+				nextCellState >= this.maxAge ? CellStates.DEAD : nextCellState++;
+		}
+
+		return nextCellState;
+	}
+}
+
+module.exports = { GenerationalCellEvaluator, LifeEvaluator };

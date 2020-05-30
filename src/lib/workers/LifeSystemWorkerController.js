@@ -35,7 +35,7 @@ class LifeSystemWorkerController extends AbstractWorkerController {
 					msg.command,
 					(msg) => this.findPromisedProperty(msg, 'config'),
 					(msg) => {
-						this.lifeSystem.reset(msg.config);
+						this.lifeSystem.reset(this.findPromisedProperty(msg, 'config'));
 						msg.promisedResponse &&
 							this.sendMessageToClient({
 								id: msg.id,
@@ -91,6 +91,16 @@ class LifeSystemWorkerController extends AbstractWorkerController {
 					msg.command,
 					(msg) => msg.displayStorage !== undefined,
 					(msg) => this.lifeSystem.displayStorage(msg.displayStorage),
+					'The displayStorage field was not provided.'
+				);
+				break;
+			case LifeSystemCmds.SET_CONFIG:
+				this.processCmd(
+					msg,
+					msg.command,
+					(msg) => this.findPromisedProperty(msg, 'config'),
+					(msg) =>
+						this.lifeSystem.setConfig(this.findPromisedProperty(msg, 'config')),
 					'The displayStorage field was not provided.'
 				);
 				break;

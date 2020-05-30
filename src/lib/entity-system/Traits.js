@@ -416,7 +416,7 @@ class BatchDrawingCellsFromBuffer extends Trait {
 	}
 
 	process(context) {
-		let row, col;
+		let row, col, stage;
 		context.rendererContext.beginPath();
 		for (
 			let index = context.entity.initialOffset;
@@ -425,9 +425,9 @@ class BatchDrawingCellsFromBuffer extends Trait {
 		) {
 			row = context.entity.buffer[index];
 			col = context.entity.buffer[index + 1];
+			// stage = context.entity.buffer[index + 2];
 			//scale and add a rect to the path.
-			if (row && col) {
-				//TODO: Remove this.
+			if (row && col ) {
 				context.rendererContext.rect(
 					row * this.scalingFactor,
 					col * this.scalingFactor,
