@@ -1,8 +1,11 @@
 const WorkerCommands = require('./WorkerCommands.js');
 const LifeSystemCmds = WorkerCommands.LifeSystemCommands;
 const LifeSystem = require('./../core/LifeSystem.js');
-const { Cell } = require('./../entity-system/Entities.js');
-const { AbstractWorkerController } = require('./AbstractWorkerController.js');
+
+const {
+	AbstractWorkerController,
+	PackingConstants,
+} = require('./AbstractWorkerController.js');
 const { SeederFactory } = require('./../core/SeederFactory.js');
 
 /**
@@ -43,18 +46,21 @@ class LifeSystemWorkerController extends AbstractWorkerController {
 					'The configuration was not provided.'
 				);
 				break;
-			case LifeSystemCmds.SEND_CELLS:
+			case LifeSystemCmds.SEND_CELLS: //TODO: Make this use transferable. Where is this used?
 				this.processCmd(
 					msg,
 					msg.command,
 					(msg) => this.findPromisedProperty(msg, 'promisedResponse'),
 					(msg) => {
-						this.sendMessageToClient({
+						let cells = this.lifeSystem.getCells();
+						let response = {
 							id: msg.id,
 							promisedResponse: msg.promisedResponse,
 							command: msg.command,
-							cells: this.lifeSystem.getCells(),
-						});
+							numberOfCells: cells.length,
+							cells: this.packScene(cells),
+						};
+						this.sendMessageToClient(response, [response.cells.buffer]);
 					},
 					'Could not send the life system cells.'
 				);
@@ -106,13 +112,20 @@ class LifeSystemWorkerController extends AbstractWorkerController {
 			let aliveCellsCount = this.lifeSystem.aliveCellsCount();
 			let isSimulationDone = aliveCellsCount == 0;
 			isSimulationDone && this.stop();
-			this.sendMessageToClient({
+			let sceneStack = this.lifeSystem.getScene().getStack();
+			let storageStack = this.lifeSystem.getStorageScene().getStack();
+			let response = {
 				command: msg.command,
-				stack: this.lifeSystem.getScene().getStack(),
+				stack: this.packScene(sceneStack, storageStack),
 				aliveCellsCount: aliveCellsCount,
 				numberOfSimulationIterations: this.lifeSystem.numberOfSimulationIterations(),
+				numberOfCells: sceneStack.length,
+				cellFieldsCount: PackingConstants.FIELDS_PER_CELL,
+				numberOfStorageBoxes: storageStack.length,
+				boxFieldCount: PackingConstants.FIELDS_PER_BOX,
 				simulationStopped: isSimulationDone,
-			});
+			};
+			this.sendMessageToClient(response, [response.stack.buffer]);
 		}
 	}
 
@@ -122,10 +135,16 @@ class LifeSystemWorkerController extends AbstractWorkerController {
 	 * @param {*} msg - The message to process.
 	 */
 	initializeSeeder(msg) {
-		let cells = this.findPromisedProperty(msg, 'cells') || [];
-		let seeder = SeederFactory.build(
-			this.findPromisedProperty(msg, 'seedSetting')
-		).setCells(cells.map((c) => Cell.buildInstance(c)));
+		let seedSetting = this.findPromisedProperty(msg, 'seedSetting');
+		let cellsBuffer = this.findPromisedProperty(msg, 'cellsBuffer');
+		let numberOfCells = this.findPromisedProperty(msg, 'numberOfCells');
+		let cells = this.unpackCells(
+			cellsBuffer,
+			0,
+			numberOfCells,
+			PackingConstants.FIELDS_PER_CELL
+		);
+		let seeder = SeederFactory.build(seedSetting).setCells(cells);
 
 		this.lifeSystem
 			.setConfig(this.findPromisedProperty(msg, 'config'))
@@ -137,9 +156,6 @@ class LifeSystemWorkerController extends AbstractWorkerController {
 				id: msg.id,
 				promisedResponse: msg.promisedResponse,
 				command: msg.command,
-				stack: this.lifeSystem.getScene().getStack(),
-				aliveCellsCount: this.lifeSystem.aliveCellsCount(),
-				numberOfSimulationIterations: this.lifeSystem.numberOfSimulationIterations(),
 			});
 	}
 }

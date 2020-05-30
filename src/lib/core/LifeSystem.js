@@ -19,6 +19,7 @@ class LifeSystem {
 		this.config = {};
 		this.tickCounter = 0;
 		this.scene = new SceneManager();
+		this.storageScene = new SceneManager();
 		this.stateManager = new GameManager(this.config);
 		this.displayStorageStructure = false;
 		this.state = States.IDLE;
@@ -49,6 +50,10 @@ class LifeSystem {
 	 */
 	getScene() {
 		return this.scene;
+	}
+
+	getStorageScene(){
+		return this.storageScene;
 	}
 
 	/**
@@ -101,6 +106,10 @@ class LifeSystem {
 		this.displayStorageStructure = display;
 	}
 
+	getDisplayStorage(){
+		return this.displayStorageStructure;
+	}
+
 	/**
 	 * Getter for the number of currently alive cells.
 	 * @returns {number} The count of alive cells.
@@ -126,10 +135,11 @@ class LifeSystem {
 	update() {
 		if (this.simulationInitialized) {
 			this.scene.clear();
+			this.storageScene.clear();
 			this.getStateManager().evaluateCellsFaster(this.scene, this.evaluator);
 			this.getStateManager().stageStorage(
-				this.scene,
-				this.displayStorageStructure
+				this.storageScene,
+				this.getDisplayStorage()
 			);
 			this.getStateManager().activateNext();
 			this.tickCounter++;

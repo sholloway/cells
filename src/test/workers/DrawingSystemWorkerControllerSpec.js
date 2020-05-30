@@ -124,7 +124,7 @@ describe('DrawingSystemWorkerController', function () {
 			expect(
 				controller.drawingSystem
 					.getCells()
-					.find((c) => c.location.row === 7 && c.location.col === 14)
+					.find((c) => c.row === 7 && c.col === 14)
 			).to.be.undefined;
 			controller.process({
 				command: WorkerCommands.DrawingSystemCommands.TOGGLE_CELL,
@@ -135,7 +135,7 @@ describe('DrawingSystemWorkerController', function () {
 			expect(
 				controller.drawingSystem
 					.getCells()
-					.find((c) => c.location.row === 7 && c.location.col === 14)
+					.find((c) => c.row === 7 && c.col === 14)
 			).to.not.be.undefined;
 		});
 

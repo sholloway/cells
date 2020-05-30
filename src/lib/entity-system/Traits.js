@@ -1,4 +1,4 @@
-const {CELL_HEIGHT, CELL_WIDTH} = require('./Entities.js');
+const { CELL_HEIGHT, CELL_WIDTH } = require('./Entities.js');
 /**
  * Selects a color based on the provided age.
  * @param {number} age
@@ -121,8 +121,8 @@ class GridCellToRenderingEntity extends Trait {
 		context.rendering.entity = {};
 
 		//Define Upper Left Corner (X,Y)
-		context.rendering.entity.x = context.entity.location.row;
-		context.rendering.entity.y = context.entity.location.col;
+		context.rendering.entity.x = context.entity.row;
+		context.rendering.entity.y = context.entity.col;
 
 		//Define width & height
 		context.rendering.entity.width = CELL_WIDTH;
@@ -369,38 +369,106 @@ class BatchDrawingCells extends Trait {
 		for (let index = 0; index < context.entity.entities.length; index++) {
 			cell = context.entity.entities[index];
 			//scale and add a rect to the path.
-			if (cell && cell.location) {
+			if (cell) {
 				context.rendererContext.rect(
-					cell.location.row * this.scalingFactor,
-					cell.location.col * this.scalingFactor,
+					cell.row * this.scalingFactor,
+					cell.col * this.scalingFactor,
 					CELL_WIDTH * this.scalingFactor,
 					CELL_HEIGHT * this.scalingFactor
 				);
 			}
 		}
 		context.rendererContext.fill();
-		if (this.scalingFactor >= this.strokeThreashold) {
+
+		//Drawing strokes takes time. Only do it for when we're zoomed out.
+		if (this.scalingFactor > this.strokeThreashold) {
 			context.rendererContext.stroke();
 		}
 	}
 
+	//Note: It's more expensive to draw circles than rectangles.
 	drawCircles(context) {
 		let radius = this.scalingFactor / 2;
 		let cell;
 		context.rendererContext.beginPath();
 		for (let index = 0; index < context.entity.entities.length; index++) {
 			cell = context.entity.entities[index];
-			if (cell && cell.location) {
-				let cx = cell.location.row * this.scalingFactor + radius;
-				let cy = cell.location.col * this.scalingFactor + radius;
+			if (cell) {
+				let cx = cell.row * this.scalingFactor + radius;
+				let cy = cell.col * this.scalingFactor + radius;
 				context.rendererContext.moveTo(cx + radius, cy);
 				context.rendererContext.arc(cx, cy, radius, 0, TWO_PI, true);
 			}
 		}
 		context.rendererContext.fill();
-		if (this.scalingFactor >= this.strokeThreashold) {
+		if (this.scalingFactor > this.strokeThreashold) {
 			context.rendererContext.stroke();
 		}
+	}
+}
+
+class BatchDrawingCellsFromBuffer extends Trait {
+	constructor(scalingFactor, strokeThreashold, shape) {
+		super();
+		this.scalingFactor = scalingFactor;
+		this.strokeThreashold = strokeThreashold;
+		this.shape = shape;
+	}
+
+	process(context) {
+		let row, col;
+		context.rendererContext.beginPath();
+		for (
+			let index = context.entity.initialOffset;
+			index < context.entity.bufferEnd;
+			index += context.entity.entityFieldsCount
+		) {
+			row = context.entity.buffer[index];
+			col = context.entity.buffer[index + 1];
+			//scale and add a rect to the path.
+			if (row && col) {
+				//TODO: Remove this.
+				context.rendererContext.rect(
+					row * this.scalingFactor,
+					col * this.scalingFactor,
+					CELL_WIDTH * this.scalingFactor,
+					CELL_HEIGHT * this.scalingFactor
+				);
+			}
+		}
+		context.rendererContext.fill();
+
+		//Drawing strokes takes time. Only do it for when we're zoomed out and can actually see them.
+		if (this.scalingFactor > this.strokeThreashold) {
+			context.rendererContext.stroke();
+		}
+	}
+}
+
+class BatchDrawingBoxesFromBuffer extends Trait {
+	constructor(scalingFactor) {
+		super();
+		this.scalingFactor = scalingFactor;
+	}
+
+	process(context) {
+		let x, y, xx, yy;
+		context.rendererContext.beginPath();
+		for (
+			let index = context.entity.initialOffset;
+			index < context.entity.bufferEnd;
+			index += context.entity.entityFieldsCount
+		) {
+			x = context.entity.buffer[index] * this.scalingFactor;
+			y = context.entity.buffer[index + 1] * this.scalingFactor;
+			xx = context.entity.buffer[index + 2] * this.scalingFactor;
+			yy = context.entity.buffer[index + 3] * this.scalingFactor;
+			if (x && y && xx && yy) {
+				//TODO: Try removing the guard.
+				context.rendererContext.rect(x, y, xx - x, yy - y);
+			}
+		}
+		context.rendererContext.stroke();
 	}
 }
 
@@ -459,7 +527,9 @@ class ClearArea extends Trait {
 
 module.exports = {
 	BatchDrawingBoxes,
+	BatchDrawingBoxesFromBuffer,
 	BatchDrawingCells,
+	BatchDrawingCellsFromBuffer,
 	CircleTrait,
 	ClearArea,
 	ColorByAgeTrait,

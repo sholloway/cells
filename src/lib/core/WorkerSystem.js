@@ -80,7 +80,7 @@ class WorkerSystem extends BrowserSystem {
 		});
 	}
 
-	promiseResponse(workerName, command, params) {
+	promiseResponse(workerName, command, params, transferList) {
 		if (!this.workers.has(workerName)) {
 			throw new Error(
 				`Attempted to send a message to an unregisterd web worker. ${workerName}`
@@ -97,7 +97,7 @@ class WorkerSystem extends BrowserSystem {
 				resolve: resolve,
 				reject: reject,
 			});
-			this.workers.get(workerName).thread.postMessage(message);
+			this.workers.get(workerName).thread.postMessage(message, transferList);
 		});
 	}
 

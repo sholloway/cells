@@ -49,7 +49,7 @@ function drawTree(node, ctx, depth) {
 function drawCells(listOfCells, ctx, width, height, color) {
 	ctx.strokeStyle = color;
 	listOfCells.forEach((cell) => {
-		ctx.strokeRect(cell.location.row, cell.location.col, width, height);
+		ctx.strokeRect(cell.row, cell.col, width, height);
 	});
 }
 

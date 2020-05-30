@@ -85,6 +85,17 @@ class EntityBatch extends Entity {
 	}
 }
 
+class EntityBatchArrayBuffer extends Entity {
+	constructor(buffer, offset, numberOfEntities, entityFieldsCount) {
+		super();
+		this.buffer = buffer;
+		this.initialOffset = offset;
+		this.bufferEnd = offset + numberOfEntities * entityFieldsCount;
+		this.numberOfEntities = numberOfEntities;
+		this.entityFieldsCount = entityFieldsCount;
+	}
+}
+
 const CELL_WIDTH = 1;
 const CELL_HEIGHT = 1;
 
@@ -104,7 +115,8 @@ class Cell extends Entity {
 	constructor(row, col) {
 		super();
 		this.className = 'Cell';
-		this.location = { row: row, col: col };
+		this.row = row;
+		this.col = col;
 	}
 
 	getState() {
@@ -120,12 +132,7 @@ class Cell extends Entity {
 	 * @returns {boolean}
 	 */
 	isInsideRect(x, y, xx, yy) {
-		return (
-			x <= this.location.row &&
-			this.location.row <= xx &&
-			y <= this.location.col &&
-			this.location.col <= yy
-		);
+		return x <= this.row && this.row <= xx && y <= this.col && this.col <= yy;
 	}
 
 	/**
@@ -133,15 +140,15 @@ class Cell extends Entity {
 	 * @returns {Cell}
 	 */
 	clone() {
-		return new Cell(this.location.row, this.location.col);
+		return new Cell(this.row, this.col);
 	}
 
 	rightBoundary() {
-		return this.location.row + CELL_WIDTH;
+		return this.row + CELL_WIDTH;
 	}
 
 	lowerBoundary() {
-		return this.location.col + CELL_HEIGHT;
+		return this.col + CELL_HEIGHT;
 	}
 
 	static buildInstance(params) {
@@ -153,11 +160,7 @@ class Cell extends Entity {
 			//Don't include any boxes.
 			if (
 				obj.className === 'Cell' &&
-				!cells.some(
-					(c) =>
-						c.location.row == obj.location.row &&
-						c.location.col == obj.location.col
-				)
+				!cells.some((c) => c.row == obj.row && c.col == obj.col)
 			) {
 				cells.push(this.buildInstance(obj));
 			}
@@ -236,6 +239,7 @@ module.exports = {
 	DeadCell,
 	Entity,
 	EntityBatch,
+	EntityBatchArrayBuffer,
 	GridEntity,
 	CELL_HEIGHT,
 	CELL_WIDTH,

@@ -209,8 +209,8 @@ class GameManager {
 				aliveNeighborsCount = aliveCells.length;
 				for (let i = 0; i < aliveCells.length; i++) {
 					if (
-						aliveCells[i].location.row == row &&
-						aliveCells[i].location.col == col
+						aliveCells[i].row == row &&
+						aliveCells[i].col == col
 					) {
 						currentCellState = CellStates.ALIVE;
 						aliveNeighborsCount--;
@@ -244,10 +244,7 @@ class GameManager {
 	 * Replace the current tree with the next state tree and re-initializes the next tree to be empty.
 	 */
 	activateNext() {
-		//BUG: I thought I replaced this with a pointer.
-		// this.currentTree = QuadTree.clone(this.nextTree);
-		// this.nextTree.clear().index();
-		this.currentTree.clear(); //I wonder if we could speed this up by doing it as a promise?
+		this.currentTree.clear(); 
 		this.currentTree = null;
 		this.currentTree = this.nextTree;
 		this.nextTree = QuadTree.empty();
@@ -264,7 +261,7 @@ class GameManager {
 		}
 		let boxes = [];
 		collectBoxes(this.nextTree.root, boxes);
-		registerBoxTraits(this.config, boxes);
+		// registerBoxTraits(this.config, boxes); //No longer doing this on the worker side.
 		scene.push(boxes);
 	}
 

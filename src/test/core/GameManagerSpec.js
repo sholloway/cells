@@ -643,7 +643,7 @@ function treeToGrid(tree, width, height) {
 	}
 	//Add all alive cells directly from leaves.
 	tree.leaves.forEach((cell) => {
-		grid[cell.location.row][cell.location.col] = 1;
+		grid[cell.row][cell.col] = 1;
 	});
 	return grid;
 }

@@ -251,17 +251,12 @@ describe('QuadTree', function () {
 
 	function expectCell(cells, expected) {
 		let foundCell = cells.find((cell) => {
-			return (
-				cell.location.row == expected.location.row &&
-				cell.location.col == expected.location.col
-			);
+			return cell.row == expected.row && cell.col == expected.col;
 		});
-		expect(
-			foundCell,
-			`Can't find row: ${expected.location.row}, col: ${expected.location.col}`
-		).to.exist;
-		expect(foundCell.location.row).to.equal(expected.location.row);
-		expect(foundCell.location.col).to.equal(expected.location.col);
+		expect(foundCell, `Can't find row: ${expected.row}, col: ${expected.col}`)
+			.to.exist;
+		expect(foundCell.row).to.equal(expected.row);
+		expect(foundCell.col).to.equal(expected.col);
 	}
 
 	describe('QTNode', function () {

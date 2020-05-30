@@ -247,9 +247,14 @@ class AppStateManager {
 	 * @param {Entity[]} stack - An array of entities to render.
 	 * @returns {AppStateManager} The instance.
 	 */
-	buildScene(name, stack) {
+	buildScene(name, stack, message) {
 		if (this.sceneBuilders.has(name) && this.scenes.has(name)) {
-			this.sceneBuilders.get(name)(this.getScene(name), this.config, stack);
+			this.sceneBuilders.get(name)(
+				this.getScene(name),
+				this.config,
+				stack,
+				message
+			);
 		}
 		return this;
 	}
@@ -260,9 +265,9 @@ class AppStateManager {
 	 * @param {*} msg - The message to send.
 	 * @returns {AppStateManager} The instance.
 	 */
-	sendWorkerMessage(name, msg) {
+	sendWorkerMessage(name, msg, transferList) {
 		if (this.workers.has(name)) {
-			this.workers.get(name).postMessage(msg);
+			this.workers.get(name).postMessage(msg, transferList);
 		}
 		return this;
 	}
@@ -290,13 +295,15 @@ class AppStateManager {
 	processCycleMessage(name, message) {
 		if (message && message.command === 'PROCESS_CYCLE' && message.stack) {
 			this.clearScene(name)
-				.buildScene(name, message.stack)
+				.buildScene(name, message.stack, message)
 				.render(name)
 				.updateUI(message);
 		} else {
 			throw new Error(PROCESS_CYCLE_MESSAGE_ERR_MSG);
 		}
 	}
+
+	// processOptimizedMessage
 
 	/**
 	 * Enables the drawing mode.
@@ -329,14 +336,20 @@ class AppStateManager {
 			)
 			.then((response) => {
 				this.processCycleMessage(Layers.SIM, {
-					//2nd Render the drawing cells the Sim so there is no flicker.
+					//2nd, render the drawing cells the Sim so there is no flicker.
 					command: 'PROCESS_CYCLE',
-					stack: response.cells,
+					stack: response.stack,
+					numberOfCells: response.numberOfCells,
+					cellFieldsCount: response.cellFieldsCount,
+					numberOfStorageBoxes: response.numberOfStorageBoxes,
+					boxFieldCount: response.boxFieldCount,
 				});
 				//3rd Configure the Life Sim.
-				// updateConfiguredZoom(this.config);
 				updateConfiguredLandscape(this.config);
-				return this.setSeederOnLifeSystem(response.cells);
+				return this.setSeederOnLifeSystem(
+					response.stack,
+					response.numberOfCells
+				);
 			})
 			.then(() => {
 				//4th Start the Life Sim
@@ -358,10 +371,14 @@ class AppStateManager {
 		return this.workerSystem
 			.promiseResponse(Layers.SIM, WorkerCommands.LifeSystemCommands.SEND_CELLS)
 			.then((response) => {
-				this.sendWorkerMessage(Layers.DRAWING, {
+				let drawCellsMessage = {
 					command: WorkerCommands.DrawingSystemCommands.SET_CELLS,
+					numberOfCells: response.numberOfCells,
 					cells: response.cells,
-				}).sendWorkerMessage(Layers.SIM, {
+				};
+				this.sendWorkerMessage(Layers.DRAWING, drawCellsMessage, [
+					drawCellsMessage.cells.buffer,
+				]).sendWorkerMessage(Layers.SIM, {
 					command: WorkerCommands.LifeSystemCommands.RESET,
 					config: this.config,
 				});
@@ -390,18 +407,20 @@ class AppStateManager {
 	/**
 	 * Send configuration and cells to the life system worker to initialize the seeder with.
 	 * @private
-	 * @param {Cell[]} drawingCells The cells to populate the seeder with.
+	 * @param {Uint16Array} drawingCells The cells to populate the seeder with.
 	 * @returns {Promise} Promise to invoke the life system worker.
 	 */
-	setSeederOnLifeSystem(drawingCells) {
+	setSeederOnLifeSystem(drawingCells, numberOfCells) {
 		return this.workerSystem.promiseResponse(
 			Layers.SIM,
 			WorkerCommands.LifeSystemCommands.SET_SEEDER,
 			{
 				seedSetting: SeederModels.DRAWING,
 				config: this.config,
-				cells: drawingCells,
-			}
+				numberOfCells: numberOfCells,
+				cellsBuffer: drawingCells,
+			},
+			[drawingCells.buffer]
 		);
 	}
 
