@@ -421,12 +421,12 @@ class BatchDrawingCellsFromBuffer extends Trait {
 	}
 
 	process(context) {
-		let row, col, stage;
+		let row, col, state;
 		context.rendererContext.beginPath();
 
-		let firstStage = context.entity.initialOffset + 2;
-		let currentStage = context.entity.buffer[firstStage];
-		context.rendererContext.fillStyle = this.colors.get(currentStage);
+		let firstState = context.entity.initialOffset + 2;
+		let currentState = context.entity.buffer[firstState];
+		context.rendererContext.fillStyle = this.colors.get(currentState);
 
 		for (
 			let index = context.entity.initialOffset;
@@ -435,15 +435,14 @@ class BatchDrawingCellsFromBuffer extends Trait {
 		) {
 			row = context.entity.buffer[index];
 			col = context.entity.buffer[index + 1];
-			stage = context.entity.buffer[index + 2];
+			state = context.entity.buffer[index + 2];
 
-			if (currentStage != stage) {
+			if (currentState != state) {
 				context.rendererContext.fill(); //Render the existing
-
 				context.rendererContext.beginPath();
-				currentStage = stage;
-				context.rendererContext.fillStyle = this.colors.has(currentStage)
-					? this.colors.get(currentStage)
+				currentState = state;
+				context.rendererContext.fillStyle = this.colors.has(currentState)
+					? this.colors.get(currentState)
 					: '#f52811';
 			}
 

@@ -29,6 +29,13 @@ const Games = [
 		maxAge: 2,
 	},
 	{
+		key: 'bloomerang',
+		label: 'Bloomerang',
+		born: [3,4,6,7,8],
+		survive: [2,3,4],
+		maxAge: 24,
+	},
+	{
 		key: 'caterpillars',
 		label: 'Caterpillars',
 		born: [3, 7, 8],
@@ -36,11 +43,32 @@ const Games = [
 		maxAge: 4,
 	},
 	{
+		key: 'fireworks',
+		label: 'Fireworks',
+		born: [1,3],
+		survive: [2],
+		maxAge: 21,
+	},
+	{
 		key: 'worms',
 		label: 'Worms',
 		born: [2, 5],
 		survive: [3, 4, 6, 7],
 		maxAge: 6,
+	},
+	{
+		key: 'star-wars',
+		label: 'Star Wars',
+		born: [2],
+		survive: [3,4,5,7],
+		maxAge: 4,
+	},
+	{
+		key: 'swirl',
+		label: 'Swirl',
+		born: [3,4],
+		survive: [2,3],
+		maxAge: 8,
 	},
 ];
 
