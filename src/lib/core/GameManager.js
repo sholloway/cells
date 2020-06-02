@@ -195,6 +195,8 @@ class GameManager {
 		// prettier-ignore
 		let aliveNeighborsCount, nextCellState, x, y, xx, yy, cellsInArea, currentCellState;
 		let nextAliveCells = [];
+		let cellBin = new CellBin();
+
 		for (let row = 0; row < this.config.landscape.width; row++) {
 			for (let col = 0; col < this.config.landscape.height; col++) {
 				(x = row - 1), (y = col - 1), (xx = row + 1), (yy = col + 1);
@@ -222,13 +224,17 @@ class GameManager {
 				);
 
 				if (nextCellState !== CellStates.DEAD) {
-					nextAliveCells.push(new Cell(row, col, nextCellState));
+					// nextAliveCells.push(new Cell(row, col, nextCellState));
+					cellBin.add(new Cell(row, col, nextCellState));
 				}
 			}
-
 		}
 
-		//2. Create a new quad tree from the list of alive cells.
+		//Merge the bins into a single pre-sorted array of cells.
+		nextAliveCells = cellBin.merge();
+		cellBin.clear();
+
+		//2. Create a new quad tree from the list of active and aging cells.
 		this.nextTree.clear();
 		this.nextTree.index(nextAliveCells);
 
@@ -271,4 +277,38 @@ class GameManager {
 	}
 }
 
+/**
+ * Stores cells in arrays partitioned by their state.
+ */
+class CellBin {
+	constructor() {
+		this.bin = new Map();
+	}
+
+	add(cell) {
+		if (cell && cell.state) {
+			this.bin.has(cell.state)
+				? this.bin.get(cell.state).push(cell)
+				: this.bin.set(cell.state, [cell]);
+		} else {
+			throw new Error('Cannot add an undeclared Cell.');
+		}
+		return this;
+	}
+
+	/**
+	 * Creates a new array by combining the bins in increasing key order.
+	 * @returns {Cell[]} An array of cells.
+	 */
+	merge() {
+		let cells = [];
+		let keys = Array.from(this.bin.keys()).sort();
+		keys.forEach((k) => cells.push(...this.bin.get(k)));
+		return cells;
+	}
+
+	clear() {
+		this.bin.clear();
+	}
+}
 module.exports = GameManager;
