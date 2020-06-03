@@ -3,7 +3,8 @@
  */
 const CellStates = {
 	DEAD: 0,
-	ACTIVE: 1
+	ACTIVE: 1,
+	RETIRED: 2
 };
 
 module.exports = CellStates;

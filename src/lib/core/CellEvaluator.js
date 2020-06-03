@@ -68,31 +68,20 @@ class GenerationalCellEvaluator extends CellEvaluator {
 	evaluate(neighborsCount, currentCellState) {
 		let nextCellState = CellStates.DEAD; //Be dead by default
 		if (currentCellState === CellStates.DEAD) {
-			// console.log('A');
 			if (this.birthRules.includes(neighborsCount)) {
-				// console.log('B');
 				nextCellState = CellStates.ACTIVE; //Be Born
 			}
 		} else if (currentCellState === CellStates.ACTIVE) {
-			// console.log('C');
-			if (this.survivalRules.includes(neighborsCount)) {
-				// console.log('D');
-				nextCellState = CellStates.ACTIVE; //Stay Active
-			} else {
-				// console.log('E');
-				nextCellState = 2; //Start aging...
-			}
+			//Determine if the cell should stay active.
+			nextCellState = this.survivalRules.includes(neighborsCount)
+				? CellStates.ACTIVE //Stay Active
+				: CellStates.RETIRED; //Start aging...
 		} else {
-			// console.log('F');
 			//Aging
-			// nextCellState = (currentCellState + 1) % this.maxAge; //This will become 0 when max age is reached.
-			if (currentCellState < this.maxAge) {
-				// console.log(`G`);
-				nextCellState = currentCellState + 1; // Age
-			} else {
-				// console.log('H');
-				nextCellState = CellStates.DEAD; //Die
-			}
+			nextCellState =
+				currentCellState < this.maxAge
+					? currentCellState + 1 // Age
+					: (nextCellState = CellStates.DEAD); //Die
 		}
 
 		return nextCellState;

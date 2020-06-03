@@ -447,21 +447,19 @@ class BatchDrawingCellsFromBuffer extends Trait {
 			}
 
 			//scale and add a rect to the path.
-			if (row && col) {
-				context.rendererContext.rect(
-					row * this.scalingFactor,
-					col * this.scalingFactor,
-					CELL_WIDTH * this.scalingFactor,
-					CELL_HEIGHT * this.scalingFactor
-				);
-			}
+			context.rendererContext.rect(
+				row * this.scalingFactor,
+				col * this.scalingFactor,
+				CELL_WIDTH * this.scalingFactor,
+				CELL_HEIGHT * this.scalingFactor
+			);
 		}
 		context.rendererContext.fill();
 
 		//Drawing strokes takes time. Only do it for when we're zoomed out and can actually see them.
-		if (this.scalingFactor > this.strokeThreashold) {
-			context.rendererContext.stroke();
-		}
+		// if (this.scalingFactor > this.strokeThreashold) {
+		// 	context.rendererContext.stroke();
+		// }
 	}
 }
 
@@ -483,10 +481,7 @@ class BatchDrawingBoxesFromBuffer extends Trait {
 			y = context.entity.buffer[index + 1] * this.scalingFactor;
 			xx = context.entity.buffer[index + 2] * this.scalingFactor;
 			yy = context.entity.buffer[index + 3] * this.scalingFactor;
-			if (x && y && xx && yy) {
-				//TODO: Try removing the guard.
-				context.rendererContext.rect(x, y, xx - x, yy - y);
-			}
+			context.rendererContext.rect(x, y, xx - x, yy - y);
 		}
 		context.rendererContext.stroke();
 	}

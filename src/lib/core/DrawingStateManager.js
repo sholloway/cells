@@ -1,5 +1,6 @@
 const { QuadTree, cloneCells } = require('./Quadtree.js');
 const { Box, Cell } = require('../entity-system/Entities.js');
+const CellStates = require('../entity-system/CellStates.js');
 
 const {
 	ColorByContents,
@@ -114,10 +115,10 @@ class DrawingStateManager {
 	 * @param {number} y - The Y coordinate on the simulation's grid.
 	 */
 	toggleCell(x, y) {
-		let node = this.currentTree.search(new Cell(x, y));
+		let node = this.currentTree.search(new Cell(x, y, CellStates.ACTIVE));
 		if (node.isNullNode) {
 			//The node doesn't exist. Add it.
-			this.cells.push(new Cell(x, y));
+			this.cells.push(new Cell(x, y, CellStates.ACTIVE));
 			this.nextTree.clear();
 			this.nextTree.index(this.cells);
 		} else {

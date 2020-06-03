@@ -137,7 +137,7 @@ class AbstractWorkerController {
 		let buffer = new ArrayBuffer(bufferLength);
 		let dataView = new Uint16Array(buffer);
 		let offset;
-		
+
 		//First pack all the cells.
 		for (var current = 0; current < sceneStack.length; current++) {
 			offset = PackingConstants.FIELDS_PER_CELL * current;
