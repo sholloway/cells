@@ -1,6 +1,10 @@
 const GameManager = require('./GameManager.js');
 const SceneManager = require('./SceneManager.js');
-const { GenerationalCellEvaluator, LifeEvaluator } = require('./CellEvaluator.js');
+const {
+	CellEvaluator,
+	GenerationalCellEvaluator,
+	LifeEvaluator,
+} = require('./CellEvaluator.js');
 /**
  * The possible states the drawing system can be in.
  * @private
@@ -156,9 +160,22 @@ class LifeSystem {
 	}
 
 	createCellEvaluator(game) {
-		return game.key === 'conways-game-of-life'
-			? new LifeEvaluator(game.born, game.survive)
-			: new GenerationalCellEvaluator(game.born, game.survive, game.maxAge);
+		let evaluator;
+		switch (game.key) {
+			case 'conways-game-of-life':
+				evaluator = new LifeEvaluator(game.born, game.survive);
+				break;
+			case 'high-life':
+				evaluator = new CellEvaluator(game.born, game.survive);
+				break;
+			default:
+				evaluator = new GenerationalCellEvaluator(
+					game.born,
+					game.survive,
+					game.maxAge
+				);
+		}
+		return evaluator;
 	}
 
 	/**

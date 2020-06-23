@@ -22,6 +22,13 @@ const Games = [
 		survive: [2, 3]
 	},
 	{
+		key: 'high-life',
+		label: 'High Life',
+		born: [3,6],
+		survive: [2, 3],
+		maxAge: 1
+	},
+	{
 		key: 'brians-brain',
 		label: 'Brain',
 		born: [2],

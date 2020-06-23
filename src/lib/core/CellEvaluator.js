@@ -16,12 +16,25 @@ class CellEvaluator {
 	}
 
 	evaluate(neighborsCount, currentCellState) {
-		throw new Error(
-			'CellEvaluator children must implement evaluate(neighborsCount, currentCellState)'
-		);
+		let nextCellState = CellStates.DEAD; //Be dead by default
+		if (
+			currentCellState == CellStates.DEAD &&
+			this.birthRules.includes(neighborsCount)
+		) {
+			nextCellState = CellStates.ACTIVE; //Be Born
+		} else if (
+			currentCellState == CellStates.ACTIVE &&
+			this.survivalRules.includes(neighborsCount)
+		) {
+			nextCellState = CellStates.ACTIVE; //Survive
+		}
+		return nextCellState;
 	}
 }
 
+/**
+ * An evaluator for Life that is slightly optimized.
+ */
 class LifeEvaluator extends CellEvaluator {
 	constructor(birthRules, survivalRules) {
 		super(birthRules, survivalRules);
@@ -39,6 +52,12 @@ class LifeEvaluator extends CellEvaluator {
 			}
 		}
 		return nextCellState;
+	}
+}
+
+class LifeLike extends CellEvaluator {
+	constructor(birthRules, survivalRules) {
+		super(birthRules, survivalRules);
 	}
 }
 
@@ -88,4 +107,4 @@ class GenerationalCellEvaluator extends CellEvaluator {
 	}
 }
 
-module.exports = { GenerationalCellEvaluator, LifeEvaluator };
+module.exports = { CellEvaluator, GenerationalCellEvaluator, LifeEvaluator };
