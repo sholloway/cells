@@ -34,6 +34,12 @@ const Games = [
 		survive: [1, 2, 3, 4, 5],
 	},
 	{
+		key: 'mazectric',
+		label: 'Mazectric',
+		born: [3],
+		survive: [1, 2, 3, 4],
+	},
+	{
 		key: 'brians-brain',
 		label: 'Brain',
 		born: [2],
