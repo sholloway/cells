@@ -12,8 +12,6 @@ Questions
 - Can we transfer a Set rather than arrays?
 - Is checking a Set faster than Array.includes for small arrays?
 */
-const Any = 'any';
-
 const Games = [
 	{
 		key: 'conways-game-of-life',

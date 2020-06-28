@@ -1,5 +1,5 @@
 const { QuadTree, findAliveNeighbors, cloneCells } = require('./Quadtree.js');
-const CellEvaluator = require('./CellEvaluator.js');
+const { CellEvaluator } = require('./CellEvaluator.js');
 const { Box, Cell } = require('../entity-system/Entities.js');
 const {
 	ColorByAgeTrait,
@@ -141,7 +141,7 @@ class GameManager {
 	 * @param {SceneManager} scene - The active list of things that need to be rendered.
 	 * @param {CellEvaluator} evaluator - Responsible for evaluating a single cell.
 	 */
-	evaluateCells(scene, evaluator = defaultCellEvaluator()) {
+	evaluateCells(scene, evaluator) {
 		//1. Traverse every possible cell on the landscape, building up a list of new alive cells.
 		let aliveNeighbors, nextCellState, foundCell;
 		let nextAliveCells = [];
