@@ -8,6 +8,7 @@ const {
 	uniformScale,
 	scaleCells,
 } = require('../../lib/core/Quadtree.js');
+
 const { buildDag, createDotFile, mkFile } = require('./GraphVizUtility.js');
 const {
 	drawImageBoarder,
@@ -15,6 +16,7 @@ const {
 	drawCells,
 	mkImageFile,
 } = require('./CanvasUtility.js');
+
 const {
 	makeIdentity,
 	makeOppositeIdentity,

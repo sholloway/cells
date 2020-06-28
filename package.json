@@ -26,6 +26,8 @@
 		"url": "git://github.com/sholloway/conways_game.git"
 	},
 	"devDependencies": {
+		"@thi.ng/morton": "^2.0.16",
+		"benchmark": "^2.1.4",
 		"chai": "4.2.0",
 		"clean-webpack-plugin": "^3.0.0",
 		"css-loader": "^3.5.3",
