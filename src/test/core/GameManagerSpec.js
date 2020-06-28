@@ -1,15 +1,7 @@
-/*
-This is a replacement for GameStateManagerSpec that uses a Quadtree.
-*/
 const chai = require('chai');
 const expect = chai.expect;
-const {
-	makeIdentity,
-	makeFull10By10,
-	makeCellsFrom2DArray,
-} = require('./QuadTreeTestHelper.js');
+const { makeCellsFrom2DArray } = require('./QuadTreeTestHelper.js');
 
-const { Cell } = require('./../../lib/entity-system/Entities.js');
 const {
 	QuadTree,
 	findAliveNeighbors,
@@ -17,6 +9,9 @@ const {
 const GameManager = require('./../../lib/core/GameManager.js');
 const SceneManager = require('./../../lib/core/SceneManager.js');
 const ArrayAssertions = require('./ArrayAssertions.js');
+const { CellEvaluator } = require('../../lib/core/CellEvaluator.js');
+
+let lifeEvaluator = new CellEvaluator([3], [2,3]);
 
 describe('Game Manager', function () {
 	function buildTree(grid) {
@@ -357,7 +352,7 @@ describe('Game Manager', function () {
 
 			//Evaluating the grid should result in no changes to the current grid and
 			//The next grid should be completely alive.
-			mngr.evaluateCells(scene, new AlwayAliveEvaluator());
+			mngr.evaluateCellsFaster(scene, new AlwayAliveEvaluator());
 
 			let currentTreeLiveCells = mngr.currentTree.findAliveInArea(
 				0,
@@ -411,7 +406,7 @@ describe('Game Manager', function () {
 			expect(nextTreeLiveCellsCount == 0).to.be.true;
 
 			//Evaluating should make the next grid completely alive.
-			mngr.evaluateCells(scene, new AlwayAliveEvaluator());
+			mngr.evaluateCellsFaster(scene, new AlwayAliveEvaluator());
 			nextTreeLiveCells = mngr.nextTree.findAliveInArea(
 				0,
 				0,
@@ -437,15 +432,7 @@ describe('Game Manager', function () {
 		});
 	});
 
-	/*
-	Desired Tests: http://conwaylife.com/wiki/List_of_common_still_lifes
-	- Beehive
-	- Boat
-	- Tub
-	- Ship
-	- Barge
-	- Dark Spark Coil
-	*/
+
 	describe('Common Conway Primitives', function () {
 		it('should support blocks', function () {
 			let config = makeConfig(5, 5);
@@ -469,7 +456,7 @@ describe('Game Manager', function () {
 
 			//Do 100 evaluations
 			for (let cycle = 0; cycle < 100; cycle++) {
-				mngr.evaluateCells(scene);
+				mngr.evaluateCellsFaster(scene, lifeEvaluator);
 				mngr.activateNext();
 				scene.clear();
 			}
@@ -513,7 +500,7 @@ describe('Game Manager', function () {
 			ArrayAssertions.assertEqual2DArrays(initBlinker, currentGrid);
 
 			for (i = 0; i < 100; i++) {
-				mngr.evaluateCells(scene);
+				mngr.evaluateCellsFaster(scene, lifeEvaluator);
 				mngr.activateNext();
 				scene.clear();
 				currentGrid = treeToGrid(
@@ -555,7 +542,7 @@ describe('Game Manager', function () {
 
 			//Do 100 evaluations
 			for (let cycle = 0; cycle < 100; cycle++) {
-				mngr.evaluateCellsFaster(scene);
+				mngr.evaluateCellsFaster(scene, lifeEvaluator);
 				mngr.activateNext();
 				scene.clear();
 			}
@@ -599,7 +586,7 @@ describe('Game Manager', function () {
 			ArrayAssertions.assertEqual2DArrays(initBlinker, currentGrid);
 
 			for (i = 0; i < 100; i++) {
-				mngr.evaluateCellsFaster(scene);
+				mngr.evaluateCellsFaster(scene, lifeEvaluator);
 				mngr.activateNext();
 				scene.clear();
 				currentGrid = treeToGrid(

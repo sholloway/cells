@@ -3,6 +3,7 @@ require('./CellSizeControl.js');
 require('./ContextMenu.js');
 require('./EventButton.js');
 require('./EventCheckbox.js');
+require('./GameSelector.js');
 require('./MenuItem.js');
 require('./NumberDisplay.js');
 require('./ShapePicker.js');

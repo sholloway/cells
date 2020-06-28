@@ -11,7 +11,7 @@ const { Cell } = require('./../entity-system/Entities.js');
  * @returns {number}
  */
 function randomAliveOrDead() {
-	return getRandomIntInclusive(CellStates.DEAD, CellStates.ALIVE);
+	return getRandomIntInclusive(CellStates.DEAD, CellStates.ACTIVE);
 }
 
 /**

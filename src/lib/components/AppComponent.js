@@ -97,6 +97,10 @@ class AppComponent extends LitElement {
 				</div>
 				<div id="control_bar">
 					<div class="container row">
+						<game-selector
+							event="game-changed"
+							@game-changed=${this.handleGameChanged}
+						></game-selector>
 						<shape-picker
 							event="cell-shape-changed"
 							@cell-shape-changed=${this.setCellShapeOption}
@@ -595,6 +599,14 @@ class AppComponent extends LitElement {
 				throw new Error('Unknown context menu command.');
 		}
 		return;
+	}
+
+	handleGameChanged(event) {
+		this.config.game.activeGame = event.detail.game;
+		this.stateManager.sendWorkerMessage(Layers.SIM, {
+			command: WorkerCommands.LifeSystemCommands.SET_CONFIG,
+			config: this.config,
+		});
 	}
 }
 

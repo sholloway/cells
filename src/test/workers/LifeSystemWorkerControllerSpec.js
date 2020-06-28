@@ -5,6 +5,7 @@ const sinon = require('sinon');
 const LifeSystemWorkerController = require('./../../lib/workers/LifeSystemWorkerController.js');
 const WorkerCommands = require('./../../lib/workers/WorkerCommands.js');
 const { Cell } = require('./../../lib/entity-system/Entities.js');
+const Games = require('../../lib/configs/Games.js');
 
 describe('Life System Controller', function () {
 	let controller;
@@ -37,6 +38,9 @@ describe('Life System Controller', function () {
 						landscape: {
 							width: 1,
 							height: 1,
+						},
+						game: {
+							activeGame: Games[0],
 						},
 					},
 					seedSetting: 'draw',
@@ -75,7 +79,7 @@ describe('Life System Controller', function () {
 			expect(controller.lifeSystem.config.zoom).to.be.undefined;
 			controller.process({
 				command: WorkerCommands.LifeSystemCommands.RESET,
-				config: { zoom: 15 },
+				config: { zoom: 15, game: { activeGame: Games[0] } },
 			});
 			expect(controller.lifeSystem.config.zoom).to.equal(15);
 		});
@@ -86,7 +90,7 @@ describe('Life System Controller', function () {
 			controller.process({
 				command: WorkerCommands.DrawingSystemCommands.RESET,
 				params: {
-					config: { zoom: 15 },
+					config: { zoom: 15, game: { activeGame: Games[0] } },
 				},
 				promisedResponse: true,
 			});
@@ -134,6 +138,7 @@ describe('Life System Controller', function () {
 							width: 1,
 							height: 1,
 						},
+						game: { activeGame: Games[0] },
 					},
 					seedSetting: 'draw',
 					cells: [new Cell(1, 1), new Cell(2, 2)],

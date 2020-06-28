@@ -1,5 +1,5 @@
 const { QuadTree, findAliveNeighbors, cloneCells } = require('./Quadtree.js');
-const CellEvaluator = require('./CellEvaluator.js');
+const { CellEvaluator } = require('./CellEvaluator.js');
 const { Box, Cell } = require('../entity-system/Entities.js');
 const {
 	ColorByAgeTrait,
@@ -9,8 +9,6 @@ const {
 	ProcessBoxAsRect,
 	ColorByContents,
 	RectOutlineTrait,
-	DarkThinLines,
-	GridPattern,
 } = require('../entity-system/Traits.js');
 
 const CellStates = require('./../entity-system/CellStates.js');
@@ -143,7 +141,7 @@ class GameManager {
 	 * @param {SceneManager} scene - The active list of things that need to be rendered.
 	 * @param {CellEvaluator} evaluator - Responsible for evaluating a single cell.
 	 */
-	evaluateCells(scene, evaluator = defaultCellEvaluator()) {
+	evaluateCells(scene, evaluator) {
 		//1. Traverse every possible cell on the landscape, building up a list of new alive cells.
 		let aliveNeighbors, nextCellState, foundCell;
 		let nextAliveCells = [];
@@ -163,7 +161,7 @@ class GameManager {
 					aliveNeighbors,
 					foundCell.getState()
 				);
-				if (nextCellState == CellStates.ALIVE) {
+				if (nextCellState === CellStates.ACTIVE) {
 					nextAliveCells.push(new Cell(row, col));
 				}
 			}
@@ -195,43 +193,48 @@ class GameManager {
 	evaluateCellsFaster(scene, evaluator = defaultCellEvaluator()) {
 		//1. Traverse every possible cell on the landscape, building up a list of new alive cells.
 		// prettier-ignore
-		let aliveNeighborsCount, nextCellState, x, y, xx, yy, aliveCells, currentCellState;
+		let aliveNeighborsCount, nextCellState, x, y, xx, yy, cellsInArea, currentCellState;
 		let nextAliveCells = [];
+		let cellBin = new CellBin();
+
 		for (let row = 0; row < this.config.landscape.width; row++) {
 			for (let col = 0; col < this.config.landscape.height; col++) {
 				(x = row - 1), (y = col - 1), (xx = row + 1), (yy = col + 1);
-
-				//Note: This should never be greater than 9 cells.
-				aliveCells = this.currentTree.findAliveInArea(x, y, xx, yy);
+				cellsInArea = this.currentTree.findAliveInArea(x, y, xx, yy);
 
 				//Assume the cell is dead.
 				currentCellState = CellStates.DEAD;
-				aliveNeighborsCount = aliveCells.length;
-				for (let i = 0; i < aliveCells.length; i++) {
-					if (
-						aliveCells[i].row == row &&
-						aliveCells[i].col == col
-					) {
-						currentCellState = CellStates.ALIVE;
-						aliveNeighborsCount--;
-						break;
+				aliveNeighborsCount = 0;
+
+				//Find the current cell's state and the count of active cells.
+				for (let i = 0; i < cellsInArea.length; i++) {
+					if (cellsInArea[i].row == row && cellsInArea[i].col == col) {
+						currentCellState = cellsInArea[i].state;
+						continue; //Don't count the current cell in the neighborhood calculation.
+					}
+
+					if (cellsInArea[i].state === CellStates.ACTIVE) {
+						aliveNeighborsCount++;
 					}
 				}
 
-				//Inlining evaluation for performance tuning.
-				if (currentCellState == CellStates.DEAD) {
-					if (aliveNeighborsCount == 3) {
-						nextAliveCells.push(new Cell(row, col)); //Cell is born.
-					}
-				} else {
-					if (aliveNeighborsCount == 2 || aliveNeighborsCount == 3) {
-						nextAliveCells.push(new Cell(row, col)); //Cell survives.
-					}
+				nextCellState = evaluator.evaluate(
+					aliveNeighborsCount,
+					currentCellState
+				);
+
+				if (nextCellState !== CellStates.DEAD) {
+					// nextAliveCells.push(new Cell(row, col, nextCellState));
+					cellBin.add(new Cell(row, col, nextCellState));
 				}
 			}
 		}
 
-		//2. Create a new quad tree from the list of alive cells.
+		//Merge the bins into a single pre-sorted array of cells.
+		nextAliveCells = cellBin.merge();
+		cellBin.clear();
+
+		//2. Create a new quad tree from the list of active and aging cells.
 		this.nextTree.clear();
 		this.nextTree.index(nextAliveCells);
 
@@ -244,7 +247,7 @@ class GameManager {
 	 * Replace the current tree with the next state tree and re-initializes the next tree to be empty.
 	 */
 	activateNext() {
-		this.currentTree.clear(); 
+		this.currentTree.clear();
 		this.currentTree = null;
 		this.currentTree = this.nextTree;
 		this.nextTree = QuadTree.empty();
@@ -274,4 +277,38 @@ class GameManager {
 	}
 }
 
+/**
+ * Stores cells in arrays partitioned by their state.
+ */
+class CellBin {
+	constructor() {
+		this.bin = new Map();
+	}
+
+	add(cell) {
+		if (cell && cell.state) {
+			this.bin.has(cell.state)
+				? this.bin.get(cell.state).push(cell)
+				: this.bin.set(cell.state, [cell]);
+		} else {
+			throw new Error('Cannot add an undeclared Cell.');
+		}
+		return this;
+	}
+
+	/**
+	 * Creates a new array by combining the bins in increasing key order.
+	 * @returns {Cell[]} An array of cells.
+	 */
+	merge() {
+		let cells = [];
+		let keys = Array.from(this.bin.keys()).sort();
+		keys.forEach((k) => cells.push(...this.bin.get(k)));
+		return cells;
+	}
+
+	clear() {
+		this.bin.clear();
+	}
+}
 module.exports = GameManager;

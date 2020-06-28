@@ -1,3 +1,4 @@
+const Games = require('./Games.js');
 let DefaultConfig = {
 	canvas: {
 		width: 600,
@@ -18,6 +19,7 @@ let DefaultConfig = {
 			birth: [3],
 			survive: [2, 3],
 		},
+		activeGame: Games[0], //The CA the user picked to run. The default is the first one.
 	},
 	landscape: {
 		//used by quad tree implementation.

@@ -407,17 +407,69 @@ class BatchDrawingCells extends Trait {
 	}
 }
 
+const missingStateHandler = {
+	get: function (obj, prop) {
+		return prop in obj ? obj[prop] : '#f52811'; //Redish
+	},
+};
+
+class MapWithDefault extends Map {
+	constructor(defaultValue, entries) {
+		super(entries);
+		this.defaultValue = defaultValue;
+	}
+
+	/**
+	 * Overrides get(key) to provide a default value.
+	 * @param {*} key
+	 * @override
+	 */
+	get(key) {
+		return this.has(key) ? super.get(key) : this.defaultValue;
+	}
+}
+
 class BatchDrawingCellsFromBuffer extends Trait {
 	constructor(scalingFactor, strokeThreashold, shape) {
 		super();
 		this.scalingFactor = scalingFactor;
 		this.strokeThreashold = strokeThreashold;
 		this.shape = shape;
+
+		//TODO: Refactor
+		//Only changing colors on the fib seq numbers.
+		this.colors = new MapWithDefault('#f52811'); //Default Red-ish
+		this.colors.set(1, '#263238'); //Active
+		this.colors.set(2, '#77a1b5'); //Begin Aging
+		this.colors.set(3, '#a8e4ff'); //Fib Change
+		this.colors.set(4, '#a8e4ff');
+		this.colors.set(5, '#a8fff3'); //Fib Change
+		this.colors.set(6, '#a8fff3');
+		this.colors.set(7, '#a8fff3');
+		this.colors.set(8, '#a8ffaf'); //Fib Change
+		this.colors.set(9, '#a8ffaf');
+		this.colors.set(10, '#a8ffaf');
+		this.colors.set(11, '#a8ffaf');
+		this.colors.set(12, '#a8ffaf');
+		this.colors.set(13, '#feffa8'); //Fib Change
+		this.colors.set(14, '#feffa8');
+		this.colors.set(15, '#feffa8');
+		this.colors.set(16, '#feffa8');
+		this.colors.set(17, '#feffa8');
+		this.colors.set(18, '#feffa8');
+		this.colors.set(19, '#feffa8');
+		this.colors.set(20, '#feffa8');
+		this.colors.set(21, '#ffa8a8'); //Fib Change
 	}
 
 	process(context) {
-		let row, col;
+		let row, col, state;
 		context.rendererContext.beginPath();
+
+		let firstState = context.entity.initialOffset + 2;
+		let currentState = context.entity.buffer[firstState];
+		context.rendererContext.fillStyle = this.colors.get(currentState);
+
 		for (
 			let index = context.entity.initialOffset;
 			index < context.entity.bufferEnd;
@@ -425,23 +477,29 @@ class BatchDrawingCellsFromBuffer extends Trait {
 		) {
 			row = context.entity.buffer[index];
 			col = context.entity.buffer[index + 1];
-			//scale and add a rect to the path.
-			if (row && col) {
-				//TODO: Remove this.
-				context.rendererContext.rect(
-					row * this.scalingFactor,
-					col * this.scalingFactor,
-					CELL_WIDTH * this.scalingFactor,
-					CELL_HEIGHT * this.scalingFactor
-				);
+			state = context.entity.buffer[index + 2];
+
+			if (currentState != state) {
+				context.rendererContext.fill(); //Render the existing
+				context.rendererContext.beginPath();
+				currentState = state;
+				context.rendererContext.fillStyle = this.colors.get(currentState);
 			}
+
+			//scale and add a rect to the path.
+			context.rendererContext.rect(
+				row * this.scalingFactor,
+				col * this.scalingFactor,
+				CELL_WIDTH * this.scalingFactor,
+				CELL_HEIGHT * this.scalingFactor
+			);
 		}
 		context.rendererContext.fill();
 
 		//Drawing strokes takes time. Only do it for when we're zoomed out and can actually see them.
-		if (this.scalingFactor > this.strokeThreashold) {
-			context.rendererContext.stroke();
-		}
+		// if (this.scalingFactor > this.strokeThreashold) {
+		// 	context.rendererContext.stroke();
+		// }
 	}
 }
 
@@ -463,10 +521,7 @@ class BatchDrawingBoxesFromBuffer extends Trait {
 			y = context.entity.buffer[index + 1] * this.scalingFactor;
 			xx = context.entity.buffer[index + 2] * this.scalingFactor;
 			yy = context.entity.buffer[index + 3] * this.scalingFactor;
-			if (x && y && xx && yy) {
-				//TODO: Try removing the guard.
-				context.rendererContext.rect(x, y, xx - x, yy - y);
-			}
+			context.rendererContext.rect(x, y, xx - x, yy - y);
 		}
 		context.rendererContext.stroke();
 	}

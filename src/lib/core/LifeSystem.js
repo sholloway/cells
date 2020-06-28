@@ -1,7 +1,10 @@
-const { CanvasBasedSystem } = require('./System.js');
 const GameManager = require('./GameManager.js');
 const SceneManager = require('./SceneManager.js');
-
+const {
+	CellEvaluator,
+	GenerationalCellEvaluator,
+	LifeEvaluator,
+} = require('./CellEvaluator.js');
 /**
  * The possible states the drawing system can be in.
  * @private
@@ -25,6 +28,7 @@ class LifeSystem {
 		this.state = States.IDLE;
 		this.seeder = null;
 		this.simulationInitialized = false;
+		this.cellEvaluator = undefined; //Will be set when calling this.setConfig()
 	}
 
 	/**
@@ -42,6 +46,7 @@ class LifeSystem {
 	setConfig(config) {
 		this.config = config;
 		this.getStateManager().setConfig(this.config);
+		this.cellEvaluator = this.createCellEvaluator(this.config.game.activeGame);
 		return this;
 	}
 
@@ -52,7 +57,7 @@ class LifeSystem {
 		return this.scene;
 	}
 
-	getStorageScene(){
+	getStorageScene() {
 		return this.storageScene;
 	}
 
@@ -106,7 +111,7 @@ class LifeSystem {
 		this.displayStorageStructure = display;
 	}
 
-	getDisplayStorage(){
+	getDisplayStorage() {
 		return this.displayStorageStructure;
 	}
 
@@ -136,7 +141,10 @@ class LifeSystem {
 		if (this.simulationInitialized) {
 			this.scene.clear();
 			this.storageScene.clear();
-			this.getStateManager().evaluateCellsFaster(this.scene, this.evaluator);
+			this.getStateManager().evaluateCellsFaster(
+				this.scene,
+				this.cellEvaluator
+			);
 			this.getStateManager().stageStorage(
 				this.storageScene,
 				this.getDisplayStorage()
@@ -149,6 +157,23 @@ class LifeSystem {
 			);
 		}
 		return this;
+	}
+
+	createCellEvaluator(game) {
+		let evaluator;
+		if (game.key == 'conways-game-of-life'){
+			evaluator = new LifeEvaluator(game.born, game.survive);
+		}else if(game.maxAge){
+			//Generational Games
+			evaluator = new GenerationalCellEvaluator(
+				game.born,
+				game.survive,
+				game.maxAge
+			);
+		}else{
+			evaluator = new CellEvaluator(game.born, game.survive);
+		}
+		return evaluator;
 	}
 
 	/**

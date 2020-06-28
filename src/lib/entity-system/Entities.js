@@ -112,15 +112,12 @@ class Cell extends Entity {
 	 * @param {number} row - The horizontal location of the cell on a grid.
 	 * @param {number} col - The vertical location of the cell on a grid.
 	 */
-	constructor(row, col) {
+	constructor(row, col, state = CellStates.ACTIVE) {
 		super();
 		this.className = 'Cell';
 		this.row = row;
 		this.col = col;
-	}
-
-	getState() {
-		return CellStates.ALIVE; //We're only dealing with alive cells.
+		this.state = state;
 	}
 
 	/**

@@ -35,7 +35,7 @@ class LifeSystemWorkerController extends AbstractWorkerController {
 					msg.command,
 					(msg) => this.findPromisedProperty(msg, 'config'),
 					(msg) => {
-						this.lifeSystem.reset(msg.config);
+						this.lifeSystem.reset(this.findPromisedProperty(msg, 'config'));
 						msg.promisedResponse &&
 							this.sendMessageToClient({
 								id: msg.id,
@@ -94,6 +94,16 @@ class LifeSystemWorkerController extends AbstractWorkerController {
 					'The displayStorage field was not provided.'
 				);
 				break;
+			case LifeSystemCmds.SET_CONFIG:
+				this.processCmd(
+					msg,
+					msg.command,
+					(msg) => this.findPromisedProperty(msg, 'config'),
+					(msg) =>
+						this.lifeSystem.setConfig(this.findPromisedProperty(msg, 'config')),
+					'The displayStorage field was not provided.'
+				);
+				break;
 			default:
 				throw new Error(
 					`Unsupported command ${msg.command} was received in LifeSystem Worker.`
@@ -112,8 +122,10 @@ class LifeSystemWorkerController extends AbstractWorkerController {
 			let aliveCellsCount = this.lifeSystem.aliveCellsCount();
 			let isSimulationDone = aliveCellsCount == 0;
 			isSimulationDone && this.stop();
+			
 			let sceneStack = this.lifeSystem.getScene().getStack();
 			let storageStack = this.lifeSystem.getStorageScene().getStack();
+
 			let response = {
 				command: msg.command,
 				stack: this.packScene(sceneStack, storageStack),

@@ -13,7 +13,7 @@ const WorkerState = {
 
 const PackingConstants = {
 	BYTES_PER_NUMBER: 2,
-	FIELDS_PER_CELL: 2,
+	FIELDS_PER_CELL: 3,
 	FIELDS_PER_BOX: 4,
 };
 
@@ -143,6 +143,7 @@ class AbstractWorkerController {
 			offset = PackingConstants.FIELDS_PER_CELL * current;
 			dataView[offset] = sceneStack[current].row;
 			dataView[offset + 1] = sceneStack[current].col;
+			dataView[offset + 2] = sceneStack[current].state;
 		}
 
 		//Then pack all of the boxes (if any) after the cells.
@@ -176,7 +177,9 @@ class AbstractWorkerController {
 				current < bufferEnd;
 				current += cellsFieldsCount
 			) {
-				cells.push(new Cell(buffer[current], buffer[current + 1]));
+				cells.push(
+					new Cell(buffer[current], buffer[current + 1], buffer[current + 2])
+				);
 			}
 		}
 		return cells;
