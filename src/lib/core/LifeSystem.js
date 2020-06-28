@@ -161,19 +161,17 @@ class LifeSystem {
 
 	createCellEvaluator(game) {
 		let evaluator;
-		switch (game.key) {
-			case 'conways-game-of-life':
-				evaluator = new LifeEvaluator(game.born, game.survive);
-				break;
-			case 'high-life':
-				evaluator = new CellEvaluator(game.born, game.survive);
-				break;
-			default:
-				evaluator = new GenerationalCellEvaluator(
-					game.born,
-					game.survive,
-					game.maxAge
-				);
+		if (game.key == 'conways-game-of-life'){
+			evaluator = new LifeEvaluator(game.born, game.survive);
+		}else if(game.maxAge){
+			//Generational Games
+			evaluator = new GenerationalCellEvaluator(
+				game.born,
+				game.survive,
+				game.maxAge
+			);
+		}else{
+			evaluator = new CellEvaluator(game.born, game.survive);
 		}
 		return evaluator;
 	}
