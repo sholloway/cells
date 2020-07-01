@@ -10,7 +10,7 @@ const suite = new Benchmark.Suite();
 //Build the array of cells
 const { Cell } = require('../../lib/entity-system/Entities.js');
 const { QuadTree } = require('../../lib/core/Quadtree.js');
-const { ZCurve } = require('../../lib/core/ZCurve.js');
+const { ZCurve, LinearQuadTree } = require('../../lib/core/ZCurve.js');
 const RandomDiceRoll = require('../../lib/templates/RandomDiceRoll.js');
 
 let config = {
@@ -25,17 +25,17 @@ let config = {
 let generator = new RandomDiceRoll(config);
 let cells = generator.generateCells();
 let quadtree = new QuadTree();
-let zcurve = new ZCurve();
+let linearTree = new LinearQuadTree();
 
 console.log('Starting benchmark.');
-console.log(`Index a data set containing ${cells.length} cells.`);
+console.log(`Index a data set containing ${Benchmark.formatNumber(cells.length)} cells.`);
 
 suite
 	.add('Construct Pointer Tree', function () {
 		quadtree.index(cells);
 	})
-	.add('Construct ZCurve', function () {
-		zcurve.index(cells);
+	.add('Construct LinearQuadTree', function () {
+		linearTree.index(cells);
 	})
 	.on('cycle', function (event) {
     console.log(String(event.target));

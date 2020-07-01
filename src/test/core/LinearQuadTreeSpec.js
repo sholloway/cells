@@ -1,6 +1,11 @@
 const chai = require('chai');
 const expect = chai.expect;
-const {encode, decode, ZCurve} = require('../../lib/core/ZCurve.js')
+const {
+	encode,
+	decode,
+	LinearQuadTree,
+	ZCurve,
+} = require('../../lib/core/ZCurve.js');
 const { Cell } = require('./../../lib/entity-system/Entities.js');
 const {
 	QTNode,
@@ -9,7 +14,12 @@ const {
 	scaleCells,
 } = require('../../lib/core/Quadtree.js');
 
-const { buildDag, createDotFile, mkFile } = require('./GraphVizUtility.js');
+const {
+	buildBSTDag,
+	buildDag,
+	createDotFile,
+	mkFile,
+} = require('./GraphVizUtility.js');
 
 const {
 	makeIdentity,
@@ -17,31 +27,84 @@ const {
 	makeFull10By10,
 } = require('./QuadTreeTestHelper.js');
 
+const RandomDiceRoll = require('../../lib/templates/RandomDiceRoll.js');
+
 //const { ZCurve } = require('@thi.ng/morton');
 describe('Linear Quadtree', function () {
+	this.timeout(50000);
 	/* https://www5.in.tum.de/lehre/vorlesungen/asc/ss13/quadtrees.pdf
   - Odd digits: position in vertical direction
   - Even digits: position in horizontal direction
   - Neighbours in sequential order remain neighbours in 2D
   */
 	it('should build a quadtree', function () {
-    let cells = makeIdentity();
-    console.log(cells)
-
+		let cells = makeIdentity();
 		let tree = new QuadTree(cells);
-		let root = tree.index();
+		tree.index();
 
-    let zcurve = new ZCurve();
-    zcurve.index(cells);
+		let linearTree = new LinearQuadTree();
+		linearTree.index(cells);
+		expect(linearTree.curveSize()).to.equal(cells.length);
+		expect(linearTree.indexSize()).to.equal(cells.length);
+		console.log(linearTree.bstIndex.calculateHeight());
 
-		//Draw the tree via GraphViz
-		// let treeNodes = new Map();
-		// let relationships = new Map();
-		// buildDag(root, treeNodes, relationships);
-		// let dotFileStr = createDotFile(treeNodes, relationships);
-		// mkFile('temp.dot', dotFileStr);
+		//draw the BST
+		let bstTreeNodes = new Map();
+		let bstRelationships = new Map();
+		buildBSTDag(linearTree.bstIndex.root, bstTreeNodes, bstRelationships);
+		let bstDotFileStr = createDotFile(bstTreeNodes, bstRelationships);
+		mkFile('bst.dot', bstDotFileStr);
+	});
+
+	it('should build a big tree', function () {
+		let config = {
+			landscape: { width: 2880, height: 1800 },
+			game: {
+				rules: { birth: [2, 3] },
+			},
+		};
+
+		let generator = new RandomDiceRoll(config);
+		let cells = generator.generateCells();
+		let linearTree = new LinearQuadTree();
+		linearTree.index(cells);
+		expect(linearTree.curveSize()).to.equal(cells.length);
+		expect(linearTree.indexSize()).to.equal(cells.length);
+		console.log(
+			`${
+				cells.length
+			} cells indexed by a BST of height: ${linearTree.bstIndex.calculateHeight()}`
+		);
 	});
 });
+
+it('should lookup by zcode', function () {
+	let config = {
+		landscape: { width: 100, height: 100 }, //a few thousand points
+		game: {
+			rules: { birth: [2, 3] },
+		},
+	};
+
+	let generator = new RandomDiceRoll(config);
+	let cells = generator.generateCells();
+	let linearTree = new LinearQuadTree();
+	linearTree.index(cells);
+
+	expectCellFound(cells[0], linearTree);
+	expectCellFound(cells[100], linearTree);
+	let mid = (cells.length - 1) >>> 1
+	expectCellFound(cells[mid], linearTree);
+	expectCellFound(cells[cells.length - 1], linearTree);
+});
+
+function expectCellFound(cell, linearTree) {
+	let zcode = encode(cell.row, cell.col);
+	foundCell = linearTree.at(zcode);
+	expect(foundCell).to.not.be.null;
+	expect(foundCell.row).to.equal(cell.row);
+	expect(foundCell.col).to.equal(cell.col);
+}
 
 /*
 Rang search for the bounding box (a,b) -> (A,B)
@@ -98,5 +161,3 @@ describe('Z-order Curve', function () {
 		}
 	});
 });
-
-
