@@ -23,6 +23,7 @@ const {
 
 const {
 	makeIdentity,
+	makeCellsFrom2DArray,
 	makeOppositeIdentity,
 	makeFull10By10,
 } = require('./QuadTreeTestHelper.js');
@@ -31,7 +32,7 @@ const RandomDiceRoll = require('../../lib/templates/RandomDiceRoll.js');
 
 //const { ZCurve } = require('@thi.ng/morton');
 describe('Linear Quadtree', function () {
-	this.timeout(50000);
+	this.timeout(36000000);
 	/* https://www5.in.tum.de/lehre/vorlesungen/asc/ss13/quadtrees.pdf
   - Odd digits: position in vertical direction
   - Even digits: position in horizontal direction
@@ -57,35 +58,55 @@ describe('Linear Quadtree', function () {
 	});
 
 	it('should build a big tree', function () {
-		let config = {
-			landscape: { width: 2880, height: 1800 },
-			game: {
-				rules: { birth: [2, 3] },
-			},
-		};
-
+		//Macbook Pro Retina Display. Will generate >1.1 million cells.
+		let config = buildConfig(2880, 1800);
 		let generator = new RandomDiceRoll(config);
 		let cells = generator.generateCells();
 		let linearTree = new LinearQuadTree();
 		linearTree.index(cells);
 		expect(linearTree.curveSize()).to.equal(cells.length);
 		expect(linearTree.indexSize()).to.equal(cells.length);
-		console.log(
-			`${
-				cells.length
-			} cells indexed by a BST of height: ${linearTree.bstIndex.calculateHeight()}`
+
+		//Verify that the zcurve is in fact truly sorted.
+		expect(linearTree.verifyCurve()).to.be.true;
+
+		let mid = (cells.length - 1) >>> 1;
+		let zcode = encode(cells[mid].row, cells[mid].col);
+		let cellAtCurveIndex = linearTree.zcurve.curve.findIndex(
+			(i) => i.zcode === zcode
 		);
+		let foundByBS = linearTree.binarySearch(cells[mid]);
+		expect(foundByBS.row).to.equal(cells[mid].row);
+		expect(foundByBS.col).to.equal(cells[mid].col);
+
+		console.log(`cellAtCurveIndex: ${cellAtCurveIndex}`);
+
+		let indexNode = linearTree.search(cells[mid]);
+		console.log('The found index node');
+		console.log(indexNode);
+
+		if (!indexNode) {
+			let dfsResult = linearTree.bstIndex.bfs(zcode);
+			console.log(dfsResult.toString());
+			console.log(dfsResult.parent.toString());
+			let lineage = [];
+			buildLineage(dfsResult, lineage);
+			lineage.reverse();
+			lineage.forEach((i) => console.log(i));
+		}
 	});
 });
 
-it('should lookup by zcode', function () {
-	let config = {
-		landscape: { width: 100, height: 100 }, //a few thousand points
-		game: {
-			rules: { birth: [2, 3] },
-		},
-	};
+function buildLineage(node, stack) {
+	if (node) {
+		stack.push(node.key);
+		buildLineage(node.parent, stack);
+	}
+}
 
+it('should lookup by zcode', function () {
+	//A few thousand points
+	let config = buildConfig(100, 100);
 	let generator = new RandomDiceRoll(config);
 	let cells = generator.generateCells();
 	let linearTree = new LinearQuadTree();
@@ -93,18 +114,10 @@ it('should lookup by zcode', function () {
 
 	expectCellFound(cells[0], linearTree);
 	expectCellFound(cells[100], linearTree);
-	let mid = (cells.length - 1) >>> 1
+	let mid = (cells.length - 1) >>> 1;
 	expectCellFound(cells[mid], linearTree);
 	expectCellFound(cells[cells.length - 1], linearTree);
 });
-
-function expectCellFound(cell, linearTree) {
-	let zcode = encode(cell.row, cell.col);
-	foundCell = linearTree.at(zcode);
-	expect(foundCell).to.not.be.null;
-	expect(foundCell.row).to.equal(cell.row);
-	expect(foundCell.col).to.equal(cell.col);
-}
 
 /*
 Rang search for the bounding box (a,b) -> (A,B)
@@ -117,6 +130,98 @@ Rang search for the bounding box (a,b) -> (A,B)
 - Searching in decreasing direction is analogous with LITMAX which is 
   the highest Z-value in the query range lower than F.
 */
+it('should find all cells in a range', function () {
+	let cells = makeCellsFrom2DArray(scenarios.j);
+	let linearTree = new LinearQuadTree();
+	linearTree.index(cells);
+	let nh = neighborhood(1, 1);
+	linearTree.range(nh.x, nh.y, nh.xx, nh.yy);
+});
+
+// A helper function for calculating the neighborhood
+function neighborhood(x, y) {
+	return {
+		x: row - 1,
+		y: col - 1,
+		xx: row + 1,
+		yy: col + 1,
+	};
+}
+
+const scenarios = {
+	a: [
+		[0, 0, 0],
+		[0, 0, 0],
+		[0, 0, 0],
+	],
+	b: [
+		[1, 0, 0],
+		[0, 0, 0],
+		[0, 0, 0],
+	],
+	c: [
+		[0, 1, 0],
+		[0, 0, 0],
+		[0, 0, 0],
+	],
+	d: [
+		[0, 0, 1],
+		[0, 0, 0],
+		[0, 0, 0],
+	],
+	e: [
+		[0, 0, 0],
+		[1, 0, 0],
+		[0, 0, 0],
+	],
+	f: [
+		[0, 0, 0],
+		[0, 1, 0],
+		[0, 0, 0],
+	],
+	f: [
+		[0, 0, 0],
+		[0, 0, 1],
+		[0, 0, 0],
+	],
+	g: [
+		[0, 0, 0],
+		[0, 0, 0],
+		[1, 0, 0],
+	],
+	h: [
+		[0, 0, 0],
+		[0, 0, 0],
+		[0, 1, 0],
+	],
+	i: [
+		[0, 0, 0],
+		[0, 0, 0],
+		[0, 0, 1],
+	],
+	j: [
+		[1, 1, 1],
+		[1, 1, 1],
+		[1, 1, 1],
+	],
+};
+
+function buildConfig(width, height) {
+	return (config = {
+		landscape: { width: width, height: height },
+		game: {
+			rules: { birth: [2, 3] },
+		},
+	});
+}
+
+function expectCellFound(cell, linearTree) {
+	let zcode = encode(cell.row, cell.col);
+	foundCell = linearTree.at(zcode);
+	expect(foundCell).to.not.be.null;
+	expect(foundCell.row).to.equal(cell.row);
+	expect(foundCell.col).to.equal(cell.col);
+}
 
 describe('Z-order Curve', function () {
 	this.timeout(50000);

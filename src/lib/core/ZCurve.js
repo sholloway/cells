@@ -36,17 +36,37 @@ class LinearQuadTree {
 		this.bstIndex = new BinarySearchTree();
 	}
 
+	clear() {
+		this.bstIndex.clear();
+		this.zcurve.clear();
+	}
+
 	index(cells) {
 		this.zcurve.buildCurve(cells);
 		this.bstIndex.indexSortedArray(this.zcurve.curve);
 	}
 
+	indexWithRecursion(cells) {
+		this.zcurve.buildCurve(cells);
+		this.bstIndex.indexSortedArrayWithRecursion(this.zcurve.curve);
+	}
+
 	indexSize() {
-		return this.bstIndex.size;
+		return this.bstIndex.countChildren();
 	}
 
 	curveSize() {
 		return this.zcurve.size();
+	}
+
+	search(cell) {
+		let zcode = encode(cell.row, cell.col);
+		return this.at(zcode);
+	}
+
+	binarySearch(cell) {
+		let zcode = encode(cell.row, cell.col);
+		return this.zcurve.search(zcode);
 	}
 
 	/**
@@ -58,7 +78,7 @@ class LinearQuadTree {
 	at(zcode) {
 		let searchResult = this.bstIndex.findNodeByKey(zcode);
 		let cell = null;
-		if (searchResult.foundNode) {
+		if (searchResult && searchResult.foundNode) {
 			let encodedCell = this.zcurve.get(searchResult.foundNode.index);
 			if (!encodedCell) {
 				throw new Error(
@@ -68,6 +88,27 @@ class LinearQuadTree {
 			cell = new Cell(encodedCell.row, encodedCell.col);
 		}
 		return cell;
+	}
+
+	//Find all cells between two points.
+	range(x, y, xx, yy) {
+		//TBD
+	}
+
+	verifyCurve() {
+		let isValid = true;
+		for (var i = 1; i < this.zcurve.curve.length - 1; i++) {
+			if (this.zcurve.curve[i].zcode <= this.zcurve.curve[i - 1].zcode) {
+				console.log(
+					`Curve is not valid. ${this.zcurve.curve[i].zcode} <= ${
+						this.zcurve.curve[i - 1].zcode
+					}`
+				);
+				isValid = false;
+				break;
+			}
+		}
+		return isValid;
 	}
 }
 
@@ -80,18 +121,26 @@ class ZCurve {
 		this.curve = [];
 	}
 
-	buildCurve(cells) {
+	clear() {
 		this.curve = [];
+	}
+
+	buildCurve(cells) {
+		this.curve = this.encodeArray(cells);
+		this.curve.sort(sortByZCode);
+		return this;
+	}
+
+	encodeArray(cells) {
+		let encoded = [];
 		for (var index = 0; index < cells.length; index++) {
-			this.curve.push({
+			encoded.push({
 				zcode: encode(cells[index].row, cells[index].col),
 				row: cells[index].row,
 				col: cells[index].col,
 			});
 		}
-		//Order the curve by sorting the z-code.
-		this.curve.sort(sortByZCode);
-		return this;
+		return encoded;
 	}
 
 	size() {
@@ -102,14 +151,27 @@ class ZCurve {
 		return this.curve[index];
 	}
 
-	//Add a cell to the existing z-curve. For drawing mode.
-	add(cell) {}
-
-	//Is the cell already in the curve? For drawing mode.
-	contains(cell) {}
-
-	//Remove a cell from the curve. For drawing mode.
-	delete(cell) {}
+	/**
+	 * Find a cell if it existing on the curve by its Z-Code using binary search
+	 * @param {*} zcode
+	 */
+	search(zcode) {
+		let mid,
+			left = 0;
+		let right = this.curve.length - 1;
+		const NOT_FOUND = null;
+		while (left <= right) {
+			mid = (left + right) >>> 1;
+			if (this.curve[mid].zcode < zcode) {
+				left = mid + 1;
+			} else if (this.curve[mid].zcode > zcode) {
+				right = mid - 1;
+			} else {
+				return this.curve[mid];
+			}
+		}
+		return NOT_FOUND;
+	}
 
 	//Find all alive cells in the bounding box.
 	range(x, y, xx, yy) {}
@@ -120,6 +182,19 @@ class BinarySearchTree {
 		this.root = null;
 		this.size = 0;
 		this.idCount = 0;
+	}
+
+	clear() {
+		this.root = null;
+		this.size = 0;
+		this.idCount = 0;
+	}
+
+	countChildren(node = this.root) {
+		if (!node) {
+			return 0;
+		}
+		return this.countChildren(node.left) + this.countChildren(node.right) + 1;
 	}
 
 	calculateHeight(node = this.root) {
@@ -147,37 +222,56 @@ class BinarySearchTree {
 		stack.push({ node: this.root, start: 0, end: curve.length - 1 });
 		while (stack.length > 0) {
 			current = stack.pop();
-			this.size++;
+
 			if (current.end < current.start) {
-				current.node.delete();
-				this.size--;
-				continue;
+				if (current.node.key == null) {
+					current.node.delete();
+				}
 			} else if (current.end == current.start) {
 				current.node.key = curve[current.end].zcode;
 				current.node.index = current.end;
-				continue;
+			} else {
+				//https://ai.googleblog.com/2006/06/extra-extra-read-all-about-it-nearly.html
+				let mid = (current.start + current.end) >>> 1;
+				current.node.key = curve[mid].zcode;
+				current.node.index = mid;
+				current.node.setLeft(BSTNode.withId(this.generateId()));
+				current.node.setRight(BSTNode.withId(this.generateId()));
+
+				stack.push({
+					node: current.node.left,
+					start: current.start,
+					end: mid - 1,
+				});
+
+				stack.push({
+					node: current.node.right,
+					start: mid + 1,
+					end: current.end,
+				});
 			}
-
-			//https://ai.googleblog.com/2006/06/extra-extra-read-all-about-it-nearly.html
-			let mid = (current.start + current.end) >>> 1;
-			current.node.key = curve[mid].zcode;
-			current.node.index = mid;
-			current.node.setLeft(BSTNode.withId(this.generateId()));
-			current.node.setRight(BSTNode.withId(this.generateId()));
-
-			stack.push({
-				node: current.node.left,
-				start: current.start,
-				end: mid - 1,
-			});
-
-			stack.push({
-				node: current.node.right,
-				start: mid + 1,
-				end: current.end,
-			});
 		}
 		return this.root;
+	}
+
+	//build the tree using binary search and recursion
+	indexSortedArrayWithRecursion(curve) {
+		this.root = this.helper(curve, 0, curve.length - 1);
+		return this.root;
+	}
+
+	helper(curve, start, end) {
+		if (start > end) {
+			return null;
+		}
+
+		let mid = Math.floor(start + (end - start) / 2);
+		let node = BSTNode.withId(this.generateId());
+		node.key = curve[mid].zcode;
+		node.index = mid;
+		node.setLeft(this.helper(curve, start, mid - 1));
+		node.setRight(this.helper(curve, mid + 1, end));
+		return node;
 	}
 
 	add(newNode) {
@@ -197,14 +291,48 @@ class BinarySearchTree {
 	}
 
 	//Recursively search for a node and its parent.
-	findNodeByKey(key, current = this.root) {
-		if (!key || key === current.key) {
-			return { foundNode: current, parent: current.parent };
+	findNodeByKey(key, current = this.root, parent = null) {
+		if (!current || current.key == key) {
+			return { foundNode: current, parent: parent };
 		} else {
-			return key < current.key
-				? this.findNodeByKey(key, current.left)
-				: this.findNodeByKey(key, current.right);
+			if (key < current.key) {
+				return this.findNodeByKey(key, current.left, current);
+			} else if (key > current.key) {
+				return this.findNodeByKey(key, current.right, current);
+			}
 		}
+	}
+
+	//For debugging. Apply a breadth first search to find a value.
+	bfs(value, node = this.root) {
+		let visitedCount = 0;
+		let percentComplete = 0;
+		let queue = [];
+		let current;
+		queue.push(node);
+
+		console.log(`Searching for Z-Code: ${value}`);
+		console.log(`Nodes created: ${this.idCount}`);
+		while (queue && queue.length > 0) {
+			visitedCount++;
+			percentComplete = (visitedCount / this.idCount) * 100;
+			current = queue.shift();
+			process.stdout.write(
+				`% complete: ${percentComplete} \t Queue Length: ${queue.length} \t Evaluating: ${current.key} \r`
+			);
+			if (current.key == value) {
+				process.stdout.write('\r');
+				console.log('Match Found!');
+				console.log(
+					`% complete: ${percentComplete} \t Queue Length: ${queue.length} \t Evaluating: ${current.key}`
+				);
+				queue = [];
+				return current;
+			}
+			if (current.left) queue.push(current.left);
+			if (current.right) queue.push(current.right);
+		}
+		return null;
 	}
 
 	print(node = this.root, depth = 0) {
