@@ -1,5 +1,7 @@
 const { Cell } = require('../entity-system/Entities.js');
 
+const OUT_OF_RANGE = -1;
+
 //Borrowed from: https://github.com/mikolalysenko/bit-twiddle/blob/master/twiddle.js
 function encode(x, y) {
 	x &= 0xffff; //Constrain to 16 bits. 0xffff is 65535 which is the number range of 16 bits. 1111111111111111 in binary. Numbers larger than 65535 will roll over.
@@ -28,6 +30,33 @@ function deinterleave(zcode, component) {
 	zcode = (zcode | (zcode >>> 4)) & 0x00ff00ff; // 111111110000000011111111
 	zcode = (zcode | (zcode >>> 8)) & 0x000ffff; // 1111111111111111
 	return (zcode << 16) >> 16;
+}
+
+function componentsToCell(comps) {
+	return new Cell(comps[0], comps[1]);
+}
+
+function cellInBox(cell, x, y, xx, yy) {
+	return !(cell.row < x || cell.row > xx || cell.col < y || cell.col > yy);
+}
+
+function bigMinSimple(currentAddress, zmin, zmax, x, y, xx, yy) {
+	if (currentAddress < zmin || zmax <= currentAddress) {
+		return OUT_OF_RANGE;
+	}
+
+	for (
+		var inspectAddress = currentAddress + 1;
+		inspectAddress <= zmax + 1;
+		inspectAddress++
+	) {
+		var inspectAddressComponents = decode(inspectAddress);
+
+		if (cellInBox(componentsToCell(inspectAddressComponents), x, y, xx, yy)) {
+			return inspectAddress;
+		}
+	}
+	throw new Error('bigMinSimple: Could not find a bigmin value. Bug city!');
 }
 
 class LinearQuadTree {
@@ -152,7 +181,7 @@ class ZCurve {
 	}
 
 	/**
-	 * Find a cell if it existing on the curve by its Z-Code using binary search
+	 * Find a cell if it exists on the curve by its Z-Code using binary search.
 	 * @param {*} zcode
 	 */
 	search(zcode) {
@@ -167,14 +196,61 @@ class ZCurve {
 			} else if (this.curve[mid].zcode > zcode) {
 				right = mid - 1;
 			} else {
-				return this.curve[mid];
+				//Enrich the data on the curve with the curve location.
+				//This is useful for range searches.
+				return {
+					index: mid,
+					zcode: this.curve[mid].zcode,
+					row: this.curve[mid].row,
+					col: this.curve[mid].col,
+				};
 			}
 		}
 		return NOT_FOUND;
 	}
 
-	//Find all alive cells in the bounding box.
-	range(x, y, xx, yy) {}
+	/**
+	 * Find the zcodes on the curve inside a bounding box.
+	 * Note: This does not return the actual cells, but rather
+	 * the z-codes of the cells that need to be examined.
+	 *
+	 * Leverages the bigmin technique.
+	 * {@link https://en.wikipedia.org/wiki/Z-order_curve#Use_with_one-dimensional_data_structures_for_range_searching}
+	 * {@link https://github.com/smatsumt/pyzorder/blob/master/pyzorder/pyzorder.py}
+	 * {@link https://github.com/thi-ng/umbrella/blob/81e8a39c45ad8f32ada5f48552757d15b4cd681c/packages/morton/src/zcurve.ts#L228}
+	 *
+	 * @param {Number} x - The horizontal component of the minimum point.
+	 * @param {Number} y - The vertical component of the minimum point.
+	 * @param {Number} xx - The horizontal component of the maximum point.
+	 * @param {Number} yy - The vertical component of the minimum point.
+	 * @returns {Cell[]} Returns an array of cells contained in the bounding box.
+	 */
+	range(x, y, xx, yy) {
+		//calculate the z-code for the bounding box points.
+		const zmin = encode(x, y);
+		const zmax = encode(xx, yy);
+
+		//There is no guarantee that zmin or zmax themseleves are on the curve.
+		//Search the curve and grab their indices if they exist.
+
+		//Iterate on the curve from zmin to zmax.
+		//Leverage the bigmin algorithm to skip curve sections that aren't in the bounding box.
+		const foundCells = [];
+		let currentAddress = zmin;
+		let currentPoint;
+		while (currentAddress != OUT_OF_RANGE) {
+			// Is there anything at the current z-code address on the curve?
+			currentPoint = this.search(currentAddress); //returns null when nothing is found.
+			if (currentPoint && cellInBox(currentPoint, x, y, xx, yy)) {
+				foundCells.push(currentPoint);
+				currentAddress++;
+			} else {
+				//Find the next zcode in the sequence that
+				currentAddress = bigMinSimple(currentAddress, zmin, zmax, x, y, xx, yy);
+			}
+		}
+		return foundCells;
+	}
 }
 
 class BinarySearchTree {

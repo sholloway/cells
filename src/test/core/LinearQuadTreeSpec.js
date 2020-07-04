@@ -119,93 +119,6 @@ it('should lookup by zcode', function () {
 	expectCellFound(cells[cells.length - 1], linearTree);
 });
 
-/*
-Rang search for the bounding box (a,b) -> (A,B)
-- MIN is the lowest zcode. The point (a,b)
-- MAX is the highest zcode. The point (A,B)
-- To speed up the search, one would calculate the next Z-value which 
-  is in the search range, called BIGMIN (36 in the example) and only 
-  search in the interval between BIGMIN and MAX (bold values), thus 
-  skipping most of the hatched area.
-- Searching in decreasing direction is analogous with LITMAX which is 
-  the highest Z-value in the query range lower than F.
-*/
-it('should find all cells in a range', function () {
-	let cells = makeCellsFrom2DArray(scenarios.j);
-	let linearTree = new LinearQuadTree();
-	linearTree.index(cells);
-	let nh = neighborhood(1, 1);
-	linearTree.range(nh.x, nh.y, nh.xx, nh.yy);
-});
-
-// A helper function for calculating the neighborhood
-function neighborhood(x, y) {
-	return {
-		x: row - 1,
-		y: col - 1,
-		xx: row + 1,
-		yy: col + 1,
-	};
-}
-
-const scenarios = {
-	a: [
-		[0, 0, 0],
-		[0, 0, 0],
-		[0, 0, 0],
-	],
-	b: [
-		[1, 0, 0],
-		[0, 0, 0],
-		[0, 0, 0],
-	],
-	c: [
-		[0, 1, 0],
-		[0, 0, 0],
-		[0, 0, 0],
-	],
-	d: [
-		[0, 0, 1],
-		[0, 0, 0],
-		[0, 0, 0],
-	],
-	e: [
-		[0, 0, 0],
-		[1, 0, 0],
-		[0, 0, 0],
-	],
-	f: [
-		[0, 0, 0],
-		[0, 1, 0],
-		[0, 0, 0],
-	],
-	f: [
-		[0, 0, 0],
-		[0, 0, 1],
-		[0, 0, 0],
-	],
-	g: [
-		[0, 0, 0],
-		[0, 0, 0],
-		[1, 0, 0],
-	],
-	h: [
-		[0, 0, 0],
-		[0, 0, 0],
-		[0, 1, 0],
-	],
-	i: [
-		[0, 0, 0],
-		[0, 0, 0],
-		[0, 0, 1],
-	],
-	j: [
-		[1, 1, 1],
-		[1, 1, 1],
-		[1, 1, 1],
-	],
-};
-
 function buildConfig(width, height) {
 	return (config = {
 		landscape: { width: width, height: height },
@@ -265,4 +178,201 @@ describe('Z-order Curve', function () {
 			}
 		}
 	});
+
+	/*
+	Range search for the bounding box (a,b) -> (A,B)
+	- MIN is the lowest zcode. The point (a,b)
+	- MAX is the highest zcode. The point (A,B)
+	- To speed up the search, one would calculate the next Z-value which 
+		is in the search range, called BIGMIN (36 in the example) and only 
+		search in the interval between BIGMIN and MAX (bold values), thus 
+		skipping most of the hatched area.
+	- Searching in decreasing direction is analogous with LITMAX which is 
+		the highest Z-value in the query range lower than F.
+*/
+	describe('Range Search', function () {
+		it('should find 0 cells: EMPTY', function () {
+			let cells = makeCellsFrom2DArray(scenarios.EMPTY);
+			let nh = neighborhood(1, 1);
+			let zcurve = new ZCurve();
+			zcurve.buildCurve(cells);
+			expect(zcurve.range(nh.x, nh.y, nh.xx, nh.yy).length).to.equal(0);
+		});
+
+		it('should find 1 cells: NW', function () {
+			let cells = makeCellsFrom2DArray(scenarios.NW);
+			let nh = neighborhood(1, 1);
+			let zcurve = new ZCurve();
+			zcurve.buildCurve(cells);
+			let found = zcurve.range(nh.x, nh.y, nh.xx, nh.yy);
+			expect(found.length).to.equal(1);
+			expect(found[0].row).to.equal(0);
+			expect(found[0].col).to.equal(0);
+		});
+
+		it('should find 1 cells: North', function () {
+			let cells = makeCellsFrom2DArray(scenarios.NORTH);
+			let nh = neighborhood(1, 1);
+			let zcurve = new ZCurve();
+			zcurve.buildCurve(cells);
+			let found = zcurve.range(nh.x, nh.y, nh.xx, nh.yy);
+			expect(found.length).to.equal(1);
+			expect(found[0].row).to.equal(0);
+			expect(found[0].col).to.equal(1);
+		});
+
+		it('should find 1 cells: NE', function () {
+			let cells = makeCellsFrom2DArray(scenarios.NE);
+			let nh = neighborhood(1, 1);
+			let zcurve = new ZCurve();
+			zcurve.buildCurve(cells);
+			let found = zcurve.range(nh.x, nh.y, nh.xx, nh.yy);
+			expect(found.length).to.equal(1);
+			expect(found[0].row).to.equal(0);
+			expect(found[0].col).to.equal(2);
+		});
+
+		it('should find 1 cells: West', function () {
+			let cells = makeCellsFrom2DArray(scenarios.WEST);
+			let nh = neighborhood(1, 1);
+			let zcurve = new ZCurve();
+			zcurve.buildCurve(cells);
+			let found = zcurve.range(nh.x, nh.y, nh.xx, nh.yy);
+			expect(found.length).to.equal(1);
+			expect(found[0].row).to.equal(1);
+			expect(found[0].col).to.equal(0);
+		});
+
+		it('should find 1 cells: Center', function () {
+			let cells = makeCellsFrom2DArray(scenarios.CENTER);
+			let nh = neighborhood(1, 1);
+			let zcurve = new ZCurve();
+			zcurve.buildCurve(cells);
+			let found = zcurve.range(nh.x, nh.y, nh.xx, nh.yy);
+			expect(found.length).to.equal(1);
+			expect(found[0].row).to.equal(1);
+			expect(found[0].col).to.equal(1);
+		});
+
+		it('should find 1 cells: SW', function () {
+			let cells = makeCellsFrom2DArray(scenarios.SW);
+			let nh = neighborhood(1, 1);
+			let zcurve = new ZCurve();
+			zcurve.buildCurve(cells);
+			let found = zcurve.range(nh.x, nh.y, nh.xx, nh.yy);
+			expect(found.length).to.equal(1);
+			expect(found[0].row).to.equal(2);
+			expect(found[0].col).to.equal(0);
+		});
+
+		it('should find 1 cells: South', function () {
+			let cells = makeCellsFrom2DArray(scenarios.SOUTH);
+			let nh = neighborhood(1, 1);
+			let zcurve = new ZCurve();
+			zcurve.buildCurve(cells);
+			let found = zcurve.range(nh.x, nh.y, nh.xx, nh.yy);
+			expect(found.length).to.equal(1);
+			expect(found[0].row).to.equal(2);
+			expect(found[0].col).to.equal(1);
+		});
+
+		it('should find 1 cells: SE', function () {
+			let cells = makeCellsFrom2DArray(scenarios.SE);
+			let nh = neighborhood(1, 1);
+			let zcurve = new ZCurve();
+			zcurve.buildCurve(cells);
+			let found = zcurve.range(nh.x, nh.y, nh.xx, nh.yy);
+			expect(found.length).to.equal(1);
+			expect(found[0].row).to.equal(2);
+			expect(found[0].col).to.equal(2);
+		});
+
+		it('should find 9 cells', function () {
+			let cells = makeCellsFrom2DArray(scenarios.ALL);
+			let nh = neighborhood(1, 1);
+			let zcurve = new ZCurve();
+			zcurve.buildCurve(cells);
+			
+			let found = zcurve.range(nh.x, nh.y, nh.xx, nh.yy);
+
+			expect(found.length).to.equal(9);
+			expect(found[0].zcode).to.equal(0);
+			expect(found[1].zcode).to.equal(1);
+			expect(found[2].zcode).to.equal(2);
+			expect(found[3].zcode).to.equal(3);
+			expect(found[4].zcode).to.equal(4);
+			expect(found[5].zcode).to.equal(6);
+			expect(found[6].zcode).to.equal(8);
+			expect(found[7].zcode).to.equal(9);
+			expect(found[8].zcode).to.equal(12);
+		});
+	});
 });
+
+// A helper function for calculating the neighborhood
+function neighborhood(x, y) {
+	return {
+		x: x - 1,
+		y: y - 1,
+		xx: x + 1,
+		yy: y + 1,
+	};
+}
+
+const scenarios = {
+	EMPTY: [
+		[0, 0, 0],
+		[0, 0, 0],
+		[0, 0, 0],
+	],
+	NW: [
+		[1, 0, 0],
+		[0, 0, 0],
+		[0, 0, 0],
+	],
+	NORTH: [
+		[0, 1, 0],
+		[0, 0, 0],
+		[0, 0, 0],
+	],
+	NE: [
+		[0, 0, 1],
+		[0, 0, 0],
+		[0, 0, 0],
+	],
+	WEST: [
+		[0, 0, 0],
+		[1, 0, 0],
+		[0, 0, 0],
+	],
+	CENTER: [
+		[0, 0, 0],
+		[0, 1, 0],
+		[0, 0, 0],
+	],
+	EAST: [
+		[0, 0, 0],
+		[0, 0, 1],
+		[0, 0, 0],
+	],
+	SW: [
+		[0, 0, 0],
+		[0, 0, 0],
+		[1, 0, 0],
+	],
+	SOUTH: [
+		[0, 0, 0],
+		[0, 0, 0],
+		[0, 1, 0],
+	],
+	SE: [
+		[0, 0, 0],
+		[0, 0, 0],
+		[0, 0, 1],
+	],
+	ALL: [
+		[1, 1, 1],
+		[1, 1, 1],
+		[1, 1, 1],
+	],
+};
