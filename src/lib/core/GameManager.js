@@ -1,4 +1,4 @@
-const { QuadTree, findAliveNeighbors, cloneCells } = require('./Quadtree.js');
+const { CellMortonStore } = require('./CellMortonStore.js');
 const { CellEvaluator } = require('./CellEvaluator.js');
 const { Box, Cell } = require('../entity-system/Entities.js');
 const {
@@ -98,8 +98,8 @@ class GameManager {
 	 */
 	constructor(config) {
 		this.config = config;
-		this.currentTree = QuadTree.empty();
-		this.nextTree = QuadTree.empty();
+		this.currentStore = new CellMortonStore();
+		this.nextStore = new CellMortonStore();
 	}
 
 	setConfig(config) {
@@ -111,7 +111,7 @@ class GameManager {
 	 * @returns {number}
 	 */
 	aliveCellsCount() {
-		return this.currentTree.aliveCellsCount();
+		return this.currentStore.size();
 	}
 
 	/**
@@ -119,7 +119,7 @@ class GameManager {
 	 * @returns {Cell[]} The copy of the cells.
 	 */
 	getCells() {
-		return cloneCells(this.currentTree.leaves);
+		return this.currentStore.cells();
 	}
 
 	/**
@@ -130,66 +130,9 @@ class GameManager {
 			this.config.landscape.width,
 			this.config.landscape.height
 		);
-		this.currentTree.index(aliveCells);
-		this.nextTree.index();
+		this.currentStore.addList(aliveCells);
 	}
 
-	/**
-	 * Traverse the current grid, applying the rules defined by the evaluator and
-	 * populate the next grid accordingly. No changes are made to the current grid.
-	 *
-	 * @param {SceneManager} scene - The active list of things that need to be rendered.
-	 * @param {CellEvaluator} evaluator - Responsible for evaluating a single cell.
-	 */
-	evaluateCells(scene, evaluator) {
-		//1. Traverse every possible cell on the landscape, building up a list of new alive cells.
-		let aliveNeighbors, nextCellState, foundCell;
-		let nextAliveCells = [];
-		for (let row = 0; row < this.config.landscape.width; row++) {
-			for (let col = 0; col < this.config.landscape.height; col++) {
-				/*
-				TODO: There is an opportunity to combine findAliveNeighbors with findCellIfAlive.
-				Then, only one traversal would be needed. findAliveNeighbors could be renamed and return
-				something like { aliveNeighbors:..., aliveCenter: ... }
-
-				At the moment there are two tree traversals for every single cell in the grid.
-				By combining the two, we might be able to cut the time spent in traversal in half.
-				*/
-				aliveNeighbors = findAliveNeighbors(this.currentTree, row, col);
-				foundCell = this.currentTree.findCellIfAlive(row, col); //Returns DeadCell if not alive.
-				nextCellState = evaluator.evaluate(
-					aliveNeighbors,
-					foundCell.getState()
-				);
-				if (nextCellState === CellStates.ACTIVE) {
-					nextAliveCells.push(new Cell(row, col));
-				}
-			}
-		}
-
-		//2. Create a new quad tree from the list of alive cells.
-		this.nextTree.clear();
-		this.nextTree.index(nextAliveCells);
-
-		//3. Feed the cells to the scene manager.
-		registerCellTraits(this.config, nextAliveCells);
-		scene.push(nextAliveCells);
-	}
-
-	/*
-	Next Steps: Wrapping Grid
-	The cells on the edges of the grid should wrap. 
-	Use Cases
-	- Corners
-		- Upper Left 	(0,0)
-		- Upper Right (Width - 1, 0)
-		- Lower Left 	(0, Height - 1)
-		- Lower Right	(Width - 1, Height - 1)
-	- Top Edge 			(1, 0) 					-> (Width - 1, 0)
-	- Bottom Edge		(1, Height - 1) -> (Width - 2, Height - 1)
-	- Left Edge			(0, 1) 					-> (0, Height - 2)
-	- Right Edge		(Width - 1, 1) 	-> (Width - 1, Height - 2)
-	*/
 	evaluateCellsFaster(scene, evaluator = defaultCellEvaluator()) {
 		//1. Traverse every possible cell on the landscape, building up a list of new alive cells.
 		// prettier-ignore
@@ -199,8 +142,10 @@ class GameManager {
 
 		for (let row = 0; row < this.config.landscape.width; row++) {
 			for (let col = 0; col < this.config.landscape.height; col++) {
-				(x = row - 1), (y = col - 1), (xx = row + 1), (yy = col + 1);
-				cellsInArea = this.currentTree.findAliveInArea(x, y, xx, yy);
+				cellsInArea = this.currentStore.neighborhood(
+					{ row: row, col: col }, 
+					this.config.landscape.width,
+					this.config.landscape.height);
 
 				//Assume the cell is dead.
 				currentCellState = CellStates.DEAD;
@@ -234,12 +179,11 @@ class GameManager {
 		nextAliveCells = cellBin.merge();
 		cellBin.clear();
 
-		//2. Create a new quad tree from the list of active and aging cells.
-		this.nextTree.clear();
-		this.nextTree.index(nextAliveCells);
+		//2. Create a new hash store from the list of active and aging cells.
+		this.nextStore.clear();
+		this.nextStore.addList(nextAliveCells);
 
 		//3. Feed the cells to the scene manager.
-		//registerCellTraits(this.config, nextAliveCells); Disabled for web worker.
 		scene.push(nextAliveCells);
 	}
 
@@ -247,11 +191,13 @@ class GameManager {
 	 * Replace the current tree with the next state tree and re-initializes the next tree to be empty.
 	 */
 	activateNext() {
-		this.currentTree.clear();
-		this.currentTree = null;
-		this.currentTree = this.nextTree;
-		this.nextTree = QuadTree.empty();
-		this.nextTree.index();
+		this.currentStore.clear();
+		this.currentStore = null;
+		this.currentStore = this.nextStore;
+		this.nextStore = new CellMortonStore(
+			this.config.landscape.width,
+			this.config.landscape.height
+		);
 	}
 
 	/**
@@ -272,8 +218,8 @@ class GameManager {
 	 * Purges the game manager of all alive cells.
 	 */
 	clear() {
-		this.currentTree.clear().index();
-		this.nextTree.clear().index();
+		this.currentStore.clear();
+		this.nextStore.clear();
 	}
 }
 

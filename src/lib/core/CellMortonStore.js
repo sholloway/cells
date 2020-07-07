@@ -23,8 +23,6 @@ function clip(value, min, max) {
 class CellMortonStore {
 	constructor(width, height) {
 		this.map = new Map();
-		this.width = width;
-		this.height = height;
 	}
 
 	size() {
@@ -56,6 +54,10 @@ class CellMortonStore {
 		return this;
 	}
 
+	cells(){
+		return [...this.map.values()];
+	}
+
 	/**
 	 * Find all of the cells in a given cell's Moore neighborhood.
 	 *
@@ -63,15 +65,15 @@ class CellMortonStore {
 	 *
 	 * @param {*} cell
 	 */
-	neighborhood(cell) {
+	neighborhood(cell, width, height) {
 		let found = [];
 		let current;
 
 		//constrain the neigborhood to the boundaries of the grid 
-		let left = clip(cell.row - 1, 0, this.width);
-		let right = clip(cell.row + 1, 0, this.width)
-		let bottom = clip(cell.col-1, 0, this.height);
-		let top = clip(cell.col+1, 0, this.height);
+		let left = clip(cell.row - 1, 0, width);
+		let right = clip(cell.row + 1, 0, width)
+		let bottom = clip(cell.col-1, 0, height);
+		let top = clip(cell.col+1, 0, height);
 
 		for (var row = left; row <= right; row++) {
 			for (var col = bottom; col <= top; col++) {
