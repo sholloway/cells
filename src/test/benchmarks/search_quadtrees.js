@@ -3,7 +3,8 @@ var suite = new BenchTable();
 
 const { Cell } = require('../../lib/entity-system/Entities.js');
 const { QuadTree } = require('../../lib/core/Quadtree.js');
-const { ZCurve, LinearQuadTree } = require('../../lib/core/ZCurve.js');
+const { ZCurveManager, LinearQuadTree } = require('../../lib/core/ZCurve.js');
+const { CellMortonStore } = require('../../lib/core/CellMortonStore.js');
 const RandomDiceRoll = require('../../lib/templates/RandomDiceRoll.js');
 
 let config = {
@@ -23,6 +24,12 @@ quadtree.index(cells);
 let linearTree = new LinearQuadTree();
 linearTree.index(cells); //BST height should be around 21 levels.
 
+let store = new CellMortonStore(
+	config.landscape.width,
+	config.landscape.height
+);
+store.addList(cells);
+
 let mid = cells.length >>> 1;
 
 suite
@@ -35,6 +42,9 @@ suite
 	})
 	.addFunction('Binary Search of Z-Curve', (cell) => {
 		linearTree.binarySearch(cell);
+	})
+	.addFunction('Morton Store Lookup', (cell) => {
+		store.get(cell);
 	})
 	// Add inputs
 	.addInput('midpoint', [cells[mid]])

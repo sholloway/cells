@@ -9,7 +9,9 @@ var suite = new BenchTable();
 //Build the array of cells
 const { Cell } = require('../../lib/entity-system/Entities.js');
 const { QuadTree } = require('../../lib/core/Quadtree.js');
-const { ZCurve, LinearQuadTree } = require('../../lib/core/ZCurve.js');
+const { ZCurveManager, LinearQuadTree } = require('../../lib/core/ZCurve.js');
+const { CellMortonStore } = require('../../lib/core/CellMortonStore.js');
+
 const RandomDiceRoll = require('../../lib/templates/RandomDiceRoll.js');
 
 let config = {
@@ -25,7 +27,8 @@ let generator = new RandomDiceRoll(config);
 let cells = generator.generateCells();
 let quadtree = new QuadTree();
 let linearTree = new LinearQuadTree();
-let zcurve = new ZCurve();
+let zcurve = new ZCurveManager();
+let store = new CellMortonStore();
 
 console.log('Starting benchmark.');
 console.log(
@@ -43,17 +46,20 @@ suite
 		linearTree.indexWithRecursion(cells);
 	})
 	.addFunction('Construct Z-Curve', function (cells) {
-		// linearTree.clear();
 		zcurve.buildCurve(cells);
 	})
 	.addFunction('Encode Cells', function (cells) {
 		zcurve.encodeArray(cells);
+	})
+	.addFunction('Construct Morton Store', function (cells) {
+		store.addList(cells);
 	})
 	.addInput(`${Benchmark.formatNumber(cells.length)} Cells`, [cells])
 	.on('cycle', function (event) {
 		quadtree.clear();
 		linearTree.clear();
 		zcurve.clear();
+		store.clear();
 		console.log(String(event.target));
 	})
 	.on('complete', function () {

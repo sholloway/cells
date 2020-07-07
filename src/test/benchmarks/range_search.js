@@ -3,7 +3,8 @@ var suite = new BenchTable();
 
 const { Cell } = require('../../lib/entity-system/Entities.js');
 const { QuadTree } = require('../../lib/core/Quadtree.js');
-const { ZCurve, LinearQuadTree } = require('../../lib/core/ZCurve.js');
+const { ZCurveManager, LinearQuadTree } = require('../../lib/core/ZCurve.js');
+const { CellMortonStore } = require('../../lib/core/CellMortonStore.js');
 const RandomDiceRoll = require('../../lib/templates/RandomDiceRoll.js');
 
 let config = {
@@ -20,11 +21,18 @@ let cells = generator.generateCells(); // Generate around 1.1 million cells.
 let quadtree = new QuadTree();
 quadtree.index(cells);
 
-let zcurve = new ZCurve();
+let zcurve = new ZCurveManager();
 zcurve.buildCurve(cells);
 
+let store = new CellMortonStore(
+	config.landscape.width,
+	config.landscape.height
+);
+store.addList(cells);
+
 let mid = cells.length >>> 1;
-let nh = neighborhood(cells[mid]);
+let cell = cells[mid];
+let nh = neighborhood(cell);
 
 function neighborhood(cell) {
 	return {
@@ -43,8 +51,11 @@ suite
 	.addFunction('Z-Curve.range()', (nh) => {
 		zcurve.range(nh.x, nh.y, nh.xx, nh.yy);
 	})
+	.addFunction('CellMortonStore.neighborhood()', (nh, cell) => {
+		store.neighborhood(cell);
+	})
 	// Add inputs
-	.addInput('midpoint', [nh])
+	.addInput('midpoint', [nh, cell])
 	// Add listeners
 	.on('cycle', (event) => {
 		console.log(event.target.toString());

@@ -1,36 +1,5 @@
+const { ZCurve } = require('@thi.ng/morton');
 const { Cell } = require('../entity-system/Entities.js');
-
-const OUT_OF_RANGE = -1;
-
-//Borrowed from: https://github.com/mikolalysenko/bit-twiddle/blob/master/twiddle.js
-function encode(x, y) {
-	x &= 0xffff; //Constrain to 16 bits. 0xffff is 65535 which is the number range of 16 bits. 1111111111111111 in binary. Numbers larger than 65535 will roll over.
-	x = (x | (x << 8)) & 0x00ff00ff; //Shift to the left by 8. Mask: 111111110000000011111111
-	x = (x | (x << 4)) & 0x0f0f0f0f; //Mask: 1111000011110000111100001111
-	x = (x | (x << 2)) & 0x33333333; //Mask: 110011001100110011001100110011
-	x = (x | (x << 1)) & 0x55555555; //Mask: 1010101010101010101010101010101
-
-	y &= 0xffff;
-	y = (y | (y << 8)) & 0x00ff00ff;
-	y = (y | (y << 4)) & 0x0f0f0f0f;
-	y = (y | (y << 2)) & 0x33333333;
-	y = (y | (y << 1)) & 0x55555555;
-
-	return x | (y << 1);
-}
-
-function decode(zcode) {
-	return [deinterleave(zcode, 0), deinterleave(zcode, 1)];
-}
-
-function deinterleave(zcode, component) {
-	zcode = (zcode >>> component) & 0x55555555; // 1010101010101010101010101010101
-	zcode = (zcode | (zcode >>> 1)) & 0x33333333; // 110011001100110011001100110011
-	zcode = (zcode | (zcode >>> 2)) & 0x0f0f0f0f; // 1111000011110000111100001111
-	zcode = (zcode | (zcode >>> 4)) & 0x00ff00ff; // 111111110000000011111111
-	zcode = (zcode | (zcode >>> 8)) & 0x000ffff; // 1111111111111111
-	return (zcode << 16) >> 16;
-}
 
 function componentsToCell(comps) {
 	return new Cell(comps[0], comps[1]);
@@ -40,28 +9,9 @@ function cellInBox(cell, x, y, xx, yy) {
 	return !(cell.row < x || cell.row > xx || cell.col < y || cell.col > yy);
 }
 
-function bigMinSimple(currentAddress, zmin, zmax, x, y, xx, yy) {
-	if (currentAddress < zmin || zmax <= currentAddress) {
-		return OUT_OF_RANGE;
-	}
-
-	for (
-		var inspectAddress = currentAddress + 1;
-		inspectAddress <= zmax + 1;
-		inspectAddress++
-	) {
-		var inspectAddressComponents = decode(inspectAddress);
-
-		if (cellInBox(componentsToCell(inspectAddressComponents), x, y, xx, yy)) {
-			return inspectAddress;
-		}
-	}
-	throw new Error('bigMinSimple: Could not find a bigmin value. Bug city!');
-}
-
 class LinearQuadTree {
 	constructor() {
-		this.zcurve = new ZCurve();
+		this.zcurve = new ZCurveManager();
 		this.bstIndex = new BinarySearchTree();
 	}
 
@@ -89,12 +39,12 @@ class LinearQuadTree {
 	}
 
 	search(cell) {
-		let zcode = encode(cell.row, cell.col);
+		let zcode = this.zcurve.encode(cell.row, cell.col);
 		return this.at(zcode);
 	}
 
 	binarySearch(cell) {
-		let zcode = encode(cell.row, cell.col);
+		let zcode = this.zcurve.encode(cell.row, cell.col);
 		return this.zcurve.search(zcode);
 	}
 
@@ -142,16 +92,21 @@ class LinearQuadTree {
 }
 
 function sortByZCode(a, b) {
-	return a.zcode - b.zcode;
+	return a.zcode < b.zcode ? -1 : a.zcode > b.zcode ? 1 : 0;
 }
 
-class ZCurve {
+class ZCurveManager {
 	constructor() {
 		this.curve = [];
+		this.encoder = new ZCurve(2, 16);
 	}
 
 	clear() {
 		this.curve = [];
+	}
+
+	encode(row, col) {
+		return this.encoder.encode([row, col]);
 	}
 
 	buildCurve(cells) {
@@ -164,7 +119,7 @@ class ZCurve {
 		let encoded = [];
 		for (var index = 0; index < cells.length; index++) {
 			encoded.push({
-				zcode: encode(cells[index].row, cells[index].col),
+				zcode: this.encoder.encode([cells[index].row, cells[index].col]),
 				row: cells[index].row,
 				col: cells[index].col,
 			});
@@ -185,8 +140,8 @@ class ZCurve {
 	 * @param {*} zcode
 	 */
 	search(zcode) {
-		let mid,
-			left = 0;
+		let mid;
+		let left = 0;
 		let right = this.curve.length - 1;
 		const NOT_FOUND = null;
 		while (left <= right) {
@@ -226,30 +181,15 @@ class ZCurve {
 	 * @returns {Cell[]} Returns an array of cells contained in the bounding box.
 	 */
 	range(x, y, xx, yy) {
-		//calculate the z-code for the bounding box points.
-		const zmin = encode(x, y);
-		const zmax = encode(xx, yy);
-
-		//There is no guarantee that zmin or zmax themseleves are on the curve.
-		//Search the curve and grab their indices if they exist.
-
-		//Iterate on the curve from zmin to zmax.
-		//Leverage the bigmin algorithm to skip curve sections that aren't in the bounding box.
-		const foundCells = [];
-		let currentAddress = zmin;
-		let currentPoint;
-		while (currentAddress != OUT_OF_RANGE) {
-			// Is there anything at the current z-code address on the curve?
-			currentPoint = this.search(currentAddress); //returns null when nothing is found.
-			if (currentPoint && cellInBox(currentPoint, x, y, xx, yy)) {
-				foundCells.push(currentPoint);
-				currentAddress++;
-			} else {
-				//Find the next zcode in the sequence that
-				currentAddress = bigMinSimple(currentAddress, zmin, zmax, x, y, xx, yy);
+		let component,
+			found = [];
+		for (var zcode of this.encoder.range([x, y], [xx, yy])) {
+			component = this.search(zcode);
+			if (component) {
+				found.push(new Cell(component.row, component.col));
 			}
 		}
-		return foundCells;
+		return found;
 	}
 }
 
@@ -467,10 +407,8 @@ class BSTNode {
 }
 
 module.exports = {
-	encode,
-	decode,
 	BinarySearchTree,
 	BSTNode,
 	LinearQuadTree,
-	ZCurve,
+	ZCurveManager,
 };
