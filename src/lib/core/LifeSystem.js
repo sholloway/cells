@@ -22,7 +22,6 @@ class LifeSystem {
 		this.config = {};
 		this.tickCounter = 0;
 		this.scene = new SceneManager();
-		this.storageScene = new SceneManager();
 		this.stateManager = new GameManager(this.config);
 		this.displayStorageStructure = false;
 		this.state = States.IDLE;
@@ -55,10 +54,6 @@ class LifeSystem {
 	 */
 	getScene() {
 		return this.scene;
-	}
-
-	getStorageScene() {
-		return this.storageScene;
 	}
 
 	/**
@@ -140,16 +135,9 @@ class LifeSystem {
 	update() {
 		if (this.simulationInitialized) {
 			this.scene.clear();
-			this.storageScene.clear();
-			this.getStateManager().evaluateCellsFaster(
-				this.scene,
-				this.cellEvaluator
-			);
-			this.getStateManager().stageStorage(
-				this.storageScene,
-				this.getDisplayStorage()
-			);
-			this.getStateManager().activateNext();
+			this.getStateManager()
+				.evaluateCells(this.scene, this.cellEvaluator)
+				.activateNext();
 			this.tickCounter++;
 		} else {
 			throw new Error(
@@ -161,16 +149,16 @@ class LifeSystem {
 
 	createCellEvaluator(game) {
 		let evaluator;
-		if (game.key == 'conways-game-of-life'){
+		if (game.key == 'conways-game-of-life') {
 			evaluator = new LifeEvaluator(game.born, game.survive);
-		}else if(game.maxAge){
+		} else if (game.maxAge) {
 			//Generational Games
 			evaluator = new GenerationalCellEvaluator(
 				game.born,
 				game.survive,
 				game.maxAge
 			);
-		}else{
+		} else {
 			evaluator = new CellEvaluator(game.born, game.survive);
 		}
 		return evaluator;

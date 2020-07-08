@@ -135,14 +135,6 @@ class AppComponent extends LitElement {
 					</div>
 					<div class="container row">
 						<event-checkbox
-							id="display_quadtree"
-							event="dispay-tree-toggle"
-							@dispay-tree-toggle=${this.toggleDisplayStorageStructure}
-						>
-							Display Quadtree
-						</event-checkbox>
-
-						<event-checkbox
 							id="display_grid"
 							event="dispay-grid-toggle"
 							@dispay-grid-toggle=${this.handleGridBackgroundClicked}
@@ -520,16 +512,6 @@ class AppComponent extends LitElement {
 			cellSize: this.config.zoom,
 		});
 		this.refreshGrid();
-	}
-
-	/**
-	 * Command all registered workers to set their display storage setting.
-	 */
-	toggleDisplayStorageStructure(event) {
-		this.stateManager.broadcast({
-			command: WorkerCommands.LifeSystemCommands.DISPLAY_STORAGE,
-			displayStorage: event.detail.checked,
-		});
 	}
 
 	/**
