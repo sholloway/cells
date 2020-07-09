@@ -495,11 +495,6 @@ class BatchDrawingCellsFromBuffer extends Trait {
 			);
 		}
 		context.rendererContext.fill();
-
-		//Drawing strokes takes time. Only do it for when we're zoomed out and can actually see them.
-		// if (this.scalingFactor > this.strokeThreashold) {
-		// 	context.rendererContext.stroke();
-		// }
 	}
 }
 

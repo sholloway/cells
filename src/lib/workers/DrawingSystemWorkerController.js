@@ -82,15 +82,6 @@ class DrawingSystemWorkerController extends AbstractWorkerController {
 					'Either cx or cy was not provided.'
 				);
 				break;
-			case DrawingSystemCommands.DISPLAY_STORAGE:
-				this.processCmd(
-					msg,
-					DrawingSystemCommands.DISPLAY_STORAGE,
-					(msg) => msg.displayStorage !== undefined,
-					(msg) => this.drawingSystem.displayStorage(msg.displayStorage),
-					'The displayStorage field was not provided.'
-				);
-				break;
 			case DrawingSystemCommands.SEND_CELLS:
 				this.processCmd(
 					msg,
@@ -104,8 +95,6 @@ class DrawingSystemWorkerController extends AbstractWorkerController {
 							command: msg.command,
 							numberOfCells: sceneStack.length,
 							cellFieldsCount: PackingConstants.FIELDS_PER_CELL,
-							numberOfStorageBoxes: 0,
-							boxFieldCount: 0,
 							stack: this.packScene(sceneStack),
 						};
 						this.sendMessageToClient(response, [response.stack.buffer]);
@@ -143,7 +132,6 @@ class DrawingSystemWorkerController extends AbstractWorkerController {
 		if (this.systemRunning() && this.drawingSystem.canUpdate()) {
 			this.drawingSystem.update();
 			let sceneStack = this.drawingSystem.getScene().getStack();
-			let storageStack = this.drawingSystem.getStorageScene().getStack();
 			let response = {
 				id: msg.id,
 				promisedResponse: msg.promisedResponse,
@@ -151,9 +139,7 @@ class DrawingSystemWorkerController extends AbstractWorkerController {
 				origin: Layers.DRAWING,
 				numberOfCells: sceneStack.length,
 				cellFieldsCount: PackingConstants.FIELDS_PER_CELL,
-				numberOfStorageBoxes: storageStack.length,
-				boxFieldCount: PackingConstants.FIELDS_PER_BOX,
-				stack: this.packScene(sceneStack, storageStack),
+				stack: this.packScene(sceneStack),
 			};
 			this.sendMessageToClient(response, [response.stack.buffer]);
 		}

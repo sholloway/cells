@@ -24,7 +24,6 @@ class DrawingSystem {
 		};
 		this.stateManager = new DrawingStateManager(this.config);
 		this.scene = new SceneManager();
-		this.storageScene = new SceneManager();
 		this.displayStorageStructure = false;
 		this.state = States.IDLE;
 	}
@@ -52,10 +51,6 @@ class DrawingSystem {
 		return this.scene;
 	}
 
-	getStorageScene(){
-		return this.storageScene;
-	}
-
 	/**
 	 * @returns {DrawingStateManager} Returns the state manager for the drawing system.
 	 */
@@ -66,11 +61,6 @@ class DrawingSystem {
 	update() {
 		this.state = States.UPDATING;
 		this.scene.clear();
-		this.storageScene.clear();
-		this.getStateManager().stageStorage(
-			this.storageScene,
-			this.displayStorageStructure
-		);
 		this.getStateManager().processCells(this.scene);
 		this.state = States.IDLE;
 	}

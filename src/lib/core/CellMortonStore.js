@@ -41,6 +41,10 @@ class CellMortonStore {
 		return this;
 	}
 
+	search(x, y) {
+		return this.get(encode(x, y));
+	}
+
 	has(zcode) {
 		return this.map.has(zcode);
 	}
@@ -49,12 +53,16 @@ class CellMortonStore {
 		return this.map.get(zcode);
 	}
 
+	delete(x, y) {
+		return this.map.delete(encode(x, y));
+	}
+
 	clear() {
 		this.map.clear();
 		return this;
 	}
 
-	cells(){
+	cells() {
 		return [...this.map.values()];
 	}
 
@@ -69,11 +77,11 @@ class CellMortonStore {
 		let found = [];
 		let current;
 
-		//constrain the neigborhood to the boundaries of the grid 
+		//constrain the neigborhood to the boundaries of the grid
 		let left = clip(cell.row - 1, 0, width);
-		let right = clip(cell.row + 1, 0, width)
-		let bottom = clip(cell.col-1, 0, height);
-		let top = clip(cell.col+1, 0, height);
+		let right = clip(cell.row + 1, 0, width);
+		let bottom = clip(cell.col - 1, 0, height);
+		let top = clip(cell.col + 1, 0, height);
 
 		for (var row = left; row <= right; row++) {
 			for (var col = bottom; col <= top; col++) {

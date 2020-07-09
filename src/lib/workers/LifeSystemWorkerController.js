@@ -85,15 +85,6 @@ class LifeSystemWorkerController extends AbstractWorkerController {
 					'Setting the seeder requires including the config and seedingSetting properties. The cells property is optional.'
 				);
 				break;
-			case LifeSystemCmds.DISPLAY_STORAGE:
-				this.processCmd(
-					msg,
-					msg.command,
-					(msg) => msg.displayStorage !== undefined,
-					(msg) => this.lifeSystem.displayStorage(msg.displayStorage),
-					'The displayStorage field was not provided.'
-				);
-				break;
 			case LifeSystemCmds.SET_CONFIG:
 				this.processCmd(
 					msg,
@@ -101,7 +92,7 @@ class LifeSystemWorkerController extends AbstractWorkerController {
 					(msg) => this.findPromisedProperty(msg, 'config'),
 					(msg) =>
 						this.lifeSystem.setConfig(this.findPromisedProperty(msg, 'config')),
-					'The displayStorage field was not provided.'
+					'The config field was not provided.'
 				);
 				break;
 			default:
@@ -132,7 +123,6 @@ class LifeSystemWorkerController extends AbstractWorkerController {
 				numberOfSimulationIterations: this.lifeSystem.numberOfSimulationIterations(),
 				numberOfCells: sceneStack.length,
 				cellFieldsCount: PackingConstants.FIELDS_PER_CELL,
-				boxFieldCount: PackingConstants.FIELDS_PER_BOX,
 				simulationStopped: isSimulationDone,
 			};
 			this.sendMessageToClient(response, [response.stack.buffer]);

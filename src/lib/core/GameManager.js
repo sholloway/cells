@@ -1,13 +1,6 @@
 const { CellMortonStore } = require('./CellMortonStore.js');
 const { CellEvaluator } = require('./CellEvaluator.js');
 const { Cell } = require('../entity-system/Entities.js');
-const {
-	ColorByAgeTrait,
-	CircleTrait,
-	GridCellToRenderingEntity,
-	ScaleTransformer,
-} = require('../entity-system/Traits.js');
-
 const CellStates = require('./../entity-system/CellStates.js');
 const { SeederFactory, SeederModels } = require('./SeederFactory.js');
 
@@ -137,10 +130,7 @@ class GameManager {
 		this.currentStore.clear();
 		this.currentStore = null;
 		this.currentStore = this.nextStore;
-		this.nextStore = new CellMortonStore(
-			this.config.landscape.width,
-			this.config.landscape.height
-		);
+		this.nextStore = new CellMortonStore();
 		return this;
 	}
 
@@ -178,8 +168,15 @@ class CellBin {
 	 */
 	merge() {
 		let cells = [];
+		let groupedCells;
 		let keys = Array.from(this.bin.keys()).sort();
-		keys.forEach((k) => cells.push(...this.bin.get(k)));
+		//keys.forEach((k) => cells.push(...this.bin.get(k)));
+		for (let keyIndex = 0; keyIndex < keys.length; keyIndex++) {
+			groupedCells = this.bin.get(keys[keyIndex]);
+			for (let cellIndex = 0; cellIndex < groupedCells.length; cellIndex++) {
+				cells.push(groupedCells[cellIndex]);
+			}
+		}
 		return cells;
 	}
 

@@ -66,19 +66,6 @@ class DrawingSceneBuilder {
 					new BatchDrawingCellsFromBuffer(config.zoom, 10, config.cell.shape)
 				);
 			scene.push(cellBatch);
-
-			if (message.numberOfStorageBoxes > 0) {
-				let boxBatch = new EntityBatchArrayBuffer(
-					stack,
-					cellBatch.bufferEnd,
-					message.numberOfStorageBoxes,
-					message.boxFieldCount
-				);
-				boxBatch
-					.register(new OutlineStyle(2, '#0d47a1'))
-					.register(new BatchDrawingBoxesFromBuffer(config.zoom));
-				scene.push(boxBatch);
-			}
 		}
 
 		//Highlight which cell the mouse is over, if any.
