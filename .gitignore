@@ -17,7 +17,7 @@ dist
 # Generated stuff
 *.dot
 *.png
-docs
+jsdocs
 
 # Chrome Profiles
 profile_runs/

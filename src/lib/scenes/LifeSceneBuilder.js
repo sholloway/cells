@@ -1,23 +1,8 @@
+const { EntityBatchArrayBuffer } = require('../entity-system/Entities.js');
 const {
-	Box,
-	Cell,
-	EntityBatch,
-	EntityBatchArrayBuffer,
-} = require('../entity-system/Entities.js');
-const {
-	BatchDrawingBoxes,
-	BatchDrawingBoxesFromBuffer,
-	BatchDrawingCells,
 	BatchDrawingCellsFromBuffer,
-	CircleTrait,
-	ColorByAgeTrait,
-	ColorByContents,
 	FillStyle,
-	GridCellToRenderingEntity,
 	OutlineStyle,
-	ProcessBoxAsRect,
-	RectOutlineTrait,
-	ScaleTransformer,
 } = require('../entity-system/Traits.js');
 
 class LifeSceneBuilder {

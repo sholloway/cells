@@ -1,8 +1,3 @@
-const {
-	EntityBuilderFactory,
-} = require('../entity-system/EntityBuilderFactory');
-const { TraitBuilderFactory } = require('../entity-system/TraitBuilderFactory');
-
 /**
  * Data structure for storing the entities ready to render.
  */

@@ -1,6 +1,5 @@
 const { CellMortonStore } = require('./CellMortonStore.js');
 const { Cell } = require('../entity-system/Entities.js');
-const CellStates = require('../entity-system/CellStates.js');
 
 /**
  * Orchestrates drawing.
