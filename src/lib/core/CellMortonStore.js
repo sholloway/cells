@@ -1,5 +1,3 @@
-const { map } = require('benchmark');
-
 //Borrowed from: https://github.com/mikolalysenko/bit-twiddle/blob/master/twiddle.js
 function encode(x, y) {
 	x &= 0xffff; //Constrain to 16 bits. 0xffff is 65535 which is the number range of 16 bits. 1111111111111111 in binary. Numbers larger than 65535 will roll over.
