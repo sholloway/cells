@@ -13,7 +13,7 @@ describe('Life System', function () {
 
 	it('should run the game manager through its paces on update', function () {
 		let fakeGameManager = {};
-		fakeGameManager.evaluateCellsFaster = sinon.spy();
+		fakeGameManager.evaluateCells = sinon.stub().returns(fakeGameManager);
 		fakeGameManager.stageStorage = sinon.spy();
 		fakeGameManager.activateNext = sinon.spy();
 		fakeGameManager.seedWorld = sinon.spy();
@@ -25,8 +25,7 @@ describe('Life System', function () {
 		ls.setSeeder(fakeSeeder).initializeSimulation().update();
 
 		expect(fakeGameManager.seedWorld.calledOnce).to.be.true;
-		expect(fakeGameManager.evaluateCellsFaster.calledOnce).to.be.true;
-		expect(fakeGameManager.stageStorage.calledOnce).to.be.true;
+		expect(fakeGameManager.evaluateCells.calledOnce).to.be.true;
 		expect(fakeGameManager.activateNext.calledOnce).to.be.true;
 	});
 

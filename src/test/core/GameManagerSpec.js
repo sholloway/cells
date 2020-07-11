@@ -11,7 +11,7 @@ const SceneManager = require('./../../lib/core/SceneManager.js');
 const ArrayAssertions = require('./ArrayAssertions.js');
 const { CellEvaluator } = require('../../lib/core/CellEvaluator.js');
 
-let lifeEvaluator = new CellEvaluator([3], [2,3]);
+let lifeEvaluator = new CellEvaluator([3], [2, 3]);
 
 describe('Game Manager', function () {
 	function buildTree(grid) {
@@ -34,22 +34,6 @@ describe('Game Manager', function () {
 		expect(gm.aliveCellsCount()).to.equal(gm.getCells().length);
 	});
 
-	it('should enable rendering the quad tree', function () {
-		let gm = new GameManager({
-			landscape: {
-				width: 200,
-				height: 200,
-			},
-		});
-		gm.seedWorld();
-		let scene = new SceneManager();
-		gm.stageStorage(scene, false);
-		expect(scene.fullyRendered()).to.be.true;
-
-		gm.stageStorage(scene, true);
-		expect(scene.fullyRendered()).to.be.false;
-	});
-
 	it('should clear the system', function () {
 		let gm = new GameManager({
 			landscape: {
@@ -60,8 +44,8 @@ describe('Game Manager', function () {
 		gm.seedWorld();
 		gm.clear();
 
-		expect(gm.currentTree.aliveCellsCount()).to.equal(0);
-		expect(gm.nextTree.aliveCellsCount()).to.equal(0);
+		expect(gm.currentStore.size()).to.equal(0);
+		expect(gm.nextStore.size()).to.equal(0);
 		expect(gm.getCells().length).to.equal(0);
 	});
 
@@ -301,26 +285,14 @@ describe('Game Manager', function () {
 			let config = makeConfig();
 			let mngr = new GameManager(config);
 			mngr.seedWorld();
-			let aliveCells = mngr.nextTree.findAliveInArea(
-				0,
-				0,
-				config.landscape.width,
-				config.landscape.height
-			);
-			expect(aliveCells.length).to.equal(0);
+			expect(mngr.nextStore.size()).to.equal(0);
 		});
 
 		it('should initialize the currentGrid with some life in it', function () {
 			let config = makeConfig();
 			let mngr = new GameManager(config);
 			mngr.seedWorld();
-			let aliveCells = mngr.currentTree.findAliveInArea(
-				0,
-				0,
-				config.landscape.width,
-				config.landscape.height
-			);
-			let aliveCellsCount = aliveCells.length;
+			let aliveCellsCount = mngr.currentStore.size();
 			expect(
 				aliveCellsCount > 0 &&
 					aliveCellsCount <= config.landscape.width * config.landscape.height
@@ -337,13 +309,7 @@ describe('Game Manager', function () {
 			//Seeding the world should result in a current grid that has some life and
 			//A next grid that is completely dead.
 			mngr.seedWorld();
-			let originalAliveCells = mngr.currentTree.findAliveInArea(
-				0,
-				0,
-				config.landscape.width,
-				config.landscape.height
-			);
-			let originalAliveCellsCount = originalAliveCells.length;
+			let originalAliveCellsCount = mngr.currentStore.size();
 			expect(
 				originalAliveCellsCount > 0 &&
 					originalAliveCellsCount <=
@@ -352,25 +318,13 @@ describe('Game Manager', function () {
 
 			//Evaluating the grid should result in no changes to the current grid and
 			//The next grid should be completely alive.
-			mngr.evaluateCellsFaster(scene, new AlwayAliveEvaluator());
+			mngr.evaluateCells(scene, new AlwayAliveEvaluator());
 
-			let currentTreeLiveCells = mngr.currentTree.findAliveInArea(
-				0,
-				0,
-				config.landscape.width,
-				config.landscape.height
-			);
-			let currentTreeLiveCellsCount = currentTreeLiveCells.length;
+			let currentTreeLiveCellsCount = mngr.currentStore.size();
 			expect(currentTreeLiveCellsCount == originalAliveCellsCount).to.be.true;
 
 			//verify that the nextGrid is fully alive
-			let nextTreeLiveCells = mngr.nextTree.findAliveInArea(
-				0,
-				0,
-				config.landscape.width,
-				config.landscape.height
-			);
-			let nextTreeLiveCellsCount = nextTreeLiveCells.length;
+			let nextTreeLiveCellsCount = mngr.nextStore.size();
 			expect(
 				nextTreeLiveCellsCount ==
 					config.landscape.width * config.landscape.height
@@ -378,13 +332,8 @@ describe('Game Manager', function () {
 
 			//Activating the next grid should replace the current grid with the next grid.
 			mngr.activateNext();
-			let newCurrentTreeAliveCells = mngr.currentTree.findAliveInArea(
-				0,
-				0,
-				config.landscape.width,
-				config.landscape.height
-			);
-			let newCurrentTreeAliveCellsCount = newCurrentTreeAliveCells.length;
+
+			let newCurrentTreeAliveCellsCount = mngr.currentStore.size();
 			expect(newCurrentTreeAliveCellsCount == nextTreeLiveCellsCount).to.be
 				.true;
 		});
@@ -396,24 +345,12 @@ describe('Game Manager', function () {
 
 			//Seeding should result in the next grid being completely dead.
 			mngr.seedWorld();
-			let nextTreeLiveCells = mngr.nextTree.findAliveInArea(
-				0,
-				0,
-				config.landscape.width,
-				config.landscape.height
-			);
-			let nextTreeLiveCellsCount = nextTreeLiveCells.length;
+			let nextTreeLiveCellsCount = mngr.nextStore.size();
 			expect(nextTreeLiveCellsCount == 0).to.be.true;
 
 			//Evaluating should make the next grid completely alive.
-			mngr.evaluateCellsFaster(scene, new AlwayAliveEvaluator());
-			nextTreeLiveCells = mngr.nextTree.findAliveInArea(
-				0,
-				0,
-				config.landscape.width,
-				config.landscape.height
-			);
-			nextTreeLiveCellsCount = nextTreeLiveCells.length;
+			mngr.evaluateCells(scene, new AlwayAliveEvaluator());
+			nextTreeLiveCellsCount = mngr.nextStore.size();
 			expect(
 				nextTreeLiveCellsCount ==
 					config.landscape.width * config.landscape.height
@@ -421,187 +358,8 @@ describe('Game Manager', function () {
 
 			//Activating should make the next grid dead again.
 			mngr.activateNext();
-			nextTreeLiveCells = mngr.nextTree.findAliveInArea(
-				0,
-				0,
-				config.landscape.width,
-				config.landscape.height
-			);
-			nextTreeLiveCellsCount = nextTreeLiveCells.length;
+			nextTreeLiveCellsCount = mngr.nextStore.size();
 			expect(nextTreeLiveCellsCount == 0).to.be.true;
-		});
-	});
-
-
-	describe('Common Conway Primitives', function () {
-		it('should support blocks', function () {
-			let config = makeConfig(5, 5);
-			let mngr = new GameManager(config);
-			let scene = new SceneManager();
-			let gridWithBlock = [
-				[0, 0, 0, 0, 0],
-				[0, 0, 0, 0, 0],
-				[0, 0, 1, 1, 0],
-				[0, 0, 1, 1, 0],
-				[0, 0, 0, 0, 0],
-			];
-			mngr.seedWorld(new ArraySeeder(gridWithBlock));
-
-			let currentGrid = treeToGrid(
-				mngr.currentTree,
-				config.landscape.width,
-				config.landscape.height
-			);
-			ArrayAssertions.assertEqual2DArrays(gridWithBlock, currentGrid);
-
-			//Do 100 evaluations
-			for (let cycle = 0; cycle < 100; cycle++) {
-				mngr.evaluateCellsFaster(scene, lifeEvaluator);
-				mngr.activateNext();
-				scene.clear();
-			}
-
-			//The block should still be there.
-			let lastGrid = treeToGrid(
-				mngr.currentTree,
-				config.landscape.width,
-				config.landscape.height
-			);
-			ArrayAssertions.assertEqual2DArrays(gridWithBlock, lastGrid);
-		});
-
-		it('should support blinkers', function () {
-			let config = makeConfig(5, 5);
-			let mngr = new GameManager(config);
-			let scene = new SceneManager();
-
-			let initBlinker = [
-				[0, 0, 0, 0, 0],
-				[0, 0, 1, 0, 0],
-				[0, 0, 1, 0, 0],
-				[0, 0, 1, 0, 0],
-				[0, 0, 0, 0, 0],
-			];
-
-			let blink = [
-				[0, 0, 0, 0, 0],
-				[0, 0, 0, 0, 0],
-				[0, 1, 1, 1, 0],
-				[0, 0, 0, 0, 0],
-				[0, 0, 0, 0, 0],
-			];
-			mngr.seedWorld(new ArraySeeder(initBlinker));
-
-			let currentGrid = treeToGrid(
-				mngr.currentTree,
-				config.landscape.width,
-				config.landscape.height
-			);
-			ArrayAssertions.assertEqual2DArrays(initBlinker, currentGrid);
-
-			for (i = 0; i < 100; i++) {
-				mngr.evaluateCellsFaster(scene, lifeEvaluator);
-				mngr.activateNext();
-				scene.clear();
-				currentGrid = treeToGrid(
-					mngr.currentTree,
-					config.landscape.width,
-					config.landscape.height
-				);
-				if (i % 2) {
-					//Odd: i % 2 == 1
-					ArrayAssertions.assertEqual2DArrays(initBlinker, currentGrid);
-				} else {
-					//Even: i % 2 == 0
-					ArrayAssertions.assertEqual2DArrays(blink, currentGrid);
-				}
-			}
-		});
-	});
-
-	describe('Profiling Experiment', function () {
-		it('should support blocks', function () {
-			let config = makeConfig(5, 5);
-			let mngr = new GameManager(config);
-			let scene = new SceneManager();
-			let gridWithBlock = [
-				[0, 0, 0, 0, 0],
-				[0, 0, 0, 0, 0],
-				[0, 0, 1, 1, 0],
-				[0, 0, 1, 1, 0],
-				[0, 0, 0, 0, 0],
-			];
-			mngr.seedWorld(new ArraySeeder(gridWithBlock));
-
-			let currentGrid = treeToGrid(
-				mngr.currentTree,
-				config.landscape.width,
-				config.landscape.height
-			);
-			ArrayAssertions.assertEqual2DArrays(gridWithBlock, currentGrid);
-
-			//Do 100 evaluations
-			for (let cycle = 0; cycle < 100; cycle++) {
-				mngr.evaluateCellsFaster(scene, lifeEvaluator);
-				mngr.activateNext();
-				scene.clear();
-			}
-
-			//The block should still be there.
-			let lastGrid = treeToGrid(
-				mngr.currentTree,
-				config.landscape.width,
-				config.landscape.height
-			);
-			ArrayAssertions.assertEqual2DArrays(gridWithBlock, lastGrid);
-		});
-
-		it('should support blinkers', function () {
-			let config = makeConfig(5, 5);
-			let mngr = new GameManager(config);
-			let scene = new SceneManager();
-
-			let initBlinker = [
-				[0, 0, 0, 0, 0],
-				[0, 0, 1, 0, 0],
-				[0, 0, 1, 0, 0],
-				[0, 0, 1, 0, 0],
-				[0, 0, 0, 0, 0],
-			];
-
-			let blink = [
-				[0, 0, 0, 0, 0],
-				[0, 0, 0, 0, 0],
-				[0, 1, 1, 1, 0],
-				[0, 0, 0, 0, 0],
-				[0, 0, 0, 0, 0],
-			];
-			mngr.seedWorld(new ArraySeeder(initBlinker));
-
-			let currentGrid = treeToGrid(
-				mngr.currentTree,
-				config.landscape.width,
-				config.landscape.height
-			);
-			ArrayAssertions.assertEqual2DArrays(initBlinker, currentGrid);
-
-			for (i = 0; i < 100; i++) {
-				mngr.evaluateCellsFaster(scene, lifeEvaluator);
-				mngr.activateNext();
-				scene.clear();
-				currentGrid = treeToGrid(
-					mngr.currentTree,
-					config.landscape.width,
-					config.landscape.height
-				);
-				if (i % 2) {
-					//Odd: i % 2 == 1
-					ArrayAssertions.assertEqual2DArrays(initBlinker, currentGrid);
-				} else {
-					//Even: i % 2 == 0
-					ArrayAssertions.assertEqual2DArrays(blink, currentGrid);
-				}
-			}
 		});
 	});
 });
@@ -619,28 +377,4 @@ function makeConfig(width = 10, height = 10) {
 			height: height,
 		},
 	};
-}
-
-function treeToGrid(tree, width, height) {
-	//Make an array of 0s...
-	let grid = [];
-	for (let row = 0; row < width; row++) {
-		let currentRow = Array(height).fill(0);
-		grid.push(currentRow);
-	}
-	//Add all alive cells directly from leaves.
-	tree.leaves.forEach((cell) => {
-		grid[cell.row][cell.col] = 1;
-	});
-	return grid;
-}
-
-class ArraySeeder {
-	constructor(grid) {
-		this.grid = grid;
-	}
-
-	seed(width, height) {
-		return makeCellsFrom2DArray(this.grid);
-	}
 }
