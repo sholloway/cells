@@ -101,10 +101,6 @@ class AppComponent extends LitElement {
 							event="game-changed"
 							@game-changed=${this.handleGameChanged}
 						></game-selector>
-						<shape-picker
-							event="cell-shape-changed"
-							@cell-shape-changed=${this.setCellShapeOption}
-						></shape-picker>
 						<cell-size-control
 							event="cell-size-changed"
 							min="5"

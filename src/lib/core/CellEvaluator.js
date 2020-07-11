@@ -1,6 +1,5 @@
 const CellStates = require('./../entity-system/CellStates.js');
 
-const Any = 'any';
 /**
  * Enforces the simulation (game) rules.
  */

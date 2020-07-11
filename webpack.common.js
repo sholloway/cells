@@ -4,6 +4,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TerserJSPlugin = require('terser-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const WorkerPlugin = require('worker-plugin');
 
 module.exports = {
 	entry: './src/lib/index.js',
@@ -29,6 +30,10 @@ module.exports = {
 		new MiniCssExtractPlugin({
 			filename: '[name].css',
 			chunkFilename: '[id].css',
+		}),
+		new WorkerPlugin({
+			// disable warnings about "window" breaking HMR:
+			globalObject: 'self',
 		}),
 	],
 	module: {

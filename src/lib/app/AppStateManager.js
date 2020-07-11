@@ -112,12 +112,12 @@ class AppStateManager {
 	 */
 	createWorker(
 		name,
-		workerConstructor,
+		worker,
 		messageHandler,
 		registerForBroadcastMessages = true
 	) {
 		if (!this.workers.has(name)) {
-			let worker = new workerConstructor();
+			// let worker = new workerConstructor();
 			worker.onmessage = messageHandler;
 			registerForBroadcastMessages
 				? this.workerSystem.registerWorker(name, worker)

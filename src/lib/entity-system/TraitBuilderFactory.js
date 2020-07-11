@@ -1,19 +1,4 @@
-const {
-	CircleTrait,
-	ClearArea,
-	ColorByAgeTrait,
-	ColorByContents,
-	DarkFillTrait,
-	DarkThinLines,
-	FilledRectTrait,
-	FillStyle,
-	GridPattern,
-	ProcessBoxAsRect,
-	RectOutlineTrait,
-	ScaleTransformer,
-	StrokeStyle,
-	Trait,
-} = require('./Traits.js');
+const { GridPattern, ProcessBoxAsRect, Trait } = require('./Traits.js');
 
 class TraitBuilderFactory {
 	static select(traitName) {

@@ -3,7 +3,6 @@
  * @module quadtree
  */
 
-const CellStates = require('../entity-system/CellStates.js');
 const {
 	Cell,
 	CELL_HEIGHT,
