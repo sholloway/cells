@@ -127,13 +127,9 @@ class AbstractWorkerController {
 
 	https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays
 	*/
-	packScene(sceneStack, storageStack = []) {
+	packScene(sceneStack) {
 		// prettier-ignore
-		let sceneStackByteLength = PackingConstants.BYTES_PER_NUMBER * PackingConstants.FIELDS_PER_CELL * sceneStack.length;
-		// prettier-ignore
-		let storageStackByteLength = PackingConstants.BYTES_PER_NUMBER * PackingConstants.FIELDS_PER_BOX * storageStack.length;
-		let bufferLength = sceneStackByteLength + storageStackByteLength;
-
+		let bufferLength = PackingConstants.BYTES_PER_NUMBER * PackingConstants.FIELDS_PER_CELL * sceneStack.length;
 		let buffer = new ArrayBuffer(bufferLength);
 		let dataView = new Uint16Array(buffer);
 		let offset;
@@ -145,18 +141,7 @@ class AbstractWorkerController {
 			dataView[offset + 1] = sceneStack[current].col;
 			dataView[offset + 2] = sceneStack[current].state;
 		}
-
-		//Then pack all of the boxes (if any) after the cells.
-		//This shouldn't run when storageStack.length is 0.
-		offset = PackingConstants.FIELDS_PER_CELL * sceneStack.length;
-		for (var current = 0; current < storageStack.length; current++) {
-			dataView[offset] = storageStack[current].x;
-			dataView[offset + 1] = storageStack[current].y;
-			dataView[offset + 2] = storageStack[current].xx;
-			dataView[offset + 3] = storageStack[current].yy;
-			offset += 4;
-		}
-
+		
 		return dataView;
 	}
 

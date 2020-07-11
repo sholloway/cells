@@ -146,22 +146,5 @@ describe('Life System Controller', function () {
 			});
 			expect(controller.sendMessageToClient.calledOnce).to.be.true;
 		});
-
-		it('should throw an error when the display storage field is not provided', function () {
-			expect(() => {
-				controller.process({
-					command: WorkerCommands.LifeSystemCommands.DISPLAY_STORAGE,
-				});
-			}).to.throw(Error, 'The displayStorage field was not provided.');
-		});
-
-		it('should set display storage', function () {
-			expect(controller.lifeSystem.displayStorageStructure).to.be.false;
-			controller.process({
-				command: WorkerCommands.LifeSystemCommands.DISPLAY_STORAGE,
-				displayStorage: true,
-			});
-			expect(controller.lifeSystem.displayStorageStructure).to.be.true;
-		});
 	});
 });

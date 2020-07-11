@@ -160,23 +160,6 @@ describe('DrawingSystemWorkerController', function () {
 			}).to.throw(Error, 'Either cx or cy was not provided.');
 		});
 
-		it('should throw an error when the display storage field is not provided', function () {
-			expect(() => {
-				controller.process({
-					command: WorkerCommands.DrawingSystemCommands.DISPLAY_STORAGE,
-				});
-			}).to.throw(Error, 'The displayStorage field was not provided.');
-		});
-
-		it('should set display storage', function () {
-			expect(controller.drawingSystem.displayStorageStructure).to.be.false;
-			controller.process({
-				command: WorkerCommands.DrawingSystemCommands.DISPLAY_STORAGE,
-				displayStorage: true,
-			});
-			expect(controller.drawingSystem.displayStorageStructure).to.be.true;
-		});
-
 		it('should promise to send cells', function () {
 			sinon.stub(controller, 'sendMessageToClient');
 			expect(controller.sendMessageToClient.calledOnce).to.be.false;

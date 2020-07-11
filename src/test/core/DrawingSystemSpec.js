@@ -13,11 +13,9 @@ describe('DrawingSystem', function () {
 	it('should update the scene', function () {
 		let ds = new DrawingSystem();
 		let fakeStateManager = {};
-		fakeStateManager.stageStorage = sinon.spy();
 		fakeStateManager.processCells = sinon.spy();
 		ds.stateManager = fakeStateManager;
 		ds.update();
-		expect(fakeStateManager.stageStorage.calledOnce).to.be.true;
 		expect(fakeStateManager.processCells.calledOnce).to.be.true;
 	});
 

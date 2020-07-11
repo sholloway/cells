@@ -31,6 +31,41 @@ function buildDag(node, treeNodes, relationships) {
 }
 
 /**
+ * Given a node in a BST, map out the set of nodes and
+ * relationships to then draw using GraphViz
+ * @param {BSTNode} node - The current node.
+ * @param {*} treeNodes - Hashmap of the tree nodes.
+ * @param {*} relationships - Hashmap of the tree relationships.
+ */
+function buildBSTDag(node, treeNodes, relationships) {
+	if (!treeNodes.has(node.id)) {
+		let dagNode = {};
+		if (node.index != null) {
+			dagNode.color = node.parentDirection == 'LEFT' ? 'green' : 'blue';
+			dagNode.label = `Node: ${node.id}\nCurve Key: ${node.key}\nCurve Index: ${node.index}`;
+		} else {
+			dagNode.color = 'blue';
+			dagNode.label = `${node.toString()}`;
+		}
+		treeNodes.set(node.id, dagNode);
+	}
+
+	if (!relationships.has(node.id)) {
+		relationships.set(node.id, []); // of the form: 218->{219 241}
+	}
+
+	if (node.left) {
+		relationships.get(node.id).push(node.left.id);
+		buildBSTDag(node.left, treeNodes, relationships);
+	}
+
+	if (node.right) {
+		relationships.get(node.id).push(node.right.id);
+		buildBSTDag(node.right, treeNodes, relationships);
+	}
+}
+
+/**
  * Generates a dot file for Graphviz.
  * @param {*} treeNodes
  * @param {*} relationships
@@ -76,4 +111,4 @@ function mkFile(filename, dotFile) {
 	});
 }
 
-module.exports = { buildDag, createDotFile, mkFile };
+module.exports = { buildBSTDag, buildDag, createDotFile, mkFile };
