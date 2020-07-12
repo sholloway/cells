@@ -98,6 +98,10 @@ class AppComponent extends LitElement {
 							value="20"
 							@cell-size-changed=${this.changedCellSize}
 						></cell-size-control>
+						<speed-selector
+							event="speed-changed"
+							@speed-changed=${this.handleGameSpeedChanged}
+						></speed-selector>
 						<start-button
 							state="IDLE"
 							@sim-event-start-requested=${this.handleStartButtonClicked}
@@ -170,6 +174,14 @@ class AppComponent extends LitElement {
 				</div>
 			</div>
 		`;
+	}
+
+	handleGameSpeedChanged(event) {
+		this.config.game.tickLength = event.detail.fps.tickLength;
+		this.stateManager.sendWorkerMessage(Layers.SIM, {
+			command: WorkerCommands.LifeSystemCommands.SET_CONFIG,
+			config: this.config,
+		});
 	}
 
 	/**
