@@ -491,12 +491,14 @@ class AppComponent extends LitElement {
 	 */
 	changedCellSize(event) {
 		this.config.zoom = event.detail.cellSize;
+		updateConfiguredLandscape(this.config);
 		//Inform the drawing system and Life Simulation of the change.
 		this.stateManager.broadcast({
 			command: WorkerCommands.LifeSystemCommands.SET_CELL_SIZE,
 			cellSize: this.config.zoom,
 		});
 		this.refreshGrid();
+		this.setflagAsDirty(Layers.DRAWING);
 	}
 
 	/**
