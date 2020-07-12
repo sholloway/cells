@@ -48,16 +48,9 @@ class AppComponent extends LitElement {
 		return [
 			grid,
 			css`
-				#block {
-					height: 24px;
-					background-color: #006db3;
-				}
-
-				#header {
-					background-color: #039be5;
-					border-top-width: 1px;
-					border-top-color: #3fafe8;
-					border-top-style: solid;
+				:host {
+					display: block;
+					border: 1px solid black;
 				}
 
 				#canvas_container {
@@ -65,6 +58,7 @@ class AppComponent extends LitElement {
 					border: 1px solid black;
 					z-index: 0;
 					position: relative;
+					margin: 1;
 				}
 
 				#grid_canvas {
@@ -91,10 +85,6 @@ class AppComponent extends LitElement {
 	render() {
 		return html`
 			<div class="container col">
-				<div id="block"></div>
-				<div id="header">
-					<h1>Conway's Game Of Life</h1>
-				</div>
 				<div id="control_bar">
 					<div class="container row">
 						<game-selector
@@ -197,11 +187,10 @@ class AppComponent extends LitElement {
 
 	sizeCanvas() {
 		let fullscreen = this.isFullscreen();
-		this.config.canvas.height = fullscreen
-			? screen.height
-			: this.calculateConfiguredCanvasHeight();
+		this.config.canvas.height = fullscreen ? screen.height : 400;
 
 		let canvasContainerDiv = this.shadowRoot.getElementById('canvas_container');
+		let controlBar = this.shadowRoot.getElementById('control_bar');
 
 		//WARNING: Setting the canvas height changes the body
 		//width so always set the height before the width.
@@ -213,7 +202,7 @@ class AppComponent extends LitElement {
 
 		this.config.canvas.width = fullscreen
 			? window.innerWidth
-			: document.body.clientWidth;
+			: controlBar.clientWidth - 2; //account for the 1px boarder on the canvas container.
 
 		canvasContainerDiv.style.width = `${this.config.canvas.width}px`;
 		canvases.forEach((c) => c.setAttribute('width', this.config.canvas.width));

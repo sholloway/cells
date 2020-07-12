@@ -5,7 +5,7 @@ require('./EventButton.js');
 require('./EventCheckbox.js');
 require('./GameSelector.js');
 require('./MenuItem.js');
-//require('./NumberDisplay.js');
+require('./NumberDisplay.js');
 //require('./ShapePicker.js');
 require('./StatefulMenuItem.js');
 require('./StartButton.js');
