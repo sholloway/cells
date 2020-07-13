@@ -28,8 +28,9 @@ p {
 
 h1 {
 	color: #000000;
+	font-weight: 300;
 	/* margin-left: 20px; */
-	padding: 1em;
+	/* padding: 1em; */
 }
 
 #block {
@@ -37,9 +38,14 @@ h1 {
 	background-color: #006db3;
 }
 
-#header {
+#header_old {
 	background-color: #039be5;
 	border-top-width: 1px;
 	border-top-color: #3fafe8;
 	border-top-style: solid;
+	padding: 0;
+}
+
+.subheader {
+	font-weight: 300;
 }
