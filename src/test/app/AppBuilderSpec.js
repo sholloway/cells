@@ -10,7 +10,12 @@ const messagehandlers = {
 	setThreadFlagToClean: sinon.stub(),
 };
 
-rewiremock(() => require('./../../lib/workers/WorkersLoader.js')).with({});
+const rewiredWorkerLoader = {
+	createWorker: sinon.stub(),
+};
+rewiremock(() => require('./../../lib/workers/WorkersLoader.js')).with(
+	rewiredWorkerLoader
+);
 rewiremock(() => require('./../../lib/app/AppMessageHandlers')).with(
 	messagehandlers
 );
