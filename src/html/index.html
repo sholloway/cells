@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title>Conway's Game of Life</title>
+		<title>Cells: Cellular Playground</title>
 		<meta charset="utf-8" />
 		<%= htmlWebpackPlugin.tags.headTags %>
 		<link
-			href="https://fonts.googleapis.com/css?family=Roboto"
+			href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400&display=swap"
 			rel="stylesheet"
 		/>
 		<link
@@ -14,7 +14,93 @@
 		/>
 	</head>
 	<body>
-		<conways-game></conways-game>
+		<div class="content-wrapper">
+			<div class="content">
+				<header>
+					<div id="block"></div>
+					<div id="header">
+						<h1>
+							Cells
+							<span class="subheader"> | A Cellular Automaton Playground</span>
+						</h1>
+					</div>
+				</header>
+				<main>
+					<p>
+						This is the home for my tinkering with cellular automata.
+						Originally, I thought it would be a fun challenge to build John
+						Conway’s <i>Game of Life</i>. That then expanded into exploring
+						Stephen Wolfram’s 256 rules. For an introduction to both of these
+						topics, see Daniel Shiffman's book
+						<a href="https://natureofcode.com/book/chapter-7-cellular-automata/"
+							>The Nature of Code</a
+						>.
+					</p>
+					<p>
+						After completing my version of the game of life I added support for
+						<a href="https://www.conwaylife.com/wiki/Generations"
+							>generational</a
+						>
+						rule sets. These multi-state simulations can create rich patterns by
+						controlling color based on how many iterations a cell has survived.
+					</p>
+					<h2>My Little Program</h2>
+					<p>
+						The program allows you to run different types of cellular automata
+						rules. Think of rules as a population simulation. Each position on
+						the grid can contain an alive cell or nothing. Before running a
+						simulation you can set the initial population by clicking on the
+						grid.
+					</p>
+					<p>
+						Right clicking on the grid displays the context menu. The context
+						menu provides a set of templates for building up a population. The
+						bottom group of templates are some of Stephen Wolfram's 256 rules.
+						Be default, Wolfram's rules all start with a single alive cell at
+						the middle of the first row. To randomize a rule's starting inputs
+						check the <i>Random Start</i> checkbox.
+					</p>
+					<conways-game></conways-game>
+
+					<h2>Resources</h2>
+					<p class="no-margin">
+						If this sort of thing interests you, here are some resources you can
+						leverage to dive deeper.
+					</p>
+					<ul>
+						<li>
+							The code for my little app and an explanation for how it works is
+							<a href="https://github.com/sholloway/cells">here.</a>
+						</li>
+						<li>
+							<a href="http://golly.sourceforge.net/">Golly</a> is a more
+							powerful application that can be used to explore cellular
+							automata.
+						</li>
+						<li>
+							<a href="https://www.conwaylife.com/">ConwayLife.com</a> is an
+							online community for cellular automata.
+						</li>
+						<li>
+							<a href="https://www.reddit.com/r/cellular_automata/"
+								>/r/cellular_automata</a
+							>
+							is a subreddit dedicated to cellular automata.
+						</li>
+					</ul>
+
+					<h2>About Me</h2>
+					<p>
+						I'm a professional software architect. When I'm not working with
+						customers on their enterprise software I like to write and build
+						interactive games and simulations. You can learn about my other
+						projects at my website
+						<a href="https://samuelholloway.com">samuelholloway.com</a>
+					</p>
+				</main>
+				<footer><p>©2020 Samuel Holloway</p></footer>
+			</div>
+		</div>
 		<%= htmlWebpackPlugin.tags.bodyTags%>
 	</body>
 </html>

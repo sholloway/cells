@@ -10,11 +10,7 @@ const GridSceneBuilder = require('../scenes/GridSceneBuilder.js');
 const LifeSceneBuilder = require('../scenes/LifeSceneBuilder.js');
 const DisplayManager = require('./DisplayManager.js');
 
-// const {
-// 	GridSystemWorker,
-// 	DrawingSystemWorker,
-// 	LifeSystemWorker,
-// } = require('../workers/WorkersLoader');
+const { createWorker } = require('../workers/WorkersLoader');
 
 const {
 	handleMessageFromGridWorker,
@@ -86,18 +82,18 @@ class AppBuilder {
 		app.stateManager
 			.createWorker(
 				Layers.GRID,
-				new Worker('../workers/GridSystem.worker.js', { type: 'module' }), //GridSystemWorker,
+				createWorker(Layers.GRID),
 				handleMessageFromGridWorker.bind(app.stateManager),
 				false
 			)
 			.createWorker(
 				Layers.DRAWING,
-				new Worker('../workers/DrawingSystem.worker.js', { type: 'module' }), //DrawingSystemWorker,
+				createWorker(Layers.DRAWING),
 				handleMsgFromDrawingWorker.bind(app.stateManager)
 			)
 			.createWorker(
 				Layers.SIM,
-				new Worker('../workers/LifeSystem.worker.js', { type: 'module' }), //LifeSystemWorker,
+				createWorker(Layers.SIM),
 				handleMessageFromLifeWorker.bind(app.stateManager)
 			);
 
