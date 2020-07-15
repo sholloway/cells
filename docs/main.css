@@ -1,14 +1,52 @@
-
 body {
-	background-color: #000000;
+	background-color: rgb(6, 28, 48);
 	font-family: 'Roboto', sans-serif;
-	margin: 8px;
+	margin: 0px;
 }
 
-h1 {
-	color: #000000;
-	margin-left: 20px;
+.content-wrapper {
+	display: block;
+	background-color: #cccccc;
+	/* padding-top: 2em;
+	padding-left: 2em;
+	padding-right: 2em; */
+	max-width: 960px;
+	height: 100%;
+	margin-right: auto;
+	margin-left: auto;
 }
+
+.content {
+	display: block;
+	background-color: white;
+	padding: 2em;
+}
+
+p {
+	margin-bottom: 2em;
+}
+
+.no-margin{
+	margin-bottom: 0;
+}
+
+h1,
+h2,
+h3,
+h4 {
+	color: #000000;
+	font-weight: 300;
+}
+
+#block {
+	height: 24px;
+	background-color: #006db3;
+}
+
+.subheader {
+	font-weight: 300;
+}
+
 
 
 /*# sourceMappingURL=main.css.map*/

@@ -3092,6 +3092,17 @@ lit_element_LitElement.render = shady_render_render;
 
 /***/ }),
 /* 1 */
+/***/ (function(module, exports) {
+
+module.exports = {
+	GRID: 'GRID',
+	DRAWING: 'DRAWING',
+	SIM: 'SIMULATION',
+};
+
+
+/***/ }),
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -3340,17 +3351,6 @@ module.exports = {
 
 
 /***/ }),
-/* 2 */
-/***/ (function(module, exports) {
-
-module.exports = {
-	GRID: 'GRID',
-	DRAWING: 'DRAWING',
-	SIM: 'SIMULATION',
-};
-
-
-/***/ }),
 /* 3 */
 /***/ (function(module, exports) {
 
@@ -3493,7 +3493,43 @@ module.exports = new Proxy(
 /* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const { CELL_HEIGHT, CELL_WIDTH } = __webpack_require__(1);
+const { getElementById } = __webpack_require__(3);
+
+/**
+ * Updates the zoom setting all threads should use.
+ */
+function updateConfiguredZoom(config) {
+	config.zoom = getCellSize();
+}
+
+/**
+ * Updates the landscape dimensions all threads should use.
+ */
+function updateConfiguredLandscape(config) {
+	config.landscape.width = config.canvas.width / config.zoom;
+	config.landscape.height = config.canvas.height / config.zoom;
+}
+
+/**
+ * Helper function for finding the cell size as a number.
+ * @returns {number} The cell size.
+ */
+function getCellSize() {
+	return Number.parseInt(getElementById('cell_size').value);
+}
+
+module.exports = {
+	updateConfiguredZoom,
+	updateConfiguredLandscape,
+	getCellSize,
+};
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const { CELL_HEIGHT, CELL_WIDTH } = __webpack_require__(2);
 /**
  * Selects a color based on the provided age.
  * @param {number} age
@@ -4095,83 +4131,6 @@ module.exports = {
 
 
 /***/ }),
-/* 7 */
-/***/ (function(module, exports, __webpack_require__) {
-
-const { getElementById } = __webpack_require__(3);
-
-/**
- * Calculate the new height of the canvas elements.
- * @returns {number} The intended canvas height.
- */
-function calculateConfiguredCanvasHeight() {
-	// Note: This will use the same padding/margins as the HTML Body.
-	let blockElement = getElementById('block');
-	let headerElement = getElementById('header');
-	let controlBarElement = getElementById('control_bar');
-	let statusBarElement = getElementById('status_bar');
-	let bodyMargin = 8 * 2; //Padding on body element in CSS is 8 top and bottom.
-
-	return (
-		window.innerHeight -
-		bodyMargin -
-		(blockElement.offsetHeight +
-			headerElement.offsetHeight +
-			controlBarElement.offsetHeight +
-			statusBarElement.offsetHeight)
-	);
-}
-
-function calculateFullScreenHeight() {
-	return screen.height;
-}
-
-function isFullscreen() {
-	return document.fullscreenElement != null;
-}
-
-/**
- * Override the current configuration to size the HTML Canvas
- * to fit the document.
- * @param {*} config
- */
-function sizeCanvas(game) {
-	game.config.canvas.height = isFullscreen()
-		? calculateFullScreenHeight()
-		: calculateConfiguredCanvasHeight();
-
-	let canvasContainerDiv = getElementById('canvas_container');
-
-	//WARNING: Setting the canvas height changes the body
-	//width so always set the height before the width.
-	canvasContainerDiv.style.height = `${game.config.canvas.height}px`;
-	game.gridCanvas.setAttribute('height', game.config.canvas.height);
-	game.simCanvas.setAttribute('height', game.config.canvas.height);
-	game.drawCanvas.setAttribute('height', game.config.canvas.height);
-
-	game.config.canvas.width = isFullscreen() ? window.innerWidth : document.body.clientWidth;
-	canvasContainerDiv.style.width = `${game.config.canvas.width}px`;
-	game.gridCanvas.setAttribute('width', game.config.canvas.width);
-	game.simCanvas.setAttribute('width', game.config.canvas.width);
-	game.drawCanvas.setAttribute('width', game.config.canvas.width);
-	return game;
-}
-
-function convertToCell(clickEvent, boundary, scale) {
-	let px = clickEvent.clientX - boundary.left;
-	let py = clickEvent.clientY - boundary.top;
-
-	//Project to a Cell
-	let cellLocation = {};
-	cellLocation.x = Math.floor(px / scale);
-	cellLocation.y = Math.floor(py / scale);
-	return cellLocation;
-}
-
-module.exports = { convertToCell, sizeCanvas };
-
-
-/***/ }),
 /* 8 */
 /***/ (function(module, exports) {
 
@@ -4307,42 +4266,6 @@ module.exports = CellStates;
 
 /***/ }),
 /* 11 */
-/***/ (function(module, exports, __webpack_require__) {
-
-const { getElementById } = __webpack_require__(3);
-
-/**
- * Updates the zoom setting all threads should use.
- */
-function updateConfiguredZoom(config) {
-	config.zoom = getCellSize();
-}
-
-/**
- * Updates the landscape dimensions all threads should use.
- */
-function updateConfiguredLandscape(config) {
-	config.landscape.width = config.canvas.width / config.zoom;
-	config.landscape.height = config.canvas.height / config.zoom;
-}
-
-/**
- * Helper function for finding the cell size as a number.
- * @returns {number} The cell size.
- */
-function getCellSize() {
-	return Number.parseInt(getElementById('cell_size').value);
-}
-
-module.exports = {
-	updateConfiguredZoom,
-	updateConfiguredLandscape,
-	getCellSize,
-};
-
-
-/***/ }),
-/* 12 */
 /***/ (function(module, exports) {
 
 /*
@@ -4439,6 +4362,83 @@ module.exports = Games;
 
 
 /***/ }),
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const { getElementById } = __webpack_require__(3);
+
+/**
+ * Calculate the new height of the canvas elements.
+ * @returns {number} The intended canvas height.
+ */
+function calculateConfiguredCanvasHeight() {
+	// Note: This will use the same padding/margins as the HTML Body.
+	let blockElement = getElementById('block');
+	let headerElement = getElementById('header');
+	let controlBarElement = getElementById('control_bar');
+	let statusBarElement = getElementById('status_bar');
+	let bodyMargin = 8 * 2; //Padding on body element in CSS is 8 top and bottom.
+
+	return (
+		window.innerHeight -
+		bodyMargin -
+		(blockElement.offsetHeight +
+			headerElement.offsetHeight +
+			controlBarElement.offsetHeight +
+			statusBarElement.offsetHeight)
+	);
+}
+
+function calculateFullScreenHeight() {
+	return screen.height;
+}
+
+function isFullscreen() {
+	return document.fullscreenElement != null;
+}
+
+/**
+ * Override the current configuration to size the HTML Canvas
+ * to fit the document.
+ * @param {*} config
+ */
+function sizeCanvas(game) {
+	game.config.canvas.height = isFullscreen()
+		? calculateFullScreenHeight()
+		: calculateConfiguredCanvasHeight();
+
+	let canvasContainerDiv = getElementById('canvas_container');
+
+	//WARNING: Setting the canvas height changes the body
+	//width so always set the height before the width.
+	canvasContainerDiv.style.height = `${game.config.canvas.height}px`;
+	game.gridCanvas.setAttribute('height', game.config.canvas.height);
+	game.simCanvas.setAttribute('height', game.config.canvas.height);
+	game.drawCanvas.setAttribute('height', game.config.canvas.height);
+
+	game.config.canvas.width = isFullscreen() ? window.innerWidth : document.body.clientWidth;
+	canvasContainerDiv.style.width = `${game.config.canvas.width}px`;
+	game.gridCanvas.setAttribute('width', game.config.canvas.width);
+	game.simCanvas.setAttribute('width', game.config.canvas.width);
+	game.drawCanvas.setAttribute('width', game.config.canvas.width);
+	return game;
+}
+
+function convertToCell(clickEvent, boundary, scale) {
+	let px = clickEvent.clientX - boundary.left;
+	let py = clickEvent.clientY - boundary.top;
+
+	//Project to a Cell
+	let cellLocation = {};
+	cellLocation.x = Math.floor(px / scale);
+	cellLocation.y = Math.floor(py / scale);
+	return cellLocation;
+}
+
+module.exports = { convertToCell, sizeCanvas };
+
+
+/***/ }),
 /* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -4457,36 +4457,33 @@ __webpack_require__(15);
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(16);
-__webpack_require__(32);
-__webpack_require__(33);
+__webpack_require__(34);
 __webpack_require__(35);
-__webpack_require__(36);
 __webpack_require__(37);
 __webpack_require__(38);
-//require('./NumberDisplay.js');
-//require('./ShapePicker.js');
 __webpack_require__(39);
 __webpack_require__(40);
 __webpack_require__(41);
+//require('./ShapePicker.js');
+__webpack_require__(42);
+__webpack_require__(44);
+__webpack_require__(45);
+__webpack_require__(46);
 
 
 /***/ }),
 /* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const Layers = __webpack_require__(2);
+const Layers = __webpack_require__(1);
 const { LitElement, html, css } = __webpack_require__(0);
 const { grid } = __webpack_require__(4);
-const { convertToCell } = __webpack_require__(7);
-const WorkerCommands = __webpack_require__(5);
 const AppBuilder = __webpack_require__(17);
+const AppEventHandler = __webpack_require__(33);
 
 const {
 	updateConfiguredLandscape,
-} = __webpack_require__(11);
-
-const DISPLAY_TRANSITION_ERR_MSG =
-	'There was an error attempting to change display modes.';
+} = __webpack_require__(6);
 
 /**
  * The top level component for the app.
@@ -4495,6 +4492,13 @@ class AppComponent extends LitElement {
 	constructor() {
 		super();
 		AppBuilder.buildApp(this);
+		this.handler = new AppEventHandler(
+			this,
+			this.shadowRoot,
+			this.config,
+			this.stateManager,
+			this.displayManager
+		);
 	}
 
 	/**
@@ -4524,16 +4528,9 @@ class AppComponent extends LitElement {
 		return [
 			grid,
 			css`
-				#block {
-					height: 24px;
-					background-color: #006db3;
-				}
-
-				#header {
-					background-color: #039be5;
-					border-top-width: 1px;
-					border-top-color: #3fafe8;
-					border-top-style: solid;
+				:host {
+					display: block;
+					border: 1px solid black;
 				}
 
 				#canvas_container {
@@ -4541,6 +4538,7 @@ class AppComponent extends LitElement {
 					border: 1px solid black;
 					z-index: 0;
 					position: relative;
+					margin: 1;
 				}
 
 				#grid_canvas {
@@ -4567,40 +4565,52 @@ class AppComponent extends LitElement {
 	render() {
 		return html`
 			<div class="container col">
-				<div id="block"></div>
-				<div id="header">
-					<h1>Conway's Game Of Life</h1>
-				</div>
 				<div id="control_bar">
 					<div class="container row">
 						<game-selector
 							event="game-changed"
-							@game-changed=${this.handleGameChanged}
+							@game-changed=${this.handler.gameChanged.bind(this.handler)}
 						></game-selector>
 						<cell-size-control
 							event="cell-size-changed"
 							min="5"
 							max="100"
 							value="20"
-							@cell-size-changed=${this.changedCellSize}
+							@cell-size-changed=${this.handler.cellSizeChanged.bind(
+								this.handler
+							)}
 						></cell-size-control>
+						<speed-selector
+							event="speed-changed"
+							@speed-changed=${this.handler.gameSpeedChanged.bind(this.handler)}
+						></speed-selector>
 						<start-button
 							state="IDLE"
-							@sim-event-start-requested=${this.handleStartButtonClicked}
-							@sim-event-pause-requested=${this.handlePauseButtonClicked}
-							@sim-event-resume-requested=${this.handleResumeButtonClicked}
+							@sim-event-start-requested=${this.handler.startButtonClicked.bind(
+								this.handler
+							)}
+							@sim-event-pause-requested=${this.handler.pauseButtonClicked.bind(
+								this.handler
+							)}
+							@sim-event-resume-requested=${this.handler.resumeButtonClicked.bind(
+								this.handler
+							)}
 						></start-button>
 						<event-button
 							id="reset_button"
 							event="sim-reset-requested"
-							@sim-reset-requested=${this.resetSimulation}
+							@sim-reset-requested=${this.handler.resetSimulation.bind(
+								this.handler
+							)}
 						>
 							Reset
 						</event-button>
 						<event-button
 							id="fullscreen_button"
 							event="fullscreen-requested"
-							@fullscreen-requested=${this.launchFullScreen}
+							@fullscreen-requested=${this.handler.launchFullScreen.bind(
+								this.handler
+							)}
 						>
 							Fullscreen
 						</event-button>
@@ -4609,7 +4619,9 @@ class AppComponent extends LitElement {
 						<event-checkbox
 							id="display_grid"
 							event="dispay-grid-toggle"
-							@dispay-grid-toggle=${this.handleGridBackgroundClicked}
+							@dispay-grid-toggle=${this.handler.gridBackgroundClicked.bind(
+								this.handler
+							)}
 						>
 							Display Grid
 						</event-checkbox>
@@ -4617,7 +4629,9 @@ class AppComponent extends LitElement {
 						<event-checkbox
 							id="display_fullscreen"
 							event="enable-fullscreen-toggle"
-							@enable-fullscreen-toggle=${this.handleFullScreenClicked}
+							@enable-fullscreen-toggle=${this.handler.fullScreenClicked.bind(
+								this.handler
+							)}
 						>
 							Fullscreen
 						</event-checkbox>
@@ -4625,23 +4639,30 @@ class AppComponent extends LitElement {
 						<event-checkbox
 							id="random_start"
 							event="random-start-toggle"
-							@random-start-toggle=${this.handleRandomStartClicked}
+							@random-start-toggle=${this.handler.randomStartClicked.bind(
+								this.handler
+							)}
 						>
 							Random Start
 						</event-checkbox>
 					</div>
 				</div>
-				<div id="canvas_container" @contextmenu="${this.displayContextMenu}">
+				<div
+					id="canvas_container"
+					@contextmenu="${this.handler.displayContextMenu.bind(this.handler)}"
+				>
 					<canvas id="grid_canvas"></canvas>
 					<canvas id="sim_canvas"></canvas>
 					<canvas
 						id="draw_canvas"
-						@click=${this.handleDrawCanvasClicked}
-						@mousemove=${this.handleDrawCanvasMouseMoved}
+						@click=${this.handler.drawCanvasClicked.bind(this.handler)}
+						@mousemove=${this.handler.drawCanvasMouseMoved.bind(this.handler)}
 					></canvas>
 					<context-menu
 						event="context-menu-command"
-						@context-menu-command=${this.handleContextMenuCommand}
+						@context-menu-command=${this.handler.contextMenuCommand.bind(
+							this.handler
+						)}
 					></context-menu>
 				</div>
 				<div id="status_bar">
@@ -4673,11 +4694,10 @@ class AppComponent extends LitElement {
 
 	sizeCanvas() {
 		let fullscreen = this.isFullscreen();
-		this.config.canvas.height = fullscreen
-			? screen.height
-			: this.calculateConfiguredCanvasHeight();
+		this.config.canvas.height = fullscreen ? screen.height : 400;
 
 		let canvasContainerDiv = this.shadowRoot.getElementById('canvas_container');
+		let controlBar = this.shadowRoot.getElementById('control_bar');
 
 		//WARNING: Setting the canvas height changes the body
 		//width so always set the height before the width.
@@ -4689,7 +4709,7 @@ class AppComponent extends LitElement {
 
 		this.config.canvas.width = fullscreen
 			? window.innerWidth
-			: document.body.clientWidth;
+			: controlBar.clientWidth - 2; //account for the 1px boarder on the canvas container.
 
 		canvasContainerDiv.style.width = `${this.config.canvas.width}px`;
 		canvases.forEach((c) => c.setAttribute('width', this.config.canvas.width));
@@ -4697,24 +4717,6 @@ class AppComponent extends LitElement {
 
 	isFullscreen() {
 		return document.fullscreenElement != null;
-	}
-
-	calculateConfiguredCanvasHeight() {
-		// Note: This will use the same padding/margins as the HTML Body.
-		let blockElement = this.shadowRoot.getElementById('block');
-		let headerElement = this.shadowRoot.getElementById('header');
-		let controlBarElement = this.shadowRoot.getElementById('control_bar');
-		let statusBarElement = this.shadowRoot.getElementById('status_bar');
-		let bodyMargin = 8 * 2; //Padding on body element in CSS is 8 top and bottom.
-
-		return (
-			window.innerHeight -
-			bodyMargin -
-			(blockElement.offsetHeight +
-				headerElement.offsetHeight +
-				controlBarElement.offsetHeight +
-				statusBarElement.offsetHeight)
-		);
 	}
 
 	/**
@@ -4725,30 +4727,8 @@ class AppComponent extends LitElement {
 	handlePageResize(event) {
 		this.sizeCanvas();
 		updateConfiguredLandscape(this.config);
-		this.refreshGrid();
-		this.setflagAsDirty(Layers.DRAWING);
-	}
-
-	refreshGrid() {
-		this.stateManager.displayGrid
-			? this.requestToDrawGrid()
-			: this.stateManager.clearRender(Layers.GRID);
-	}
-
-	/**
-	 * Requests the grid worker to generate a grid scene.
-	 * @private
-	 */
-	requestToDrawGrid() {
-		this.stateManager.sendWorkerMessage(Layers.GRID, {
-			command: WorkerCommands.LifeCycle.PROCESS_CYCLE,
-			parameters: {
-				cellWidth: this.config.zoom,
-				cellHeight: this.config.zoom,
-				gridWidth: this.config.canvas.width,
-				gridHeight: this.config.canvas.height,
-			},
-		});
+		this.handler.refreshGrid();
+		this.handler.setflagAsDirty(Layers.DRAWING);
 	}
 
 	/**
@@ -4758,10 +4738,13 @@ class AppComponent extends LitElement {
 	 * @returns {App} The instance.
 	 */
 	updateUI(message) {
-		message.aliveCellsCount && this.setAliveCellsCount(message.aliveCellsCount);
+		message.aliveCellsCount &&
+			this.handler.setAliveCellsCount(message.aliveCellsCount);
 
 		message.numberOfSimulationIterations &&
-			this.setSimGenerationCountComponent(message.numberOfSimulationIterations);
+			this.handler.setSimGenerationCountComponent(
+				message.numberOfSimulationIterations
+			);
 
 		if (message.origin && message.origin == Layers.DRAWING && message.stack) {
 			this.manageStartButtonEnablement(
@@ -4794,47 +4777,6 @@ class AppComponent extends LitElement {
 		}
 	}
 
-	/**
-	 * Resets all web workers and the UI.
-	 */
-	resetSimulation() {
-		this.stateManager.stopSimulation();
-		this.shadowRoot.querySelector(
-			'context-menu'
-		).updateCommandState = JSON.stringify({
-			key: 'runSim',
-			activeState: 'start',
-		});
-		this.transitionToTheStartButton()
-			.setAliveCellsCount(0)
-			.setSimGenerationCountComponent(0);
-		return this.stateManager.allowDrawing().resetSimulation();
-	}
-
-	/**
-	 * Changes the current state of the simulation button.
-	 * @private
-	 * @returns {Main} Returns the instance of the main thread being modified.
-	 */
-	transitionToTheStartButton() {
-		this.shadowRoot.querySelector('start-button').state = 'IDLE';
-		return this;
-	}
-
-	setAliveCellsCount(count) {
-		this.shadowRoot
-			.getElementById('alive_cells_count')
-			.setAttribute('value', count);
-		return this;
-	}
-
-	setSimGenerationCountComponent(count) {
-		this.shadowRoot
-			.getElementById('sim_generation_count')
-			.setAttribute('value', count);
-		return this;
-	}
-
 	getCanvasContext(elementId) {
 		let canvas = this.shadowRoot.getElementById(elementId);
 		if (!canvas) {
@@ -4843,224 +4785,8 @@ class AppComponent extends LitElement {
 		return canvas.getContext('2d');
 	}
 
-	/**
-	 * Event handler for processing a user click when in drawing mode.
-	 * @param {Event} clickEvent Event generated when the draw canvas is clicked.
-	 */
-	handleDrawCanvasClicked(clickEvent) {
-		let menu = this.shadowRoot.querySelector('context-menu');
-		if (menu.display) {
-			menu.display = false;
-			return;
-		}
-
-		if (this.stateManager.isDrawingAllowed()) {
-			let boundary = this.shadowRoot
-				.getElementById('draw_canvas')
-				.getBoundingClientRect();
-			let cellLocation = convertToCell(clickEvent, boundary, this.config.zoom);
-			this.setflagAsDirty(Layers.DRAWING);
-			this.stateManager.sendWorkerMessage(Layers.DRAWING, {
-				command: WorkerCommands.DrawingSystemCommands.TOGGLE_CELL,
-				cx: cellLocation.x,
-				cy: cellLocation.y,
-			});
-		}
-	}
-
-	displayContextMenu(clickEvent) {
-		clickEvent.preventDefault();
-		let boundary = this.shadowRoot
-			.getElementById('draw_canvas')
-			.getBoundingClientRect();
-		let contextMenu = this.shadowRoot.querySelector('context-menu');
-
-		contextMenu.menuPosition = {
-			clickEvent: clickEvent,
-			boundary: boundary,
-			zoom: this.config.zoom,
-		};
-
-		contextMenu.display = true;
-		return false;
-	}
-
-	handleDrawCanvasMouseMoved(event) {
-		let boundary = this.shadowRoot
-			.getElementById('draw_canvas')
-			.getBoundingClientRect();
-		let cellLocation = convertToCell(event, boundary, this.config.zoom);
-		this.stateManager.setActiveCell(cellLocation);
-	}
-
-	handleStartButtonClicked() {
-		this.shadowRoot.querySelector(
-			'context-menu'
-		).updateCommandState = JSON.stringify({
-			key: 'runSim',
-			activeState: 'pause',
-		});
-		return new Promise((resolve, reject) => {
-			Promise.resolve(
-				this.displayManager.setDisplayMode(
-					this.stateManager.getDisplayPreference()
-				)
-			)
-				.catch((reason) => {
-					console.error(DISPLAY_TRANSITION_ERR_MSG);
-					console.error(reason);
-				})
-				.then(() => {
-					document.fullscreenElement && this.handlePageResize();
-					this.stateManager.preventDrawing();
-					this.stateManager.startSimulation();
-				});
-		});
-	}
-
-	handlePauseButtonClicked() {
-		this.stateManager.stopSimulation();
-		this.stateManager.pauseSimulationInDrawingMode();
-		this.shadowRoot.querySelector(
-			'context-menu'
-		).updateCommandState = JSON.stringify({
-			key: 'runSim',
-			activeState: 'resume',
-		});
-		this.setflagAsDirty(Layers.DRAWING);
-	}
-
-	handleResumeButtonClicked() {
-		this.shadowRoot.querySelector(
-			'context-menu'
-		).updateCommandState = JSON.stringify({
-			key: 'runSim',
-			activeState: 'pause',
-		});
-		Promise.resolve(
-			this.displayManager.setDisplayMode(
-				this.stateManager.getDisplayPreference()
-			)
-		)
-			.catch((reason) => {
-				console.error(DISPLAY_TRANSITION_ERR_MSG);
-				console.error(reason);
-			})
-			.then(() => {
-				document.fullscreenElement && this.handlePageResize();
-				this.stateManager.preventDrawing();
-				this.stateManager.startSimulation();
-			});
-	}
-
-	launchFullScreen() {
-		return new Promise((resolve, reject) => {
-			let container = this.shadowRoot.getElementById('canvas_container');
-			Promise.resolve(this.displayManager.setDisplayMode(true, container))
-				.catch((reason) => {
-					console.error(DISPLAY_TRANSITION_ERR_MSG);
-					console.error(reason);
-					reject();
-				})
-				.then(() => {
-					document.fullscreenElement && this.handlePageResize();
-					resolve();
-				});
-		});
-	}
-
 	setCellShapeOption(event) {
 		this.config.cell.shape = event.detail.shape;
-	}
-
-	/**
-	 * Command all registered workers to set their cell size.
-	 */
-	changedCellSize(event) {
-		this.config.zoom = event.detail.cellSize;
-		//Inform the drawing system and Life Simulation of the change.
-		this.stateManager.broadcast({
-			command: WorkerCommands.LifeSystemCommands.SET_CELL_SIZE,
-			cellSize: this.config.zoom,
-		});
-		this.refreshGrid();
-	}
-
-	/**
-	 * Event handler for when the grid checkbox is clicked.
-	 */
-	handleGridBackgroundClicked(event) {
-		this.stateManager.displayGrid = event.detail.checked;
-		this.refreshGrid();
-	}
-
-	handleFullScreenClicked(event) {
-		this.stateManager.setDisplayPreference(event.detail.checked);
-	}
-
-	handleRandomStartClicked(event) {
-		this.stateManager.setRandomStartPreference(event.detail.checked);
-	}
-
-	/**
-	 * Handles processing the context menu item clicked.
-	 * @param {number} row - The horizontal coordinate of the cell clicked.
-	 * @param {number} col - The vertical coordinate of the cell clicked.
-	 * @param {string} cmdName - The command clicked in the context menu
-	 */
-	handleContextMenuCommand(event) {
-		event.detail.simCommand
-			? this.processContextMenuSimCommand(event)
-			: this.generateTemplate(event);
-	}
-
-	generateTemplate(event) {
-		this.config.elementaryCAs.useRandomStart = this.stateManager.getRandomStartPreference();
-		this.stateManager.sendWorkerMessage(Layers.DRAWING, {
-			command: WorkerCommands.DrawingSystemCommands.DRAW_TEMPLATE,
-			templateName: event.detail.command,
-			row: event.detail.row,
-			col: event.detail.col,
-			config: this.config,
-		});
-		this.setflagAsDirty(Layers.DRAWING);
-	}
-
-	setflagAsDirty(workerName) {
-		this.stateManager.workerSystem.setWorkerDirtyFlag(workerName, true);
-		return this;
-	}
-
-	processContextMenuSimCommand(event) {
-		let startButton = this.shadowRoot.querySelector('start-button');
-		switch (event.detail.command) {
-			case 'start-sim':
-				startButton.state = 'RUNNING';
-				this.handleStartButtonClicked();
-				break;
-			case 'pause-sim':
-				startButton.state = 'PAUSED';
-				this.handlePauseButtonClicked();
-				break;
-			case 'resume-sim':
-				startButton.state = 'RUNNING';
-				this.handleResumeButtonClicked();
-				break;
-			case 'reset':
-				this.resetSimulation();
-				break;
-			default:
-				throw new Error('Unknown context menu command.');
-		}
-		return;
-	}
-
-	handleGameChanged(event) {
-		this.config.game.activeGame = event.detail.game;
-		this.stateManager.sendWorkerMessage(Layers.SIM, {
-			command: WorkerCommands.LifeSystemCommands.SET_CONFIG,
-			config: this.config,
-		});
 	}
 }
 
@@ -5071,30 +4797,26 @@ customElements.define('conways-game', AppComponent);
 /* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(__webpack__worker__0, __webpack__worker__1, __webpack__worker__2) {const {
+const {
 	AppStateManager,
 	AppStateManagerEvents,
-} = __webpack_require__(21);
-const DefaultConfig = __webpack_require__(26);
-const Layers = __webpack_require__(2);
+} = __webpack_require__(18);
+const DefaultConfig = __webpack_require__(23);
+const Layers = __webpack_require__(1);
 
-const DrawingSceneBuilder = __webpack_require__(27);
-const GridSceneBuilder = __webpack_require__(28);
-const LifeSceneBuilder = __webpack_require__(29);
-const DisplayManager = __webpack_require__(30);
+const DrawingSceneBuilder = __webpack_require__(24);
+const GridSceneBuilder = __webpack_require__(25);
+const LifeSceneBuilder = __webpack_require__(26);
+const DisplayManager = __webpack_require__(27);
 
-// const {
-// 	GridSystemWorker,
-// 	DrawingSystemWorker,
-// 	LifeSystemWorker,
-// } = require('../workers/WorkersLoader');
+const { createWorker } = __webpack_require__(28);
 
 const {
 	handleMessageFromGridWorker,
 	handleMsgFromDrawingWorker,
 	handleMessageFromLifeWorker,
 	setThreadFlagToClean,
-} = __webpack_require__(31);
+} = __webpack_require__(32);
 
 class AppBuilder {
 	static buildApp(app) {
@@ -5159,18 +4881,18 @@ class AppBuilder {
 		app.stateManager
 			.createWorker(
 				Layers.GRID,
-				new Worker(__webpack__worker__0, undefined), //GridSystemWorker,
+				createWorker(Layers.GRID),
 				handleMessageFromGridWorker.bind(app.stateManager),
 				false
 			)
 			.createWorker(
 				Layers.DRAWING,
-				new Worker(__webpack__worker__1, undefined), //DrawingSystemWorker,
+				createWorker(Layers.DRAWING),
 				handleMsgFromDrawingWorker.bind(app.stateManager)
 			)
 			.createWorker(
 				Layers.SIM,
-				new Worker(__webpack__worker__2, undefined), //LifeSystemWorker,
+				createWorker(Layers.SIM),
 				handleMessageFromLifeWorker.bind(app.stateManager)
 			);
 
@@ -5180,43 +4902,24 @@ class AppBuilder {
 
 module.exports = AppBuilder;
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(18), __webpack_require__(19), __webpack_require__(20)))
 
 /***/ }),
 /* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__.p + "0.3bc0679dcde76d0af99b.worker.js"
-
-/***/ }),
-/* 19 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__.p + "1.cf60ffdef3cb1f37e5db.worker.js"
-
-/***/ }),
-/* 20 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__.p + "2.f7e82d3e535da9f8882a.worker.js"
-
-/***/ }),
-/* 21 */
-/***/ (function(module, exports, __webpack_require__) {
-
 const SceneManager = __webpack_require__(8);
 const HTMLCanvasRenderer = __webpack_require__(9);
-const WorkerSystem = __webpack_require__(22);
+const WorkerSystem = __webpack_require__(19);
 const WorkerCommands = __webpack_require__(5);
-const { SeederModels } = __webpack_require__(25);
+const { SeederModels } = __webpack_require__(22);
 
-const Layers = __webpack_require__(2);
+const Layers = __webpack_require__(1);
 const { getElementById } = __webpack_require__(3);
 
 const {
 	updateConfiguredZoom,
 	updateConfiguredLandscape,
-} = __webpack_require__(11);
+} = __webpack_require__(6);
 
 const SEEDER_CREATION_ERR_MSG = 'There was an error trying to build the seeder';
 const PROCESS_CYCLE_MESSAGE_ERR_MSG =
@@ -5683,7 +5386,7 @@ module.exports = { AppStateManager, AppStateManagerEvents };
 
 
 /***/ }),
-/* 22 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -5693,11 +5396,11 @@ module.exports = { AppStateManager, AppStateManagerEvents };
  * @module system/worker
  */
 
-const { BrowserSystem } = __webpack_require__(23);
+const { BrowserSystem } = __webpack_require__(20);
 
 const WorkerCommands = __webpack_require__(5).LifeCycle;
 
-const { nanoid } = __webpack_require__(24);
+const { nanoid } = __webpack_require__(21);
 
 const PROCESS_CYCLE_MSG = {
 	command: WorkerCommands.PROCESS_CYCLE,
@@ -5823,7 +5526,7 @@ module.exports = WorkerSystem;
 
 
 /***/ }),
-/* 23 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -6091,7 +5794,7 @@ module.exports = {
 
 
 /***/ }),
-/* 24 */
+/* 21 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -6186,7 +5889,7 @@ let nanoid = (size = 21) => {
 
 
 /***/ }),
-/* 25 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -6194,7 +5897,7 @@ let nanoid = (size = 21) => {
  * @module seeders
  */
 const CellStates = __webpack_require__(10);
-const { Cell } = __webpack_require__(1);
+const { Cell } = __webpack_require__(2);
 
 /**
  * Randomly selects 0 or 1.
@@ -6324,10 +6027,10 @@ module.exports = { Seeder, SeederFactory, SeederModels };
 
 
 /***/ }),
-/* 26 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const Games = __webpack_require__(12);
+const Games = __webpack_require__(11);
 let DefaultConfig = {
 	canvas: {
 		width: 600,
@@ -6341,10 +6044,10 @@ let DefaultConfig = {
 		tickLength controls the target frames per second.
 		1 second = 1000 ms
 		A tickLength of 125 is 1000/125 = 8 FPS
-		A tickLength of 125 is 1000/62 = 16 FPS
-		A tickLength of 125 is 1000/41 = 24 FPS
+		A tickLength of 62 is 1000/62 = 16 FPS
+		A tickLength of 41 is 1000/41 = 24 FPS
 		*/
-		tickLength: 41, // Sets the simulation to run at 20Hz (Every 50ms)
+		tickLength: 125, // Sets the simulation to run at 20Hz (Every 50ms)
 		rules: {
 			birth: [3],
 			survive: [2, 3],
@@ -6367,14 +6070,14 @@ module.exports = DefaultConfig;
 
 
 /***/ }),
-/* 27 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 const {
 	Cell,
 	EntityBatch,
 	EntityBatchArrayBuffer,
-} = __webpack_require__(1);
+} = __webpack_require__(2);
 
 const {
 	BatchDrawingBoxes,
@@ -6386,7 +6089,7 @@ const {
 	RectOutlineTrait,
 	ScaleTransformer,
 	StrokeStyle,
-} = __webpack_require__(6);
+} = __webpack_require__(7);
 
 class DrawingSceneBuilder {
 	//TODO: Remove stack as a parameter. It is redundant
@@ -6423,11 +6126,11 @@ module.exports = DrawingSceneBuilder;
 
 
 /***/ }),
-/* 28 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const { Entity, GridEntity } = __webpack_require__(1);
-const { GridPattern, DarkThinLines } = __webpack_require__(6);
+const { Entity, GridEntity } = __webpack_require__(2);
+const { GridPattern, DarkThinLines } = __webpack_require__(7);
 
 class GridSceneBuilder {
 	static buildScene(scene, config, objs) {
@@ -6449,15 +6152,15 @@ module.exports = GridSceneBuilder;
 
 
 /***/ }),
-/* 29 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const { EntityBatchArrayBuffer } = __webpack_require__(1);
+const { EntityBatchArrayBuffer } = __webpack_require__(2);
 const {
 	BatchDrawingCellsFromBuffer,
 	FillStyle,
 	OutlineStyle,
-} = __webpack_require__(6);
+} = __webpack_require__(7);
 
 class LifeSceneBuilder {
 	//TODO: Remove stack as a parameter. It is redundant
@@ -6484,7 +6187,7 @@ module.exports = LifeSceneBuilder;
 
 
 /***/ }),
-/* 30 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 const { getElementById } = __webpack_require__(3);
@@ -6514,10 +6217,56 @@ module.exports = DisplayManager;
 
 
 /***/ }),
+/* 28 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(__webpack__worker__0, __webpack__worker__1, __webpack__worker__2) {let Workers = __webpack_require__(1);
+
+function createWorker(name) {
+	let worker;
+	switch (name) {
+		case Workers.GRID:
+			worker = new Worker(__webpack__worker__0, undefined);
+			break;
+		case Workers.DRAWING:
+			worker = new Worker(__webpack__worker__1, undefined);
+			break;
+		case Workers.SIM:
+			worker = new Worker(__webpack__worker__2, undefined);
+			break;
+	}
+	return worker;
+}
+
+module.exports = {
+	createWorker,
+};
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(29), __webpack_require__(30), __webpack_require__(31)))
+
+/***/ }),
+/* 29 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__.p + "0.3bc0679dcde76d0af99b.worker.js"
+
+/***/ }),
+/* 30 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__.p + "1.cf60ffdef3cb1f37e5db.worker.js"
+
+/***/ }),
 /* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const Layers = __webpack_require__(2);
+module.exports = __webpack_require__.p + "2.f7e82d3e535da9f8882a.worker.js"
+
+/***/ }),
+/* 32 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const Layers = __webpack_require__(1);
 
 /**
  * Processes a message received from the grid web worker.
@@ -6573,7 +6322,323 @@ module.exports = {
 
 
 /***/ }),
-/* 32 */
+/* 33 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const Layers = __webpack_require__(1);
+const WorkerCommands = __webpack_require__(5);
+const { convertToCell } = __webpack_require__(12);
+const {
+	updateConfiguredLandscape,
+} = __webpack_require__(6);
+
+const DISPLAY_TRANSITION_ERR_MSG =
+	'There was an error attempting to change display modes.';
+
+class AppEventHandler {
+	constructor(app, shadowRoot, config, stateManager, displayManager) {
+		this.app = app;
+		this.shadowRoot = shadowRoot;
+		this.config = config;
+		this.stateManager = stateManager;
+		this.displayManager = displayManager;
+	}
+
+	gameChanged(event) {
+		this.config.game.activeGame = event.detail.game;
+		this.stateManager.sendWorkerMessage(Layers.SIM, {
+			command: WorkerCommands.LifeSystemCommands.SET_CONFIG,
+			config: this.config,
+		});
+	}
+
+	/**
+	 * Command all registered workers to set their cell size.
+	 */
+	cellSizeChanged(event) {
+		this.config.zoom = event.detail.cellSize;
+		updateConfiguredLandscape(this.config);
+		//Inform the drawing system and Life Simulation of the change.
+		this.stateManager.broadcast({
+			command: WorkerCommands.LifeSystemCommands.SET_CELL_SIZE,
+			cellSize: this.config.zoom,
+		});
+		this.refreshGrid();
+		this.setflagAsDirty(Layers.DRAWING);
+	}
+
+	refreshGrid() {
+		this.stateManager.displayGrid
+			? this.requestToDrawGrid()
+			: this.stateManager.clearRender(Layers.GRID);
+	}
+
+	/**
+	 * Requests the grid worker to generate a grid scene.
+	 * @private
+	 */
+	requestToDrawGrid() {
+		this.stateManager.sendWorkerMessage(Layers.GRID, {
+			command: WorkerCommands.LifeCycle.PROCESS_CYCLE,
+			parameters: {
+				cellWidth: this.config.zoom,
+				cellHeight: this.config.zoom,
+				gridWidth: this.config.canvas.width,
+				gridHeight: this.config.canvas.height,
+			},
+		});
+	}
+
+	setflagAsDirty(workerName) {
+		this.stateManager.workerSystem.setWorkerDirtyFlag(workerName, true);
+		return this;
+	}
+
+	gameSpeedChanged(event) {
+		this.config.game.tickLength = event.detail.fps.tickLength;
+		this.stateManager.sendWorkerMessage(Layers.SIM, {
+			command: WorkerCommands.LifeSystemCommands.SET_CONFIG,
+			config: this.config,
+		});
+	}
+
+	startButtonClicked() {
+		this.shadowRoot.querySelector(
+			'context-menu'
+		).updateCommandState = JSON.stringify({
+			key: 'runSim',
+			activeState: 'pause',
+		});
+		return new Promise((resolve, reject) => {
+			Promise.resolve(
+				this.displayManager.setDisplayMode(
+					this.stateManager.getDisplayPreference()
+				)
+			)
+				.catch((reason) => {
+					console.error(DISPLAY_TRANSITION_ERR_MSG);
+					console.error(reason);
+				})
+				.then(() => {
+					document.fullscreenElement && this.app.handlePageResize();
+					this.stateManager.preventDrawing();
+					this.stateManager.startSimulation();
+				});
+		});
+	}
+
+	pauseButtonClicked() {
+		this.stateManager.stopSimulation();
+		this.stateManager.pauseSimulationInDrawingMode();
+		this.shadowRoot.querySelector(
+			'context-menu'
+		).updateCommandState = JSON.stringify({
+			key: 'runSim',
+			activeState: 'resume',
+		});
+		this.setflagAsDirty(Layers.DRAWING);
+	}
+
+	resumeButtonClicked() {
+		this.shadowRoot.querySelector(
+			'context-menu'
+		).updateCommandState = JSON.stringify({
+			key: 'runSim',
+			activeState: 'pause',
+		});
+		Promise.resolve(
+			this.displayManager.setDisplayMode(
+				this.stateManager.getDisplayPreference()
+			)
+		)
+			.catch((reason) => {
+				console.error(DISPLAY_TRANSITION_ERR_MSG);
+				console.error(reason);
+			})
+			.then(() => {
+				document.fullscreenElement && this.app.handlePageResize();
+				this.stateManager.preventDrawing();
+				this.stateManager.startSimulation();
+			});
+	}
+
+	/**
+	 * Resets all web workers and the UI.
+	 */
+	resetSimulation() {
+		this.stateManager.stopSimulation();
+		this.shadowRoot.querySelector(
+			'context-menu'
+		).updateCommandState = JSON.stringify({
+			key: 'runSim',
+			activeState: 'start',
+		});
+		this.transitionToTheStartButton()
+			.setAliveCellsCount(0)
+			.setSimGenerationCountComponent(0);
+		return this.stateManager.allowDrawing().resetSimulation();
+	}
+
+	launchFullScreen() {
+		return new Promise((resolve, reject) => {
+			let container = this.shadowRoot.getElementById('canvas_container');
+			Promise.resolve(this.displayManager.setDisplayMode(true, container))
+				.catch((reason) => {
+					console.error(DISPLAY_TRANSITION_ERR_MSG);
+					console.error(reason);
+					reject();
+				})
+				.then(() => {
+					document.fullscreenElement && this.app.handlePageResize();
+					resolve();
+				});
+		});
+	}
+
+	/**
+	 * Event handler for when the grid checkbox is clicked.
+	 */
+	gridBackgroundClicked(event) {
+		this.stateManager.displayGrid = event.detail.checked;
+		this.refreshGrid();
+	}
+
+	fullScreenClicked(event) {
+		this.stateManager.setDisplayPreference(event.detail.checked);
+	}
+
+	randomStartClicked(event) {
+		this.stateManager.setRandomStartPreference(event.detail.checked);
+	}
+
+	displayContextMenu(clickEvent) {
+		clickEvent.preventDefault();
+		let boundary = this.shadowRoot
+			.getElementById('draw_canvas')
+			.getBoundingClientRect();
+		let contextMenu = this.shadowRoot.querySelector('context-menu');
+
+		contextMenu.menuPosition = {
+			clickEvent: clickEvent,
+			boundary: boundary,
+			zoom: this.config.zoom,
+		};
+
+		contextMenu.display = true;
+		return false;
+	}
+
+	/**
+	 * Event handler for processing a user click when in drawing mode.
+	 * @param {Event} clickEvent Event generated when the draw canvas is clicked.
+	 */
+	drawCanvasClicked(clickEvent) {
+		let menu = this.shadowRoot.querySelector('context-menu');
+		if (menu.display) {
+			menu.display = false;
+			return;
+		}
+
+		if (this.stateManager.isDrawingAllowed()) {
+			let boundary = this.shadowRoot
+				.getElementById('draw_canvas')
+				.getBoundingClientRect();
+			let cellLocation = convertToCell(clickEvent, boundary, this.config.zoom);
+			this.setflagAsDirty(Layers.DRAWING);
+			this.stateManager.sendWorkerMessage(Layers.DRAWING, {
+				command: WorkerCommands.DrawingSystemCommands.TOGGLE_CELL,
+				cx: cellLocation.x,
+				cy: cellLocation.y,
+			});
+		}
+	}
+
+	drawCanvasMouseMoved(event) {
+		let boundary = this.shadowRoot
+			.getElementById('draw_canvas')
+			.getBoundingClientRect();
+		let cellLocation = convertToCell(event, boundary, this.config.zoom);
+		this.stateManager.setActiveCell(cellLocation);
+	}
+
+	/**
+	 * Handles processing the context menu item clicked.
+	 * @param {number} row - The horizontal coordinate of the cell clicked.
+	 * @param {number} col - The vertical coordinate of the cell clicked.
+	 * @param {string} cmdName - The command clicked in the context menu
+	 */
+	contextMenuCommand(event) {
+		event.detail.simCommand
+			? this.processContextMenuSimCommand(event)
+			: this.generateTemplate(event);
+	}
+
+	/**
+	 * Changes the current state of the simulation button.
+	 * @private
+	 * @returns {Main} Returns the instance of the main thread being modified.
+	 */
+	transitionToTheStartButton() {
+		this.shadowRoot.querySelector('start-button').state = 'IDLE';
+		return this;
+	}
+
+	generateTemplate(event) {
+		this.config.elementaryCAs.useRandomStart = this.stateManager.getRandomStartPreference();
+		this.stateManager.sendWorkerMessage(Layers.DRAWING, {
+			command: WorkerCommands.DrawingSystemCommands.DRAW_TEMPLATE,
+			templateName: event.detail.command,
+			row: event.detail.row,
+			col: event.detail.col,
+			config: this.config,
+		});
+		this.setflagAsDirty(Layers.DRAWING);
+	}
+
+	processContextMenuSimCommand(event) {
+		let startButton = this.shadowRoot.querySelector('start-button');
+		switch (event.detail.command) {
+			case 'start-sim':
+				startButton.state = 'RUNNING';
+				this.startButtonClicked();
+				break;
+			case 'pause-sim':
+				startButton.state = 'PAUSED';
+				this.pauseButtonClicked();
+				break;
+			case 'resume-sim':
+				startButton.state = 'RUNNING';
+				this.resumeButtonClicked();
+				break;
+			case 'reset':
+				this.resetSimulation();
+				break;
+			default:
+				throw new Error('Unknown context menu command.');
+		}
+		return;
+	}
+
+	setSimGenerationCountComponent(count) {
+		this.shadowRoot
+			.getElementById('sim_generation_count')
+			.setAttribute('value', count);
+		return this;
+	}
+
+	setAliveCellsCount(count) {
+		this.shadowRoot
+			.getElementById('alive_cells_count')
+			.setAttribute('value', count);
+		return this;
+	}
+}
+
+module.exports = AppEventHandler;
+
+
+/***/ }),
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 const { LitElement, html, css } = __webpack_require__(0);
@@ -6653,13 +6718,13 @@ customElements.define('cell-size-control', CellSizeControl);
 
 
 /***/ }),
-/* 33 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 const { LitElement, html, css, nothing } = __webpack_require__(0);
 
-const { convertToCell } = __webpack_require__(7);
-const {Commands, Submenus} = __webpack_require__(34);
+const { convertToCell } = __webpack_require__(12);
+const {Commands, Submenus} = __webpack_require__(36);
 
 const MenuStates = {
 	SHOW: 'SHOW',
@@ -6902,7 +6967,7 @@ customElements.define('context-menu', ContextMenu);
 
 
 /***/ }),
-/* 34 */
+/* 36 */
 /***/ (function(module, exports) {
 
 const Submenus = {
@@ -7023,7 +7088,7 @@ module.exports = { Submenus, Commands };
 
 
 /***/ }),
-/* 35 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 const { LitElement, html, css } = __webpack_require__(0);
@@ -7085,7 +7150,7 @@ customElements.define('event-button', EventButton);
 
 
 /***/ }),
-/* 36 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 const { LitElement, html, css } = __webpack_require__(0);
@@ -7156,11 +7221,11 @@ customElements.define('event-checkbox', EventCheckbox);
 
 
 /***/ }),
-/* 37 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 const { LitElement, html, css } = __webpack_require__(0);
-const Games = __webpack_require__(12);
+const Games = __webpack_require__(11);
 
 class GameSelector extends LitElement {
 	constructor() {
@@ -7231,7 +7296,7 @@ customElements.define('game-selector', GameSelector);
 
 
 /***/ }),
-/* 38 */
+/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
 
 const { LitElement, html, css, nothing } = __webpack_require__(0);
@@ -7308,7 +7373,164 @@ customElements.define('menu-item', MenuItem);
 
 
 /***/ }),
-/* 39 */
+/* 41 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const { LitElement, html, css } = __webpack_require__(0);
+
+/**
+ * A simple checkbox with label that fires an event when clicked.
+ */
+class NumberDisplay extends LitElement {
+	constructor() {
+		super();
+		this.value = '0';
+	}
+
+	/**
+	 * The properties of the component.
+	 * @returns {object}
+	 */
+	static get properties() {
+		return {
+			label: { type: String },
+			value: { type: Number },
+		};
+	}
+
+	/**
+	 * The CSS styles for the component.
+	 * @returns {string}
+	 */
+	static get styles() {
+		return css`
+			:host {
+				margin-left: 4px;
+				margin-right: 4px;
+			}
+
+			.display-value {
+				color: #039be5;
+			}
+		`;
+	}
+
+	/**
+	 * Life Cycle Method: Draws the component.
+	 */
+	render() {
+		return html`
+			<span>
+				<span class="display-label">${this.label}</span>:
+				<span class="display-value">${this.value}</span>
+			</span>
+		`;
+	}
+}
+
+customElements.define('number-display', NumberDisplay);
+
+
+/***/ }),
+/* 42 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const { LitElement, html, css } = __webpack_require__(0);
+const FPS = __webpack_require__(43);
+
+class SpeedSelector extends LitElement {
+	constructor() {
+		super();
+		this.eventBubbles = true;
+	}
+
+	/**
+	 * The properties of the component.
+	 * @returns {object}
+	 */
+	static get properties() {
+		return {
+			event: { type: String },
+		};
+	}
+
+	/**
+	 * The CSS styles for the component.
+	 * @returns {string}
+	 */
+	static get styles() {
+		return css`
+			:host {
+				margin-left: 2px;
+				margin-right: 2px;
+			}
+			select {
+				height: 25px;
+			}
+			select:focus {
+				outline: none !important;
+				border: 2px solid #039be5;
+			}
+		`;
+	}
+
+	render() {
+		return html`
+			<label>
+				Speed
+				<select @change="${this.handleChange}">
+					${FPS.map((fps) => this.renderOption(fps))}
+				</select>
+			</label>
+		`;
+	}
+	renderOption(fps) {
+		return html`<option value=${fps.key}>${fps.label}</option>`;
+	}
+
+	handleChange(event) {
+		let selectElement = this.shadowRoot.querySelector('select');
+		let fps = FPS.find((fps) => fps.key === selectElement.value);
+		this.dispatchEvent(
+			new CustomEvent(this.event, {
+				bubbles: this.eventBubbles,
+				composed: this.eventBubbles,
+				detail: {
+					fps: fps,
+				},
+			})
+		);
+	}
+}
+
+customElements.define('speed-selector', SpeedSelector);
+
+
+/***/ }),
+/* 43 */
+/***/ (function(module, exports) {
+
+const FPS = [
+	{
+		key: 'slow',
+		label: 'Slow',
+		tickLength: 125, //1000/125 = 8 FPS
+  },
+	{
+		key: 'medium',
+		label: 'Medium',
+		tickLength: 62, //1000/62 = 16 FPS
+  },
+	{
+		key: 'fast',
+		label: 'Fast',
+		tickLength: 41, //1000/41 = 24 FPS
+  }
+]
+module.exports = FPS;
+
+/***/ }),
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 const { LitElement, html, css, nothing } = __webpack_require__(0);
@@ -7389,7 +7611,7 @@ customElements.define('stateful-menu-item', StatefulMenuItem);
 
 
 /***/ }),
-/* 40 */
+/* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
 const { LitElement, html, css } = __webpack_require__(0);
@@ -7477,7 +7699,7 @@ customElements.define('start-button', StartButton);
 
 
 /***/ }),
-/* 41 */
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
 const { LitElement, html, css, nothing } = __webpack_require__(0);
@@ -7663,4 +7885,4 @@ customElements.define('context-submenu', SubMenu);
 
 /***/ })
 /******/ ]);
-//# sourceMappingURL=main.8ebbbeffb3000c6234be.js.map
+//# sourceMappingURL=main.97fcbf5d3c877dc2cd33.js.map
