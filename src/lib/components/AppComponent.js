@@ -142,6 +142,7 @@ class AppComponent extends LitElement {
 						<event-checkbox
 							id="display_grid"
 							event="dispay-grid-toggle"
+							checked=${this.stateManager.displayGrid}
 							@dispay-grid-toggle=${this.handler.gridBackgroundClicked.bind(
 								this.handler
 							)}
@@ -213,6 +214,7 @@ class AppComponent extends LitElement {
 		AppBuilder.setupRenderers(this);
 		let now = window.performance.now();
 		this.stateManager.start(now);
+		this.handler.refreshGrid();
 	}
 
 	sizeCanvas() {

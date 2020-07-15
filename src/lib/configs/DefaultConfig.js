@@ -27,6 +27,7 @@ let DefaultConfig = {
 		width: 30,
 		height: 20,
 		topology: 'finite-plane',
+		displayGrid: true,
 	},
 	zoom: 20, //The projection amount to convert a 1x1 grid cell to something that is viewable on the HTML Canvas.
 	elementaryCAs: {

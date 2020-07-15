@@ -35,7 +35,11 @@ describe('AppStateManager', function () {
 	let stateManager;
 	let config;
 	this.beforeEach(function () {
-		config = {};
+		config = {
+			landscape: {
+				displayGrid: true,
+			},
+		};
 		stateManager = new AppStateManager(config);
 	});
 
