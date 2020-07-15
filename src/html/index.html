@@ -27,65 +27,78 @@
 				</header>
 				<main>
 					<p>
-						Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam
-						iaculis volutpat accumsan. Mauris fringilla neque eget massa posuere
-						egestas. Vivamus eget est vulputate, cursus sapien sed, scelerisque
-						libero. Vivamus scelerisque est ut sollicitudin luctus. Sed porta
-						eros auctor arcu malesuada, in blandit felis auctor. Duis ac leo
-						gravida, facilisis sem vitae, semper orci. Nam ac metus vel lacus
-						feugiat vehicula at a orci. Donec vitae sollicitudin eros.
+						This is the home for my tinkering with cellular automata.
+						Originally, I thought it would be a fun challenge to build John
+						Conway’s <i>Game of Life</i>. That then expanded into exploring
+						Stephen Wolfram’s 256 rules. For an introduction to both of these
+						topics, see Daniel Shiffman's book
+						<a href="https://natureofcode.com/book/chapter-7-cellular-automata/"
+							>The Nature of Code</a
+						>.
 					</p>
 					<p>
-						Nunc odio lorem, gravida id luctus ac, sagittis eget sapien. Morbi
-						at quam scelerisque dui luctus fringilla eu in diam. Ut nunc nunc,
-						lacinia ut feugiat nec, blandit ac magna. Sed consequat felis quis
-						metus convallis bibendum. Nulla faucibus auctor urna, quis molestie
-						lacus convallis at. Maecenas non dolor congue, venenatis risus et,
-						efficitur sem. Mauris tincidunt vulputate tempus. In rutrum rhoncus
-						leo, sed vehicula mi interdum a. Interdum et malesuada fames ac ante
-						ipsum primis in faucibus. Etiam ac neque quis nibh efficitur
-						ullamcorper. Maecenas maximus facilisis enim non sagittis. Aliquam
-						gravida venenatis justo, a lobortis dui gravida eu. Nunc nec
-						hendrerit augue, vitae maximus tortor.
+						After completing my version of the game of life I added support for
+						<a href="https://www.conwaylife.com/wiki/Generations"
+							>generational</a
+						>
+						rule sets. These multi-state simulations can create rich patterns by
+						controlling color based on how many iterations a cell has survived.
+					</p>
+					<h2>My Little Program</h2>
+					<p>
+						The program allows you to run different types of cellular automata
+						rules. Think of rules as a population simulation. Each position on
+						the grid can contain an alive cell or nothing. Before running a
+						simulation you can set the initial population by clicking on the
+						grid.
+					</p>
+					<p>
+						Right clicking on the grid displays the context menu. The context
+						menu provides a set of templates for building up a population. The
+						bottom group of templates are some of Stephen Wolfram's 256 rules.
+						Be default, Wolfram's rules all start with a single alive cell at
+						the middle of the first row. To randomize a rule's starting inputs
+						check the <i>Random Start</i> checkbox.
 					</p>
 					<conways-game></conways-game>
-					<p>
-						Sed tempus metus finibus tempus dapibus. Maecenas scelerisque ante
-						metus, vel fringilla orci commodo sed. Nam tempor orci aliquam odio
-						dignissim sodales. Morbi imperdiet dolor id commodo tincidunt.
-						Aliquam sodales leo diam, nec semper urna vulputate ac. Quisque nibh
-						quam, molestie non ultrices sit amet, lobortis ac nulla. In vitae
-						ultrices lectus. Suspendisse ac nulla varius, malesuada metus non,
-						porttitor libero. Suspendisse ullamcorper mauris ultricies,
-						tincidunt arcu vel, luctus justo.
+
+					<h2>Resources</h2>
+					<p class="no-margin">
+						If this sort of thing interests you, here are some resources you can
+						leverage to dive deeper.
 					</p>
+					<ul>
+						<li>
+							The code for my little app and an explanation for how it works is
+							<a href="https://github.com/sholloway/cells">here.</a>
+						</li>
+						<li>
+							<a href="http://golly.sourceforge.net/">Golly</a> is a more
+							powerful application that can be used to explore cellular
+							automata.
+						</li>
+						<li>
+							<a href="https://www.conwaylife.com/">ConwayLife.com</a> is an
+							online community for cellular automata.
+						</li>
+						<li>
+							<a href="https://www.reddit.com/r/cellular_automata/"
+								>/r/cellular_automata</a
+							>
+							is a subreddit dedicated to cellular automata.
+						</li>
+					</ul>
+
+					<h2>About Me</h2>
 					<p>
-						Praesent rhoncus consectetur libero, in commodo sapien dictum nec.
-						Mauris quis turpis orci. Maecenas convallis, nunc nec ullamcorper
-						vestibulum, tortor justo ultricies nisi, condimentum aliquet enim
-						tellus ac lectus. Etiam at arcu commodo, aliquet tellus in,
-						venenatis ipsum. Etiam est nunc, iaculis a risus id, vehicula
-						condimentum orci. Nullam nulla magna, pulvinar ut sagittis suscipit,
-						facilisis eu arcu. Praesent placerat ligula in nisl maximus pretium.
-						Praesent a laoreet lorem. Nunc ac condimentum neque. Etiam et ex in
-						justo viverra finibus. Integer sed dapibus neque. Nunc eget mauris
-						et risus egestas condimentum. Nullam ut odio elit. Proin mi tellus,
-						accumsan eu massa sed, scelerisque efficitur orci. In semper tellus
-						nulla, sit amet commodo mi feugiat vitae.
-					</p>
-					<p>
-						Fusce condimentum, ex sed tempor maximus, diam orci ornare risus, at
-						dapibus turpis lorem vehicula purus. Quisque efficitur dolor vel
-						enim feugiat, eu posuere nulla facilisis. Curabitur iaculis sed
-						risus quis consectetur. Morbi gravida venenatis odio, porta
-						tincidunt felis dignissim et. Vestibulum et tellus nulla. Phasellus
-						eget eros eget nunc scelerisque vehicula. Pellentesque vel nisi vel
-						ipsum tempus placerat. Phasellus in nibh feugiat, rutrum ipsum
-						vestibulum, volutpat nisi. Suspendisse hendrerit aliquam odio, non
-						vulputate arcu suscipit at.
+						I'm a professional software architect. When I'm not working with
+						customers on their enterprise software I like to write and build
+						interactive games and simulations. You can learn about my other
+						projects at my website
+						<a href="https://samuelholloway.com">samuelholloway.com</a>
 					</p>
 				</main>
-				<footer><p>©2020 Samuel D. Holloway</p></footer>
+				<footer><p>©2020 Samuel Holloway</p></footer>
 			</div>
 		</div>
 		<%= htmlWebpackPlugin.tags.bodyTags%>

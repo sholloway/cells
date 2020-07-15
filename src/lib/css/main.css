@@ -26,11 +26,16 @@ p {
 	margin-bottom: 2em;
 }
 
-h1 {
+.no-margin{
+	margin-bottom: 0;
+}
+
+h1,
+h2,
+h3,
+h4 {
 	color: #000000;
 	font-weight: 300;
-	/* margin-left: 20px; */
-	/* padding: 1em; */
 }
 
 #block {
@@ -38,14 +43,7 @@ h1 {
 	background-color: #006db3;
 }
 
-#header_old {
-	background-color: #039be5;
-	border-top-width: 1px;
-	border-top-color: #3fafe8;
-	border-top-style: solid;
-	padding: 0;
-}
-
 .subheader {
 	font-weight: 300;
 }
+
