@@ -7,6 +7,7 @@ class EventCheckbox extends LitElement {
 	constructor() {
 		super();
 		this.eventBubbles = true;
+		this.checked = false;
 	}
 
 	/**
@@ -15,6 +16,7 @@ class EventCheckbox extends LitElement {
 	 */
 	static get properties() {
 		return {
+			checked: { type: Boolean },
 			event: { type: String },
 			eventBubbles: { type: Boolean },
 		};
@@ -39,7 +41,11 @@ class EventCheckbox extends LitElement {
 	render() {
 		return html`
 			<label>
-				<input type="checkbox" @click="${this.handleClick}" />
+				<input
+					type="checkbox"
+					@click="${this.handleClick}"
+					?checked=${this.checked}
+				/>
 				<slot></slot>
 			</label>
 		`;

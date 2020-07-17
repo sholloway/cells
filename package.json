@@ -12,7 +12,6 @@
 		"build:dev": "webpack --config webpack.dev.js",
 		"coverage": "npx nyc@14.1.1 --reporter=html --reporter=text node_modules/mocha/bin/mocha --recursive \"src/test/**/*Spec.js\"",
 		"docs": "npx jsdoc@3.6.4 -r --package ./package.json --destination ./jsdocs --readme ./README.md ./lib",
-		"profile": "NODE_ENV=test NODE_PATH=. node_modules/mocha/bin/mocha -f 'Profiling' --prof -t 100000",
 		"start": "webpack-dev-server --config webpack.prod.js",
 		"start:dev": "webpack-dev-server --config webpack.dev.js",
 		"test": "NODE_ENV=test NODE_PATH=. node_modules/mocha/bin/mocha --recursive \"src/test/**/*Spec.js\"",
@@ -43,7 +42,7 @@
 		"terser-webpack-plugin": "^3.0.0",
 		"webpack": "4.42.1",
 		"webpack-cli": "3.3.11",
-		"webpack-dev-server": "3.10.3",
+		"webpack-dev-server": "^3.11.0",
 		"webpack-merge": "4.2.2",
 		"worker-plugin": "^4.0.3"
 	},
