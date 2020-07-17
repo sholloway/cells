@@ -4619,6 +4619,7 @@ class AppComponent extends LitElement {
 						<event-checkbox
 							id="display_grid"
 							event="dispay-grid-toggle"
+							checked=${this.stateManager.displayGrid}
 							@dispay-grid-toggle=${this.handler.gridBackgroundClicked.bind(
 								this.handler
 							)}
@@ -4690,6 +4691,7 @@ class AppComponent extends LitElement {
 		AppBuilder.setupRenderers(this);
 		let now = window.performance.now();
 		this.stateManager.start(now);
+		this.handler.refreshGrid();
 	}
 
 	sizeCanvas() {
@@ -4945,7 +4947,7 @@ class AppStateManager {
 		this.observers = new Map();
 		this.drawingAllowed = true;
 		this.drawingCellsCount = 0;
-		this.displayGrid = false;
+		this.displayGrid = this.config.landscape.displayGrid;
 		this.fullScreenDesired = false;
 		this.useRandomStart = false;
 		this.renderers = new Map();
@@ -6059,6 +6061,7 @@ let DefaultConfig = {
 		width: 30,
 		height: 20,
 		topology: 'finite-plane',
+		displayGrid: true,
 	},
 	zoom: 20, //The projection amount to convert a 1x1 grid cell to something that is viewable on the HTML Canvas.
 	elementaryCAs: {
@@ -7162,6 +7165,7 @@ class EventCheckbox extends LitElement {
 	constructor() {
 		super();
 		this.eventBubbles = true;
+		this.checked = false;
 	}
 
 	/**
@@ -7170,6 +7174,7 @@ class EventCheckbox extends LitElement {
 	 */
 	static get properties() {
 		return {
+			checked: { type: Boolean },
 			event: { type: String },
 			eventBubbles: { type: Boolean },
 		};
@@ -7194,7 +7199,11 @@ class EventCheckbox extends LitElement {
 	render() {
 		return html`
 			<label>
-				<input type="checkbox" @click="${this.handleClick}" />
+				<input
+					type="checkbox"
+					@click="${this.handleClick}"
+					?checked=${this.checked}
+				/>
 				<slot></slot>
 			</label>
 		`;
@@ -7885,4 +7894,4 @@ customElements.define('context-submenu', SubMenu);
 
 /***/ })
 /******/ ]);
-//# sourceMappingURL=main.97fcbf5d3c877dc2cd33.js.map
+//# sourceMappingURL=main.09ab9c0077f4002b4820.js.map
