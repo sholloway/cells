@@ -7,9 +7,9 @@
 
 ## Introduction
 
-This project is a web application that enables running various cellular 
-automata in an HTML Canvas. It uses Webpack for bundling and LitElement 
-for the the user interface.  
+This project is a web application that enables running various cellular
+automata in an HTML Canvas. It uses Webpack for bundling and LitElement
+for the the user interface.
 
 ## Getting Started
 
@@ -54,35 +54,40 @@ npm run docs
 5. Run the tests.
 
 ### Creating a Release
+
 The site is hosted on GitHub pages. It sources the pages from the _docs_ directory.
 To update the site we simple do a Webpack production build and copy the contents
-of the _dist_ directory to the docs directory.  
+of the _dist_ directory to the docs directory.
 
 1. Create a release branch.
+
 ```shell
 git checkout -b release/MyRelease
 ```
 
 2. Build the app.
+
 ```shell
 npm run build
 ```
 
 3. Remove the old app and copy in the new.
+
 ```shell
 rm -r ./docs/*
 cp -R ./dist/* docs
 ```
 
-4. Verify the production app works without Webpack. I use 
+4. Verify the production app works without Webpack. I use
    the Python HTTP server for this, but there are [many ways](https://gist.github.com/willurd/5720255)
    to do this.
+
 ```shell
 cd docs
 python3 -m http.server 8000
 ```
 
-4. Check in the changes, push to origin and submit a pull request.
+5. Check in the changes, push to origin and submit a pull request.
    Merging the pull request into Master will deploy the site.
 
 ## Related Resources
